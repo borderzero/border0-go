@@ -1,0 +1,40 @@
+name: Run tests
+on: [push]
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go_version: ["1.20"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go_version }}
+      - name: Print version info
+        run: |
+          which go
+          go version
+      - name: Configure git for private modules
+        env:
+          TOKEN: ${{ secrets.LIB0_REPO_PERSONAL_ACCESS_TOKEN }}
+        run: git config --global url."https://YOUR_GITHUB_USERNAME:${TOKEN}@github.com".insteadOf "https://github.com"
+      - name: Run Go tests
+        env:
+          GOPRIVATE: github.com/borderzero
+        run: make test
+      - name: Send slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,author,ref,job,took # (default: repo,message)
+          author_name: ''
+          job_name: Unit tests
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          MATRIX_CONTEXT: ${{ toJson(matrix) }} # required
+        if: always() # pick up events even if the job failed or canceled.
