@@ -1,4 +1,4 @@
-module github.com/adrianosela/border0-go
+module github.com/borderzero/border0-go
 
 go 1.20
 
