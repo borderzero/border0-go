@@ -48,7 +48,7 @@ type AwsCredentials struct {
 // BaseAwsPluginConfiguration represents configuration fields shared across all AWS related plugins.
 type BaseAwsPluginConfiguration struct {
 	AwsCredentials *AwsCredentials `json:"aws_credentials,omitempty"`
-	AwsRegions     []string        `json:"aws_regions"`
+	AwsRegions     []string        `json:"aws_regions,omitempty"`
 }
 
 // BaseDiscoveryPluginConfiguration represents configuration fields shared across all discovery related plugins.
