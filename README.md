@@ -1,5 +1,6 @@
 # Border0 Go SDK
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/borderzero/border0-go)](https://goreportcard.com/report/github.com/borderzero/border0-go)
 [![license](https://img.shields.io/github/license/borderzero/border0-go)](https://github.com/borderzero/border0-go/blob/master/LICENSE)
 
 > 🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧
