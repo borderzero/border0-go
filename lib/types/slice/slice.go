@@ -19,3 +19,16 @@ func Transform[T any, V any](slice []T, fn func(T) V) []V {
 	}
 	return vs
 }
+
+// Map takes a slice of a given type and a function to extract
+// a map key from slice elements; it returns a map of these keys
+// to the original element. Note that if multiple elements in
+// the slice return the same key, the element that appears last
+// in the slice will be the (only) element that maps to the key.
+func Map[K comparable, V any](slice []V, fn func(V) K) map[K]V {
+	m := map[K]V{}
+	for _, v := range slice {
+		m[fn(v)] = v
+	}
+	return m
+}
