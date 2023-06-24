@@ -34,7 +34,7 @@ type PluginConfiguration struct {
 	AwsSsmDiscoveryPluginConfiguration     *AwsSsmDiscoveryPluginConfiguration     `json:"aws_ssm_discovery_plugin_configuration,omitempty"`
 	DockerDiscoveryPluginConfiguration     *DockerDiscoveryPluginConfiguration     `json:"docker_discovery_plugin_configuration,omitempty"`
 	KubernetesDiscoveryPluginConfiguration *KubernetesDiscoveryPluginConfiguration `json:"kubernetes_discovery_plugin_configuration,omitempty"`
-	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"local_network_discovery_plugin_configuration,omitempty"`
+	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"network_discovery_plugin_configuration,omitempty"`
 }
 
 // AwsCredentials represents credentials and coonfiguration for authenticating against AWS APIs.
@@ -108,16 +108,23 @@ type KubernetesDiscoveryPluginConfiguration struct {
 	// TODO: k8s api URL, credentials...
 }
 
+// NetworkDiscoveryTargetConfiguration represents configuration for discovery of a network target.
+type NetworkDiscoveryTargetConfiguration struct {
+	Ports []uint16 `json:"ports,omitempty"`
+
+	DiscoverySshServers        bool `json:"discover_ssh_servers,omitempty"`
+	DiscoveryHttpServers       bool `json:"discover_http_servers,omitempty"`
+	DiscoveryMysqlServers      bool `json:"discover_mysql_servers,omitempty"`
+	DiscoveryPostgresqlServers bool `json:"discover_postgresql_servers,omitempty"`
+
+	MaxPacketsPerSecond      uint16 `json:"max_packets_per_second"`
+	MinScanDelayMilliseconds uint16 `json:"min_scan_delay_milliseconds"`
+}
+
 // NetworkDiscoveryPluginConfiguration represents configuration for the network_discovery plugin.
 type NetworkDiscoveryPluginConfiguration struct {
 	BaseDiscoveryPluginConfiguration // extends
 
-	// map key can be a hostname, an IP, IP-range, or CIDR
-	Targets map[string]struct {
-		Ports                      []uint16 `json:"ports"`
-		DiscoverySshServers        bool     `json:"discover_ssh_servers,omitempty"`
-		DiscoveryHttpServers       bool     `json:"discover_http_servers,omitempty"`
-		DiscoveryMysqlServers      bool     `json:"discover_mysql_servers,omitempty"`
-		DiscoveryPostgresqlServers bool     `json:"discover_postgresql_servers,omitempty"`
-	} `json:"targets"`
+	// A target (map key) can be a CIDR range, an IP range, a single IP, or a DNS name.
+	TargetConfigurations map[string]NetworkDiscoveryTargetConfiguration `json:"target_configurations,omitempty"`
 }
