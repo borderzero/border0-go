@@ -25,9 +25,6 @@ const (
 
 // PluginConfiguration represents configuration for a Border0 connector plugin.
 type PluginConfiguration struct {
-	PluginType string `json:"plugin_type"`
-	Enabled    bool   `json:"enabled"`
-
 	AwsEc2DiscoveryPluginConfiguration     *AwsEc2DiscoveryPluginConfiguration     `json:"aws_ec2_discovery_plugin_configuration,omitempty"`
 	AwsEcsDiscoveryPluginConfiguration     *AwsEcsDiscoveryPluginConfiguration     `json:"aws_ecs_discovery_plugin_configuration,omitempty"`
 	AwsRdsDiscoveryPluginConfiguration     *AwsRdsDiscoveryPluginConfiguration     `json:"aws_rds_discovery_plugin_configuration,omitempty"`
