@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/borderzero/border0-go)](https://goreportcard.com/report/github.com/borderzero/border0-go)
 [![license](https://img.shields.io/github/license/borderzero/border0-go)](https://github.com/borderzero/border0-go/blob/master/LICENSE)
 
-Border0 enables users to log into various services, including web, SSH, Database, and generic TCP, using their existing Single Sign-On (SSO) credentials.
+Border0 enables users to log into various services, including web, SSH, database, and generic TCP, using their existing Single Sign-On (SSO) credentials.
 If you haven't yet registered, [create a new account](https://portal.border0.com/register) and explore our [informative blog posts](https://www.border0.com/blog)
 and [comprehensive documentation](https://docs.border0.com/docs/quick-start).
 
@@ -26,7 +26,14 @@ go get github.com/borderzero/border0-go
 
 ## Quickstart
 
-Check out the [examples](./examples) folder for more basic and advanced examples and use cases.
+Explore the [examples](./examples) folder for additional use cases and examples. To run these examples, you'll need a Border0 access token.
+You can generate one by going to [Border0 Admin Portal](https://portal.border0.com) -> Organization Settings -> Access Tokens, create a token in `Member` permission group.
+
+Once you have the token, you can proceed to run the example code with:
+
+```shell
+BORDER0_AUTH_TOKEN=_your_access_token_ go run main.go
+```
 
 ### Border API Client
 
@@ -88,18 +95,18 @@ import (
 
 func main() {
 	listener, err := border0.Listen(
-		listen.WithSocketName("border0-go-http-listener"),     // http socket name the listener will be bound to
+		listen.WithSocketName("sdk-socket-http"),              // http socket name the listener will be bound to, socket will be created if not exists
 		listen.WithAuthToken(os.Getenv("BORDER0_AUTH_TOKEN")), // optional, if not provided, Border0 SDK will use BORDER0_AUTH_TOKEN env var
 	)
 	if err != nil {
 		log.Fatalln("failed to start listener:", err)
 	}
 
-	handler := http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "Hello world! This is border0-go.")
-		},
-	)
-	log.Fatal(http.Serve(listener, handler))
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		name := r.Header.Get("X-Auth-Name")
+		fmt.Fprintf(w, "Hello, %s! This is border0-go + standard library http.", name)
+	})
+
+	log.Fatalln(http.Serve(listener, handler))
 }
 ```

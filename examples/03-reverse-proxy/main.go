@@ -29,7 +29,7 @@ const appendScript = `
 
 func main() {
 	listener, err := border0.Listen(
-		listen.WithSocketName("border0-go-reverse-proxy"),     // http socket name the listener will be bound to
+		listen.WithSocketName("sdk-socket-http"),              // http socket name the listener will be bound to, socket will be created if not exists
 		listen.WithAuthToken(os.Getenv("BORDER0_AUTH_TOKEN")), // optional, if not provided, Border0 SDK will use BORDER0_AUTH_TOKEN env var
 	)
 	if err != nil {
@@ -60,5 +60,5 @@ func main() {
 		},
 	)
 
-	log.Fatal(http.Serve(listener, handler))
+	log.Fatalln(http.Serve(listener, handler))
 }

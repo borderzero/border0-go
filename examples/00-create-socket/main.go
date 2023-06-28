@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 
@@ -16,7 +17,7 @@ func main() {
 	)
 	ctx := context.Background()
 
-	// create socket
+	// step 1: create a new socket
 	socket := client.Socket{
 		Name:       "sdk-socket-http",
 		SocketType: "http",
@@ -26,13 +27,15 @@ func main() {
 		log.Fatalln("failed to create socket using border0 api client sdk:", err)
 	}
 
-	log.Printf("created socket: %+v", created)
+	output, _ := json.MarshalIndent(created, "", "  ")
+	log.Println("created socket =", string(output))
 
-	// get socket
+	// step 2: get the socket you just created
 	fetched, err := api.Socket(ctx, created.Name)
 	if err != nil {
 		log.Fatalln("failed to get socket using border0 api client sdk:", err)
 	}
 
-	log.Printf("fetched socket: %+v", fetched)
+	output, _ = json.MarshalIndent(fetched, "", "  ")
+	log.Println("fetched socket =", string(output))
 }

@@ -248,7 +248,8 @@ func (l *Listener) keepAlive(sshClient *ssh.Client, done chan bool) {
 
 func (l *Listener) createSocket() error {
 	if socket, err := l.apiClient.Socket(context.Background(), l.socketName); err != nil {
-		if err.Error() == "not found" {
+		if client.NotFound(err) {
+			// socket doesn't exist, let's create it first
 			socket = new(client.Socket)
 			socket.Name = l.socketName
 			socket.SocketType = "http"

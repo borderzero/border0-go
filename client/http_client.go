@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -89,8 +90,7 @@ func (h *HTTPClient) Close() {
 // APIErrorFrom creates an Error from an HTTP response.
 func APIErrorFrom(resp *http.Response) Error {
 	apiErr := Error{
-		Code:    resp.StatusCode,
-		Message: fmt.Sprintf("unexpected status code: %d", resp.StatusCode),
+		Code: resp.StatusCode,
 	}
 
 	var buf bytes.Buffer
@@ -103,16 +103,33 @@ func APIErrorFrom(resp *http.Response) Error {
 		}
 	}
 
+	if apiErr.Message == "" {
+		if apiErr.Fallback != "" {
+			apiErr.Message = apiErr.Fallback
+		} else {
+			apiErr.Message = "unexpected status code"
+		}
+	}
+
 	return apiErr
 }
 
 // Error is an error returned by the API server.
 type Error struct {
-	Code    int    `json:"status_code"`
-	Message string `json:"error_message"`
+	Code     int    `json:"status_code"`
+	Message  string `json:"error_message"`
+	Fallback string `json:"message"`
 }
 
 // Error returns string representation of an Error.
 func (e Error) Error() string {
 	return fmt.Sprintf("%d: %s", e.Code, e.Message)
+}
+
+func NotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	var apiErr Error
+	return errors.As(err, &apiErr) && apiErr.Code == http.StatusNotFound
 }
