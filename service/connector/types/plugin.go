@@ -50,7 +50,7 @@ type BaseAwsPluginConfiguration struct {
 
 // BaseDiscoveryPluginConfiguration represents configuration fields shared across all discovery related plugins.
 type BaseDiscoveryPluginConfiguration struct {
-	ScanIntervalSeconds uint32 `json:"scan_interval_seconds"`
+	ScanIntervalMinutes uint32 `json:"scan_interval_minutes"`
 }
 
 // AwsEc2DiscoveryPluginConfiguration represents configuration for the aws_ec2_discovery plugin.
