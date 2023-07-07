@@ -112,9 +112,8 @@ type KubernetesDiscoveryPluginConfiguration struct {
 
 	Namespaces []string `json:"namespaces,omitempty"`
 
-	IncludeWithStatuses []string            `json:"include_with_statuses,omitempty"`
-	IncludeWithLabels   map[string][]string `json:"include_with_labels,omitempty"`
-	ExcludeWithLabels   map[string][]string `json:"exclude_with_labels,omitempty"`
+	IncludeWithLabels map[string][]string `json:"include_with_labels,omitempty"`
+	ExcludeWithLabels map[string][]string `json:"exclude_with_labels,omitempty"`
 }
 
 // NetworkDiscoveryPluginConfiguration represents configuration for the network_discovery plugin.
