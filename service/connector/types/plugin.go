@@ -34,12 +34,18 @@ type PluginConfiguration struct {
 	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"local_network_discovery_plugin_configuration,omitempty"`
 }
 
-// AwsCredentials represents credentials and coonfiguration for authenticating against AWS APIs.
+// AwsCredentials represents credentials and configuration for authenticating against AWS APIs.
 type AwsCredentials struct {
 	AwsProfile         *string `json:"aws_profile,omitempty"`
 	AwsAccessKeyId     *string `json:"aws_access_key_id,omitempty"`
 	AwsSecretAccessKey *string `json:"aws_secret_access_key,omitempty"`
 	AwsSessionToken    *string `json:"aws_session_token,omitempty"`
+}
+
+// KubernetesCredentials represents credentials and configuration for authenticating against a Kubernetes API.
+type KubernetesCredentials struct {
+	MasterUrl      *string `json:"master_url,omitempty"`
+	KubeconfigPath *string `json:"kubeconfig_path,omitempty"`
 }
 
 // BaseAwsPluginConfiguration represents configuration fields shared across all AWS related plugins.
@@ -102,7 +108,13 @@ type DockerDiscoveryPluginConfiguration struct {
 type KubernetesDiscoveryPluginConfiguration struct {
 	BaseDiscoveryPluginConfiguration // extends
 
-	// TODO: k8s api URL, credentials...
+	KubernetesCredentials *KubernetesCredentials `json:"kubernetes_credentials,omitempty"`
+
+	Namespaces []string `json:"namespaces,omitempty"`
+
+	IncludeWithStatuses []string            `json:"include_with_statuses,omitempty"`
+	IncludeWithLabels   map[string][]string `json:"include_with_labels,omitempty"`
+	ExcludeWithLabels   map[string][]string `json:"exclude_with_labels,omitempty"`
 }
 
 // NetworkDiscoveryPluginConfiguration represents configuration for the network_discovery plugin.
