@@ -101,7 +101,8 @@ type AwsSsmDiscoveryPluginConfiguration struct {
 type DockerDiscoveryPluginConfiguration struct {
 	BaseDiscoveryPluginConfiguration // extends
 
-	// TODO: docker host unix socket, etc...
+	IncludeWithLabels map[string][]string `json:"include_with_labels,omitempty"`
+	ExcludeWithLabels map[string][]string `json:"exclude_with_labels,omitempty"`
 }
 
 // KubernetesDiscoveryPluginConfiguration represents configuration for the kubernetes_discovery plugin.
