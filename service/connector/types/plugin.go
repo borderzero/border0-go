@@ -75,9 +75,8 @@ type AwsEcsDiscoveryPluginConfiguration struct {
 	BaseAwsPluginConfiguration       // extends
 	BaseDiscoveryPluginConfiguration // extends
 
-	IncludeWithStatuses []string            `json:"include_with_statuses,omitempty"`
-	IncludeWithTags     map[string][]string `json:"include_with_tags,omitempty"`
-	ExcludeWithTags     map[string][]string `json:"exclude_with_tags,omitempty"`
+	IncludeWithTags map[string][]string `json:"include_with_tags,omitempty"`
+	ExcludeWithTags map[string][]string `json:"exclude_with_tags,omitempty"`
 }
 
 // AwsRdsDiscoveryPluginConfiguration represents configuration for the aws_rds_discovery plugin.
