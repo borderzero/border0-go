@@ -67,6 +67,7 @@ type AwsEc2DiscoveryPluginConfiguration struct {
 	IncludeWithStates []string            `json:"include_with_states,omitempty"`
 	IncludeWithTags   map[string][]string `json:"include_with_tags,omitempty"`
 	ExcludeWithTags   map[string][]string `json:"exclude_with_tags,omitempty"`
+	CheckSsmStatus    bool                `json:"check_ssm_status"`
 }
 
 // AwsEcsDiscoveryPluginConfiguration represents configuration for the aws_ecs_discovery plugin.
