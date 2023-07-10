@@ -55,16 +55,32 @@ type AWSConfiguration struct {
 	Region string `json:"region"`
 	// InstanceID of the AWS configuration.
 	InstanceID string `json:"instance_id"`
+	// AvailabilityZone of the AWS configuration.
+	AvailabilityZone string `json:"availability_zone"`
 	// AwsProfile of the AWS configuration.
 	AwsProfile string `json:"aws_profile"`
 	// AwsCredentials are optional and represent AWS credentials for the configuration.
 	AwsCredentials *AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
+// AwsCredentials represents AWS SSM details
+type AwsSSMDetails struct {
+	AWSConfiguration
+}
+
+// AwsCredentials represents AWS EC2 Connect details
+type AwsEC2ConnectDetails struct {
+	AWSConfiguration
+}
+
 // SSHConfiguration represents a configuration for a SSH connection.
 type SSHConfiguration struct {
 	// UpstreamAuthenticationType specifies the type of authentication for the SSH connection.
 	UpstreamAuthenticationType string `json:"upstream_authentication_type,omitempty"`
+	// AwsSSMDetails are optional and represent AWS SSM details for SSH connection.
+	AwsSSMDetails *AwsSSMDetails `json:"aws_ssm_details,omitempty"`
+	// AwsEC2ConnectDetails are optional and represent AWS EC2 Connect details for SSH connection.
+	AwsEC2ConnectDetails *AwsEC2ConnectDetails `json:"aws_ec2_connect_details,omitempty"`
 	// SSHPrivateKeyDetails are optional and represent a private key details for SSH connection.
 	SSHPrivateKeyDetails *SSHPrivateKeyDetails `json:"ssh_private_key_details,omitempty"`
 	// BasicCredentials are optional and represent a username-password pair for SSH connection.
