@@ -28,10 +28,9 @@ type PluginConfiguration struct {
 	AwsEc2DiscoveryPluginConfiguration     *AwsEc2DiscoveryPluginConfiguration     `json:"aws_ec2_discovery_plugin_configuration,omitempty"`
 	AwsEcsDiscoveryPluginConfiguration     *AwsEcsDiscoveryPluginConfiguration     `json:"aws_ecs_discovery_plugin_configuration,omitempty"`
 	AwsRdsDiscoveryPluginConfiguration     *AwsRdsDiscoveryPluginConfiguration     `json:"aws_rds_discovery_plugin_configuration,omitempty"`
-	AwsSsmDiscoveryPluginConfiguration     *AwsSsmDiscoveryPluginConfiguration     `json:"aws_ssm_discovery_plugin_configuration,omitempty"`
 	DockerDiscoveryPluginConfiguration     *DockerDiscoveryPluginConfiguration     `json:"docker_discovery_plugin_configuration,omitempty"`
 	KubernetesDiscoveryPluginConfiguration *KubernetesDiscoveryPluginConfiguration `json:"kubernetes_discovery_plugin_configuration,omitempty"`
-	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"local_network_discovery_plugin_configuration,omitempty"`
+	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"network_discovery_plugin_configuration,omitempty"`
 }
 
 // AwsCredentials represents credentials and configuration for authenticating against AWS APIs.
@@ -89,14 +88,6 @@ type AwsRdsDiscoveryPluginConfiguration struct {
 	ExcludeWithTags     map[string][]string `json:"exclude_with_tags,omitempty"`
 }
 
-// AwsSsmDiscoveryPluginConfiguration represents configuration for the aws_ssm_discovery plugin.
-type AwsSsmDiscoveryPluginConfiguration struct {
-	BaseAwsPluginConfiguration       // extends
-	BaseDiscoveryPluginConfiguration // extends
-
-	IncludeWithPingStatuses []string `json:"include_with_ping_statuses,omitempty"`
-}
-
 // DockerDiscoveryPluginConfiguration represents configuration for the docker_discovery plugin.
 type DockerDiscoveryPluginConfiguration struct {
 	BaseDiscoveryPluginConfiguration // extends
@@ -117,16 +108,15 @@ type KubernetesDiscoveryPluginConfiguration struct {
 	ExcludeWithLabels map[string][]string `json:"exclude_with_labels,omitempty"`
 }
 
+// NetworkDiscoveryTarget represents a single target and configuration for the network_discovery plugin.
+type NetworkDiscoveryTarget struct {
+	Target string   `json:"target"`
+	Ports  []uint16 `json:"ports"`
+}
+
 // NetworkDiscoveryPluginConfiguration represents configuration for the network_discovery plugin.
 type NetworkDiscoveryPluginConfiguration struct {
 	BaseDiscoveryPluginConfiguration // extends
 
-	// map key can be a hostname, an IP, IP-range, or CIDR
-	Targets map[string]struct {
-		Ports                      []uint16 `json:"ports"`
-		DiscoverySshServers        bool     `json:"discover_ssh_servers,omitempty"`
-		DiscoveryHttpServers       bool     `json:"discover_http_servers,omitempty"`
-		DiscoveryMysqlServers      bool     `json:"discover_mysql_servers,omitempty"`
-		DiscoveryPostgresqlServers bool     `json:"discover_postgresql_servers,omitempty"`
-	} `json:"targets"`
+	Targets []NetworkDiscoveryTarget `json:"targets"`
 }
