@@ -10,9 +10,6 @@ const (
 	// PluginTypeAwsRdsDiscovery is the plugin type for aws rds db instance discovery.
 	PluginTypeAwsRdsDiscovery = "aws_rds_discovery"
 
-	// PluginTypeAwsSsmDiscovery is the plugin type for aws ssm target discovery.
-	PluginTypeAwsSsmDiscovery = "aws_ssm_discovery"
-
 	// PluginTypeDockerDiscovery is the plugin type for docker container discovery.
 	PluginTypeDockerDiscovery = "docker_discovery"
 
