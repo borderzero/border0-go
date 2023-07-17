@@ -91,6 +91,8 @@ type SSHConfiguration struct {
 type SSHPrivateKeyDetails struct {
 	// Key is the SSH private key.
 	Key string `json:"key"`
+	// Username is the SSH username
+	Username string `json:"username,omitempty"`
 }
 
 // DatabaseConfiguration represents a configuration for a database connection.
