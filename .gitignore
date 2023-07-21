@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+coverage.out
+coverage.tmp
+examples/http-listener/http-listener
+examples/reverse-proxy/reverse-proxy
+examples/api-client-basic/api-client-basic
