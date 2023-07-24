@@ -7,14 +7,14 @@ type ConnectorMetadata struct {
 
 // AwsEc2IdentityMetadata represents metadata for connectors running on AWS EC2 instances.
 type AwsEc2IdentityMetadata struct {
-	AwsAccountId        string `json:"aws_account_id"`
-	AwsRegion           string `json:"aws_region"`
-	AwsAvailabilityZone string `json:"aws_availability_zone"`
-	Ec2InstanceId       string `json:"ec2_instance_id"`
-	Ec2InstanceType     string `json:"ec2_instance_type"`
-	Ec2ImageId          string `json:"ec2_image_id"`
-	KernelId            string `json:"kernel_id"`
-	RamdiskId           string `json:"radisk_id"`
-	Architecture        string `json:"architecture"`
-	PrivateIpAddress    string `json:"private_ip_address"`
+	AwsAccountId        string `json:"aws_account_id,omitempty"`
+	AwsRegion           string `json:"aws_region,omitempty"`
+	AwsAvailabilityZone string `json:"aws_availability_zone,omitempty"`
+	Ec2InstanceId       string `json:"ec2_instance_id,omitempty"`
+	Ec2InstanceType     string `json:"ec2_instance_type,omitempty"`
+	Ec2ImageId          string `json:"ec2_image_id,omitempty"`
+	KernelId            string `json:"kernel_id,omitempty"`
+	RamdiskId           string `json:"ramdisk_id,omitempty"`
+	Architecture        string `json:"architecture,omitempty"`
+	PrivateIpAddress    string `json:"private_ip_address,omitempty"`
 }
