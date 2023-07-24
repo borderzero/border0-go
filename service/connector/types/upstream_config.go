@@ -55,10 +55,6 @@ type AWSConfiguration struct {
 	Region string `json:"region"`
 	// InstanceID of the AWS configuration.
 	InstanceID string `json:"instance_id"`
-	// AvailabilityZone of the AWS configuration.
-	AvailabilityZone string `json:"availability_zone"`
-	// AwsProfile of the AWS configuration.
-	AwsProfile string `json:"aws_profile"`
 	// AwsCredentials are optional and represent AWS credentials for the configuration.
 	AwsCredentials *AwsCredentials `json:"aws_credentials,omitempty"`
 }
