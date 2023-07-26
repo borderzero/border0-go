@@ -79,8 +79,15 @@ type SSHConfiguration struct {
 	AwsEC2ConnectDetails *AwsEC2ConnectDetails `json:"aws_ec2_connect_details,omitempty"`
 	// SSHPrivateKeyDetails are optional and represent a private key details for SSH connection.
 	SSHPrivateKeyDetails *SSHPrivateKeyDetails `json:"ssh_private_key_details,omitempty"`
+	// Border0 cert is optional and represents a Border0 certificate for SSH connection.
+	Border0CertificateDetails *Border0CertificateDetails `json:"border0_certificate_details,omitempty"`
 	// BasicCredentials are optional and represent a username-password pair for SSH connection.
 	BasicCredentials *BasicCredentials `json:"basic_credentials,omitempty"`
+}
+
+// Border0CertificateDetails represents details of a Border0 certificate.
+type Border0CertificateDetails struct {
+	Username string `json:"username,omitempty"`
 }
 
 // SSHPrivateKeyDetails represents details of a SSH private key.
