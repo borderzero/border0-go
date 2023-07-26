@@ -34,3 +34,14 @@ func Map[T any, K comparable, V any](slice []T, fn func(T) (K, V)) map[K]V {
 	}
 	return m
 }
+
+// CountWhere returns the number of elements in a slice that satisfy a given condition.
+func CountWhere[T any](slice []T, condition func(T) bool) int {
+	count := 0
+	for _, e := range slice {
+		if condition(e) {
+			count++
+		}
+	}
+	return count
+}
