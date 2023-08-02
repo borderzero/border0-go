@@ -22,7 +22,7 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/", func(c *gin.Context) {
-		name := c.Request.Header.Get("X-Auth-Name")
+		name := c.Request.Header.Get("X-Auth-Name") // border0 will set this header along with a few other identity related headers
 		c.String(http.StatusOK, "Hello, %s! This is border0-go + gin.", name)
 	})
 

@@ -22,7 +22,7 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		name := c.Get("X-Auth-Name")
+		name := c.Get("X-Auth-Name") // border0 will set this header along with a few other identity related headers
 		return c.SendString(fmt.Sprintf("Hello, %s! This is border0-go + fiber.", name))
 	})
 

@@ -23,7 +23,7 @@ func main() {
 	e := echo.New()
 
 	e.GET("/", func(c echo.Context) error {
-		name := c.Request().Header.Get("X-Auth-Name")
+		name := c.Request().Header.Get("X-Auth-Name") // border0 will set this header along with a few other identity related headers
 		return c.String(http.StatusOK, fmt.Sprintf("Hello, %s! This is border0-go + echo.", name))
 	})
 

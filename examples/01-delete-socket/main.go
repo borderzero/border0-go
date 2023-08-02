@@ -17,26 +17,30 @@ func main() {
 	)
 	ctx := context.Background()
 
-	// step 1: get the socket created from the previous example
+	//
+	// STEP 0: get the socket created from the previous example
+	//
 	previousExample := "00-create-socket"
 	socketFromPreviousExample := "sdk-socket-http"
 	fetched, err := api.Socket(ctx, socketFromPreviousExample)
 	if err != nil {
 		if client.NotFound(err) {
-			log.Fatalf("socket [%s] not found, run example [%s] first", socketFromPreviousExample, previousExample)
+			log.Fatalf("⚠️  socket [%s] not found, run example [%s] first", socketFromPreviousExample, previousExample)
 		} else {
-			log.Fatalln("failed to get socket using border0 api client sdk:", err)
+			log.Fatalln("❌ failed to get socket using border0 api client sdk:", err)
 		}
 	}
 
 	output, _ := json.MarshalIndent(fetched, "", "  ")
-	log.Printf("socket from previous example [%s] = %s", previousExample, string(output))
+	log.Printf("✅ socket from previous example [%s] = %s", previousExample, string(output))
 
-	// step 2: delete the socket that was created from the previous example
+	//
+	// STEP 1: delete the socket that was created from the previous example
+	//
 	err = api.DeleteSocket(ctx, socketFromPreviousExample)
 	if err != nil {
-		log.Fatalln("failed to delete socket using border0 api client sdk:", err)
+		log.Fatalln("❌ failed to delete socket using border0 api client sdk:", err)
 	}
 
-	log.Printf("socket [%s] deleted", socketFromPreviousExample)
+	log.Printf("❎ socket [%s] deleted", socketFromPreviousExample)
 }
