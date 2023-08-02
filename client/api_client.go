@@ -26,6 +26,7 @@ type APIClient struct {
 type Requester interface {
 	TokenClaims() (jwt.MapClaims, error)
 	SocketService
+	ConnectorService
 }
 
 const (

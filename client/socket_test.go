@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/mocks"
+	"github.com/borderzero/border0-go/service/connector/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -110,7 +111,7 @@ func Test_APIClient_Sockets(t *testing.T) {
 		wantErr       error
 	}{
 		{
-			name: "failed to get socket",
+			name: "failed to get sockets",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
 					Request(ctx, http.MethodGet, defaultBaseURL+"/socket", nil, new([]Socket)).
@@ -368,6 +369,94 @@ func Test_APIClient_DeleteSocket(t *testing.T) {
 			} else {
 				assert.EqualError(t, gotErr, test.wantErr.Error())
 			}
+		})
+	}
+}
+
+func Test_APIClient_SocketUpstreamConfigs(t *testing.T) {
+	t.Parallel()
+
+	testConfigs := &SocketUpstreamConfigs{
+		List: []SocketUpstreamConfig{
+			// SSH upstream config with username and password
+			{
+				Config: types.ConnectorServiceUpstreamConfig{
+					UpstreamConnectionType: types.UpstreamConnectionTypeSSH,
+					BaseUpstreamDetails: types.BaseUpstreamDetails{
+						Hostname: "test-hostname",
+						Port:     22,
+					},
+					SSHConfiguration: &types.SSHConfiguration{
+						UpstreamAuthenticationType: types.UpstreamAuthenticationTypeUsernamePassword,
+						BasicCredentials: &types.BasicCredentials{
+							Username: "test-username",
+							Password: "test-password",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name          string
+		mockRequester func(context.Context, *mocks.ClientHTTPRequester)
+		givenIDOrName string
+		wantConfigs   *SocketUpstreamConfigs
+		wantErr       error
+	}{
+		{
+			name: "failed to get socket upstream configs",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, defaultBaseURL+"/socket/test-name/upstream_configurations", nil, new(SocketUpstreamConfigs)).
+					Return(http.StatusInternalServerError, errors.New("failed to get socket upstream configs"))
+			},
+			givenIDOrName: "test-name",
+			wantConfigs:   nil,
+			wantErr:       errors.New("failed after 1 attempt: failed to get socket upstream configs"),
+		},
+		{
+			name: "happy path",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/socket/test-name/upstream_configurations", nil, new(SocketUpstreamConfigs)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*SocketUpstreamConfigs)
+						*output = *testConfigs
+					})
+			},
+			givenIDOrName: "test-name",
+			wantConfigs:   testConfigs,
+			wantErr:       nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotConfigs, gotErr := api.SocketUpstreamConfigs(ctx, test.givenIDOrName)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+			assert.Equal(t, test.wantConfigs, gotConfigs)
 		})
 	}
 }

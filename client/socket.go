@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/borderzero/border0-go/service/connector/types"
 )
@@ -15,6 +16,7 @@ type SocketService interface {
 	CreateSocket(ctx context.Context, in *Socket) (out *Socket, err error)
 	UpdateSocket(ctx context.Context, idOrName string, in *Socket) (out *Socket, err error)
 	DeleteSocket(ctx context.Context, idOrName string) (err error)
+	SocketUpstreamConfigs(ctx context.Context, idOrName string) (out *SocketUpstreamConfigs, err error)
 	SignSocketKey(ctx context.Context, idOrName string, in *SocketKeyToSign) (out *SignedSocketKey, err error)
 }
 
@@ -75,6 +77,16 @@ func (api *APIClient) DeleteSocket(ctx context.Context, idOrName string) (err er
 	return nil
 }
 
+// SocketUpstreamConfigs fetches all upstream configurations for a socket.
+func (api *APIClient) SocketUpstreamConfigs(ctx context.Context, idOrName string) (out *SocketUpstreamConfigs, err error) {
+	out = new(SocketUpstreamConfigs)
+	_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/socket/%s/upstream_configurations", idOrName), nil, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SignSocketKey generates a signed SSH certificate for a socket. The SSH public key must be in OpenSSH format.
 // The SSH certificate will be valid for 5 minutes. The host key is the public key Border0 server. It can be used
 // to verify the SSH certificate.
@@ -89,23 +101,31 @@ func (api *APIClient) SignSocketKey(ctx context.Context, idOrName string, in *So
 
 // Socket represents a socket in Border0 API.
 type Socket struct {
-	Name                 string            `json:"name"`
-	SocketID             string            `json:"socket_id"`
-	SocketType           string            `json:"socket_type"`
-	Description          string            `json:"description,omitempty"`
-	UpstreamType         string            `json:"upstream_type,omitempty"`
-	UpstreamHTTPHostname string            `json:"upstream_http_hostname,omitempty"`
-	Tags                 map[string]string `json:"tags,omitempty"`
+	Name                           string            `json:"name"`
+	SocketID                       string            `json:"socket_id"`
+	SocketType                     string            `json:"socket_type"`
+	Description                    string            `json:"description,omitempty"`
+	UpstreamType                   string            `json:"upstream_type,omitempty"`
+	UpstreamHTTPHostname           string            `json:"upstream_http_hostname,omitempty"`
+	RecordingEnabled               bool              `json:"recording_enabled"`
+	ConnectorAuthenticationEnabled bool              `json:"connector_authentication_enabled"`
+	Tags                           map[string]string `json:"tags,omitempty"`
 
-	RecordingEnabled               bool `json:"recording_enabled"`
-	ConnectorAuthenticationEnabled bool `json:"connector_authentication_enabled"`
-
-	ConnectorData *SocketConnectorData `json:"connector_data,omitempty"`
+	// link to a connector with upstream config
+	ConnectorID    string                                `json:"connector_id,omitempty"`
+	UpstreamConfig *types.ConnectorServiceUpstreamConfig `json:"upstream_configuration,omitempty"`
 }
 
-type SocketConnectorData struct {
-	ConnectorID string                                `json:"connector_id,omitempty"`
-	Config      *types.ConnectorServiceUpstreamConfig `json:"config,omitempty"`
+// SocketUpstreamConfigs represents a list of upstream configurations for a socket.
+type SocketUpstreamConfigs struct {
+	List []SocketUpstreamConfig `json:"list"`
+}
+
+// SocketUpstreamConfig represents an upstream configuration for a socket.
+type SocketUpstreamConfig struct {
+	Config    types.ConnectorServiceUpstreamConfig `json:"config"`
+	CreatedAt time.Time                            `json:"created_at"`
+	UpdatedAt time.Time                            `json:"updated_at"`
 }
 
 // SocketKeyToSign represents a SSH public key to sign.
