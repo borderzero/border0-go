@@ -161,6 +161,22 @@ func Test_APIErrorFrom(t *testing.T) {
 			wantErr: errors.New("400: not a json error response"),
 		},
 		{
+			name: "error response can be decoded, but error_message field is empty, so fallback on message field",
+			givenResp: &http.Response{
+				StatusCode: http.StatusBadRequest,
+				Body:       io.NopCloser(strings.NewReader(`{"message":"bad request"}`)),
+			},
+			wantErr: errors.New("400: bad request"),
+		},
+		{
+			name: "error response can be decoded, but both error_message and message fields are empty",
+			givenResp: &http.Response{
+				StatusCode: http.StatusBadRequest,
+				Body:       io.NopCloser(strings.NewReader("")),
+			},
+			wantErr: errors.New("400: unexpected status code"),
+		},
+		{
 			name: "error response can be decoded",
 			givenResp: &http.Response{
 				StatusCode: http.StatusBadRequest,
@@ -177,6 +193,53 @@ func Test_APIErrorFrom(t *testing.T) {
 
 			gotErr := APIErrorFrom(test.givenResp)
 			assert.EqualError(t, gotErr, test.wantErr.Error())
+		})
+	}
+}
+
+func Test_NotFound(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		givenErr error
+		want     bool
+	}{
+		{
+			name:     "no - not an error",
+			givenErr: nil,
+			want:     false,
+		},
+		{
+			name:     "no - not an Error typed error",
+			givenErr: errors.New("not an Error typed error"),
+			want:     false,
+		},
+		{
+			name: "no - it's a bad request error",
+			givenErr: Error{
+				Code:    http.StatusBadRequest,
+				Message: "bad request",
+			},
+			want: false,
+		},
+		{
+			name: "yes - not found error",
+			givenErr: Error{
+				Code:    http.StatusNotFound,
+				Message: "not found",
+			},
+			want: true,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := NotFound(test.givenErr)
+			assert.Equal(t, test.want, got)
 		})
 	}
 }

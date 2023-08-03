@@ -14,8 +14,14 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+*.swp
 coverage.out
 coverage.tmp
-examples/http-listener/http-listener
-examples/reverse-proxy/reverse-proxy
-examples/api-client-basic/api-client-basic
+examples/00-create-socket/00-create-socket
+examples/01-delete-socket/01-delete-socket
+examples/02-echo-listener/02-echo-listener
+examples/02-fiber-listener/02-fiber-listener
+examples/02-gin-listener/02-gin-listener
+examples/02-http-listener/02-http-listener
+examples/03-reverse-proxy/03-reverse-proxy
+examples/04-list-sockets/04-list-sockets

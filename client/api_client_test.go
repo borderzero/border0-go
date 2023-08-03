@@ -123,7 +123,7 @@ func Test_APIClient_request(t *testing.T) {
 			wantErr:  fmt.Errorf("failed after 1 attempt: %w", errUnitTest),
 		},
 		{
-			name: "unauthorized request and should not retry",
+			name: "401 unauthorized request and should not retry",
 			mockRequester: func(requester *mocks.ClientHTTPRequester, ctx context.Context, _ context.CancelFunc) {
 				requester.EXPECT().
 					Request(ctx, testMethod, testURL, testInput, testOutput).
@@ -136,6 +136,22 @@ func Test_APIClient_request(t *testing.T) {
 				WithBaseURL(testBaseURL),
 			},
 			wantCode: http.StatusUnauthorized,
+			wantErr:  fmt.Errorf("failed after 1 attempt: %w", errUnitTest),
+		},
+		{
+			name: "404 not found request and should not retry",
+			mockRequester: func(requester *mocks.ClientHTTPRequester, ctx context.Context, _ context.CancelFunc) {
+				requester.EXPECT().
+					Request(ctx, testMethod, testURL, testInput, testOutput).
+					Return(http.StatusNotFound, errUnitTest).
+					Once()
+			},
+			givenOptions: []Option{
+				WithRetryMax(3),
+				WithBackoff(mockBackoff),
+				WithBaseURL(testBaseURL),
+			},
+			wantCode: http.StatusNotFound,
 			wantErr:  fmt.Errorf("failed after 1 attempt: %w", errUnitTest),
 		},
 		{
