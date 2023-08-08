@@ -7,6 +7,8 @@ const (
 	UpstreamConnectionTypeAwsEC2Connection = "aws_ec2_connect"
 	// UpstreamConnectionTypeAwsSSM represents a AWS SSM type of upstream connection.
 	UpstreamConnectionTypeAwsSSM = "aws_ssm"
+	// UpstreamConnectionTypeBuiltInSshServer represents the Border0 built-in SSH server.
+	UpstreamConnectionTypeBuiltInSshServer = "built_in_ssh_server"
 	// UpstreamConnectionTypeDatabase represents a database type of upstream connection.
 	UpstreamConnectionTypeDatabase = "database"
 )
