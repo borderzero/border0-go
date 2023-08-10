@@ -7,8 +7,6 @@ const (
 	UpstreamConnectionTypeAwsEC2Connection = "aws_ec2_connect"
 	// UpstreamConnectionTypeAwsSSM represents a AWS SSM type of upstream connection.
 	UpstreamConnectionTypeAwsSSM = "aws_ssm"
-	// UpstreamConnectionTypeBuiltInSshServer represents the Border0 built-in SSH server.
-	UpstreamConnectionTypeBuiltInSshServer = "built_in_ssh_server"
 	// UpstreamConnectionTypeDatabase represents a database type of upstream connection.
 	UpstreamConnectionTypeDatabase = "database"
 )
@@ -21,6 +19,18 @@ const (
 	UpstreamAuthenticationTypeBorder0Cert = "border0_cert"
 	// UpstreamAuthenticationTypeSSHPrivateKey represents a SSH private key type of upstream authentication.
 	UpstreamAuthenticationTypeSSHPrivateKey = "ssh_private_key"
+	// UpstreamAuthenticationTypeBuiltInSshServer represents the Border0 built-in SSH server as the upstream.
+	UpstreamAuthenticationTypeBuiltInSshServer = "built_in_ssh_server"
+)
+
+// Built-in ssh server username provider constants.
+const (
+	// UsernameProviderPromptClient specifies that the username will be prompted-for to clients.
+	UsernameProviderPromptClient = "prompt_client"
+	// UsernameProviderConnectorUser specifies that the username will be derived from the connector's user.
+	UsernameProviderConnectorUser = "connector_user"
+	// UsernameProviderHardcoded specifies that the username will be provided manually by admins.
+	UsernameProviderHardcoded = "harcoded"
 )
 
 // ConnectorServiceUpstreamConfig represents a configuration of a connector service upstream.
@@ -83,6 +93,8 @@ type SSHConfiguration struct {
 	SSHPrivateKeyDetails *SSHPrivateKeyDetails `json:"ssh_private_key_details,omitempty"`
 	// Border0 cert is optional and represents a Border0 certificate for SSH connection.
 	Border0CertificateDetails *Border0CertificateDetails `json:"border0_certificate_details,omitempty"`
+	// BuiltInSshServerDetails is optional and represents details for a built-in ssh server ssh connection.
+	BuiltInSshServerDetails *BuiltInSshServerDetails `json:"built_in_ssh_server_details,omitempty"`
 	// BasicCredentials are optional and represent a username-password pair for SSH connection.
 	BasicCredentials *BasicCredentials `json:"basic_credentials,omitempty"`
 }
@@ -90,6 +102,12 @@ type SSHConfiguration struct {
 // Border0CertificateDetails represents details of a Border0 certificate.
 type Border0CertificateDetails struct {
 	Username string `json:"username,omitempty"`
+}
+
+// BuiltInSshServerDetails represents details to use for a built-in ssh server socket.
+type BuiltInSshServerDetails struct {
+	UsernameProvider string `json:"username_provider,omitempty"`
+	Username         string `json:"username,omitempty"`
 }
 
 // SSHPrivateKeyDetails represents details of a SSH private key.
