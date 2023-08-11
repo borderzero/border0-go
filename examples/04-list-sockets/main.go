@@ -20,9 +20,9 @@ func main() {
 	// get all sockets from your organization
 	sockets, err := api.Sockets(ctx)
 	if err != nil {
-		log.Fatalln("failed to get sockets using border0 api client sdk:", err)
+		log.Fatalln("❌ failed to get sockets using border0 api client sdk:", err)
 	}
 
 	output, _ := json.MarshalIndent(sockets, "", "  ")
-	log.Printf("found %d sockets from my Border0 organization = %s", len(sockets), string(output))
+	log.Printf("✅ found %d sockets from my Border0 organization = %s", len(sockets), string(output))
 }

@@ -27,3 +27,5 @@ BORDER0_AUTH_TOKEN=_your_access_token_ go run main.go
 - [02-http-listener](./02-http-listener): Another listener example, and this time we use the http package standard library.
 - [03-reverse-proxy](./03-reverse-proxy): Make a reverse proxy in Go, and rewrite the HTTP response body, then serve the requests with Border0 listener.
 - [04-list-sockets](./04-list-sockets): List all sockets from your Border0 organization using Border0 API client.
+- [05-create-connector-and-socket](./05-create-connector-and-socket): Create a connector, a connector token and an SSH socket that's linked to the connector with upstream config.
+- [06-delete-connector-and-socket](./06-delete-connector-and-socket): Delete the resources created from the previous example (a connector, a connector token and an SSH socket).

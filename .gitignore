@@ -25,3 +25,5 @@ examples/02-gin-listener/02-gin-listener
 examples/02-http-listener/02-http-listener
 examples/03-reverse-proxy/03-reverse-proxy
 examples/04-list-sockets/04-list-sockets
+examples/05-create-connector-and-socket/05-create-connector-and-socket
+examples/06-delete-connector-and-socket/06-delete-connector-and-socket

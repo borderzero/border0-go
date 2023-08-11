@@ -27,7 +27,7 @@ go get github.com/borderzero/border0-go
 ## Quickstart
 
 Explore the [examples](./examples) folder for additional use cases and examples. To run these examples, you'll need a Border0 access token.
-You can generate one by going to [Border0 Admin Portal](https://portal.border0.com) -> Organization Settings -> Access Tokens, create a token in `Member` permission group.
+You can generate one by going to [Border0 Admin Portal](https://portal.border0.com) -> Organization Settings -> Access Tokens, create a token in `Member` or `Admin` permission groups.
 
 Once you have the token, you can proceed to run the example code with:
 
@@ -76,7 +76,7 @@ func main() {
 
 The following example will:
 
-- Automatically create an HTTP socket with name `border0-go-http-listener`
+- Automatically create an HTTP socket with name `sdk-socket-http`
 - Connect to Border0 and return a Border0 `net.Listener`
 - Serve HTTP requests that are sent by Border0 right from your local machine
 
@@ -103,10 +103,12 @@ func main() {
 	}
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		name := r.Header.Get("X-Auth-Name")
+		name := r.Header.Get("X-Auth-Name") // border0 will set this header along with a few other identity related headers
 		fmt.Fprintf(w, "Hello, %s! This is border0-go + standard library http.", name)
 	})
 
 	log.Fatalln(http.Serve(listener, handler))
 }
 ```
+
+Also see `border0.Listen` examples for [gin](./examples/02-gin-listener/main.go), [echo](./examples/02-echo-listener/main.go) and [fiber](./examples/02-fiber-listener/main.go).

@@ -20,7 +20,7 @@ func main() {
 	}
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		name := r.Header.Get("X-Auth-Name")
+		name := r.Header.Get("X-Auth-Name") // border0 will set this header along with a few other identity related headers
 		fmt.Fprintf(w, "Hello, %s! This is border0-go + standard library http.", name)
 	})
 

@@ -17,25 +17,29 @@ func main() {
 	)
 	ctx := context.Background()
 
-	// step 1: create a new socket
+	//
+	// STEP 0: create a new socket
+	//
 	socket := client.Socket{
 		Name:       "sdk-socket-http",
 		SocketType: "http",
 	}
 	created, err := api.CreateSocket(ctx, &socket)
 	if err != nil {
-		log.Fatalln("failed to create socket using border0 api client sdk:", err)
+		log.Fatalln("❌ failed to create socket using border0 api client sdk:", err)
 	}
 
 	output, _ := json.MarshalIndent(created, "", "  ")
-	log.Println("created socket =", string(output))
+	log.Println("✅ created socket =", string(output))
 
-	// step 2: get the socket you just created
+	//
+	// STEP 1: get the socket you just created
+	//
 	fetched, err := api.Socket(ctx, created.Name)
 	if err != nil {
-		log.Fatalln("failed to get socket using border0 api client sdk:", err)
+		log.Fatalln("❌ failed to get socket using border0 api client sdk:", err)
 	}
 
 	output, _ = json.MarshalIndent(fetched, "", "  ")
-	log.Println("fetched socket =", string(output))
+	log.Println("✅ fetched socket =", string(output))
 }
