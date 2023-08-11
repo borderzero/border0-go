@@ -13,7 +13,7 @@ This SDK contains 2 major components:
 
 - [Border0 API Client](./client): provides API client methods that interact with our API to manage Border0 resources. See [examples](./examples)
   folder for a basic example of how to manage Border0 resources using this API client.
-- [Border0 Listen](./listen): `border0.Listen` creates a Go `net.listener`, that can be used to accept incoming connections. When the
+- [Border0 Listen](./listen): `border0.Listen` creates a Go `net.Listener`, that can be used to accept incoming connections. When the
   listener is passed to http.Serve, the server will accept HTTP requests sent by Border0 and forward them to an HTTP handler. The handler's
   response will be sent back to Border0. See [examples](./examples) folder for a simple and advanced examples of how to use the `border0.Listen`
   function.
@@ -35,7 +35,7 @@ Once you have the token, you can proceed to run the example code with:
 BORDER0_AUTH_TOKEN=_your_access_token_ go run main.go
 ```
 
-### Border API Client
+### Border0 API Client
 
 Create an HTTP socket using `border0-go`:
 
