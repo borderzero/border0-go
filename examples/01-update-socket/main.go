@@ -38,7 +38,6 @@ func main() {
 	fetched.Description = "updated description"
 
 	s, err := api.UpdateSocket(ctx, socketFromPreviousExample, fetched)
-	//err = api.DeleteSocket(ctx, socketFromPreviousExample)
 	if err != nil {
 		log.Fatalln("❌ failed to delete socket using border0 api client sdk:", err)
 	}

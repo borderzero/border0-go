@@ -31,7 +31,7 @@ const appendScript = `
 	const replaceTitleInterval = setInterval(() => {
 		const title = document.querySelector('.module--header h2 span');
 		if (title) {
-			title.innerHTML = '<span class="blink">Welcome to Border0</span><br><marquee bgcolor="Green" direction="left" >Your own version of the BBC</marquee>'
+			title.innerHTML = '<span class="blink">Welcome to Border0</span><br><marquee bgcolor="Green" direction="left">Your own version of the BBC</marquee>'
 			clearInterval(replaceTitleInterval);
 		}
 	}, 100)
