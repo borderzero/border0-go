@@ -34,9 +34,7 @@ func main() {
 	output, _ := json.MarshalIndent(fetched, "", "  ")
 	log.Printf("✅ socket from previous example [%s] = %s", previousExample, string(output))
 
-	//
 	// Update the description of the socket
-	//
 	fetched.Description = "updated description"
 
 	s, err := api.UpdateSocket(ctx, socketFromPreviousExample, fetched)
