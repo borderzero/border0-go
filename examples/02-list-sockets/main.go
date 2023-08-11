@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -22,7 +23,13 @@ func main() {
 	if err != nil {
 		log.Fatalln("❌ failed to get sockets using border0 api client sdk:", err)
 	}
+	fmt.Printf("✅ found %d sockets in this Border0 organization", len(sockets))
 
-	output, _ := json.MarshalIndent(sockets, "", "  ")
-	log.Printf("✅ found %d sockets from my Border0 organization = %s", len(sockets), string(output))
+	//  print the details of each socket
+	for _, socket := range sockets {
+		output, _ := json.MarshalIndent(socket, "", "  ")
+		fmt.Printf("✅ socket details for %s\n", socket.Name)
+		fmt.Println(string(output))
+	}
+
 }
