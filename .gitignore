@@ -22,9 +22,10 @@ examples/01-update-socket/01-update-socket
 examples/02-list-sockets/02-list-sockets
 examples/03-delete-socket/03-delete-socket
 examples/04-reverse-proxy/04-reverse-proxy
-examples/05-echo-listener/05-echo-listener
-examples/05-fiber-listener/05-fiber-listener
-examples/05-gin-listener/05-gin-listener
-examples/05-http-listener/05-http-listener
-examples/06-create-connector-and-socket/06-create-connector-and-socket
-examples/07-delete-connector-and-socket/07-delete-connector-and-socket
+examples/05-load-balancer/05-load-balancer
+examples/06-echo-listener/06-echo-listener
+examples/06-fiber-listener/06-fiber-listener
+examples/06-gin-listener/06-gin-listener
+examples/06-http-listener/06-http-listener
+examples/07-create-connector-and-socket/07-create-connector-and-socket
+examples/08-delete-connector-and-socket/08-delete-connector-and-socket
