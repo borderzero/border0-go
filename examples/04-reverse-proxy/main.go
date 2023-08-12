@@ -16,8 +16,8 @@ import (
 
 // This is the code we inject.
 // Just for demonstration purposes, we're replacing the title of the page with a blinking text.
-const appendScript = `
-<style>
+func rewriteString(name string) string {
+	return `<style>
   .blink {
     animation: blinker 1s linear infinite;
   }
@@ -31,12 +31,13 @@ const appendScript = `
 	const replaceTitleInterval = setInterval(() => {
 		const title = document.querySelector('.module--header h2 span');
 		if (title) {
-			title.innerHTML = '<span class="blink">Welcome to Border0</span><br><marquee bgcolor="Green" direction="left">Your own version of the BBC</marquee>'
+			title.innerHTML = '<span class="blink">Welcome to Border0: ` + name + ` </span><br><marquee bgcolor="Green" direction="left">Your own version of the BBC</marquee>'
 			clearInterval(replaceTitleInterval);
 		}
 	}, 100)
 </script>
 `
+}
 
 func main() {
 	listener, err := border0.Listen(
@@ -53,28 +54,31 @@ func main() {
 		Host:   "www.bbc.com",
 	})
 
-	proxy.ModifyResponse = func(resp *http.Response) error {
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		// replace all occurrences of "BBC" with "Border0"
-		body = []byte(strings.ReplaceAll(string(body), "BBC", "Border0") + appendScript)
-
-		resp.Body = io.NopCloser(bytes.NewReader(body))
-		return nil
-	}
-
 	handler := http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			// border0 will set this header along with a few other identity related headers
 			// now we know the users name, we can use it to personalize the page
-			name := r.Header.Get("X-Auth-Name")
-			email := r.Header.Get("X-Auth-email")
-			log.Println("serving request from", name, email)
+			userFullName := r.Header.Get("X-Auth-Name")
+			userEmail := r.Header.Get("X-Auth-email")
+			log.Println("serving request from", userFullName, userEmail)
 			// serve the reverse proxy with the correct host header
 			r.Host = "www.bbc.com"
+			// Remove the headers so they aren't sent upstream.
+			r.Header.Del("X-Auth-Name")
+			r.Header.Del("X-Auth-email")
+
+			proxy.ModifyResponse = func(resp *http.Response) error {
+
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					return err
+				}
+				// replace all occurrences of "BBC" with "Border0"
+				body = []byte(strings.ReplaceAll(string(body), "BBC", "Border0") + rewriteString(userFullName))
+
+				resp.Body = io.NopCloser(bytes.NewReader(body))
+				return nil
+			}
 			proxy.ServeHTTP(w, r)
 		},
 	)
