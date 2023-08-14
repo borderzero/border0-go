@@ -46,7 +46,7 @@ func (api *APIClient) Sockets(ctx context.Context) (out []Socket, err error) {
 
 // CreateSocket creates a new socket in your Border0 organization. Socket name must be unique within your organization,
 // otherwise, an error will be returned. Socket type is required and must be one of the following: "http", "ssh",
-// "tls" or "database".
+// "tls" or "database". Socket name name must contain only lowercase letters, numbers and dashes.
 func (api *APIClient) CreateSocket(ctx context.Context, in *Socket) (out *Socket, err error) {
 	out = new(Socket)
 	_, err = api.request(ctx, http.MethodPost, "/socket", in, out)
@@ -126,6 +126,9 @@ type Socket struct {
 	// link to a connector with upstream config
 	ConnectorID    string                                `json:"connector_id,omitempty"`
 	UpstreamConfig *types.ConnectorServiceUpstreamConfig `json:"upstream_configuration,omitempty"`
+
+	// associated policies
+	Policies []Policy `json:"policies,omitempty"`
 }
 
 // SocketConnectors represents a list of connectors that are linked to a socket.

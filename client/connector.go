@@ -41,7 +41,7 @@ func (api *APIClient) Connectors(ctx context.Context) (out []Connector, err erro
 }
 
 // CreateConnector creates a new connector in your Border0 organization. Connector name must be unique within your organization,
-// otherwise API will return an error.
+// otherwise API will return an error. Connector name must contain only lowercase letters, numbers and dashes.
 func (api *APIClient) CreateConnector(ctx context.Context, in *Connector) (out *Connector, err error) {
 	out = new(Connector)
 	_, err = api.request(ctx, http.MethodPost, "/connector", in, out)

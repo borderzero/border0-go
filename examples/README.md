@@ -31,3 +31,5 @@ BORDER0_AUTH_TOKEN=_your_access_token_ go run main.go
 - [06-fiber-listener](./06-fiber-listener): Start a fiber server with the Border0 listner.
 - [07-create-connector-and-socket](./07-create-connector-and-socket): Create a connector, a connector token and an SSH socket that's linked to the connector with upstream config.
 - [08-delete-connector-and-socket](./08-delete-connector-and-socket): Delete the resources created from the previous example (a connector, a connector token and an SSH socket).
+- [09-create-policy-and-attach](./09-create-policy-and-attach): Create a policy and a socket, and then attach the policy to the socket.
+- [10-detach-policy-and-delete](./10-detach-policy-and-delete): Detach the policy and delete the policy and socket created from the previous example.

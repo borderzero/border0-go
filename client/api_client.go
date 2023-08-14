@@ -27,6 +27,7 @@ type Requester interface {
 	TokenClaims() (jwt.MapClaims, error)
 	SocketService
 	ConnectorService
+	PolicyService
 }
 
 const (
