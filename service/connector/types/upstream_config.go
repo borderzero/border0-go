@@ -1,5 +1,7 @@
 package types
 
+import "github.com/borderzero/border0-go/service"
+
 const (
 	// UpstreamConnectionTypeSSH represents a SSH type of upstream connection.
 	UpstreamConnectionTypeSSH = "ssh"
@@ -42,7 +44,7 @@ type ConnectorServiceUpstreamConfig struct {
 	// SSHConfiguration is optional and represents a configuration for a SSH connection.
 	SSHConfiguration *SSHConfiguration `json:"ssh_configuration,omitempty"`
 	// DatabaseConfiguration is optional and represents a configuration for a database connection.
-	DatabaseConfiguration *DatabaseConfiguration `json:"database_configuration,omitempty"`
+	DatabaseConfiguration *service.DatabaseServiceConfiguration `json:"database_service_configuration,omitempty"`
 }
 
 // BaseUpstreamDetails represents basic details of an upstream connection.
@@ -116,10 +118,4 @@ type SSHPrivateKeyDetails struct {
 	Key string `json:"key"`
 	// Username is the SSH username
 	Username string `json:"username,omitempty"`
-}
-
-// DatabaseConfiguration represents a configuration for a database connection.
-type DatabaseConfiguration struct {
-	// UpstreamAuthenticationType specifies the type of authentication for the database connection.
-	UpstreamAuthenticationType string `json:"upstream_authentication_type"`
 }
