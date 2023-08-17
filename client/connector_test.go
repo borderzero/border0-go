@@ -242,9 +242,10 @@ func Test_APIClient_UpdateConnector(t *testing.T) {
 	t.Parallel()
 
 	testConnector := &Connector{
-		Name:        "test-name",
-		Description: "Test description",
-		ConnectorID: "test-id",
+		Name:                     "test-name",
+		Description:              "Test description",
+		BuiltInSshServiceEnabled: true,
+		ConnectorID:              "test-id",
 	}
 
 	tests := []struct {

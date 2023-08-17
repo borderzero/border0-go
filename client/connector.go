@@ -109,8 +109,9 @@ func (api *APIClient) DeleteConnectorToken(ctx context.Context, connectorID, tok
 // Connector represents a connector in your Border0 organization.
 type Connector struct {
 	// input and output fields
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
+	Name                     string `json:"name"`
+	Description              string `json:"description,omitempty"`
+	BuiltInSshServiceEnabled bool   `json:"built_in_ssh_service_enabled,omitempty"`
 
 	// output field
 	ConnectorID string `json:"connector_id"`
