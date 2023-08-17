@@ -19,6 +19,14 @@ const (
 )
 
 const (
+	// SsmTargetTypeEc2 is the ssm target type for ec2 targets.
+	SsmTargetTypeEc2 = "ec2"
+
+	// SsmTargetTypeEcs is the ssm target type for ecs targets.
+	SsmTargetTypeEcs = "ecs"
+)
+
+const (
 	// StandardSshServiceAuthenticationTypeUsernameAndPassword is the standard ssh
 	// service authentication type for authenticating with a username and password.
 	StandardSshServiceAuthenticationTypeUsernameAndPassword = "username_and_password"
@@ -33,17 +41,20 @@ const (
 )
 
 const (
-	// BuiltInSshServiceUsernameProviderPromptClient is the built-in ssh service
-	// username provider option for prompting clients for the username.
-	BuiltInSshServiceUsernameProviderPromptClient = "prompt_client"
+	// UsernameProviderDefined is the username provider
+	// option for using an admin-defined (static) username.
+	UsernameProviderDefined = "defined"
 
-	// BuiltInSshServiceUsernameProviderUseConnectorUser is the built-in ssh
-	// service username provider option for using the connector's OS username.
-	BuiltInSshServiceUsernameProviderUseConnectorUser = "use_connector_user"
+	// UsernameProviderPromptClient is username provider option
+	// for prompting connecting clients for the username.
+	UsernameProviderPromptClient = "prompt_client"
 
-	// BuiltInSshServiceUsernameProviderDefined is the built-in ssh
-	// service username provider option for using an admin-defined username.
-	BuiltInSshServiceUsernameProviderDefined = "defined"
+	// UsernameProviderUseConnectorUser is username provider
+	// option for using the connector's OS username.
+	//
+	// NOTE: This option can only be used as the username
+	// provider for connector built-in ssh services.
+	UsernameProviderUseConnectorUser = "use_connector_user"
 )
 
 // SshServiceConfiguration represents service
@@ -74,15 +85,39 @@ type StandardSshServiceConfiguration struct {
 // AwsSsmSshServiceConfiguration represents service
 // configuration for aws ssm ssh services (fka sockets).
 type AwsSsmSshServiceConfiguration struct {
-	SsmTarget      string          `json:"ssm_target"`
-	AwsCredentials *AwsCredentials `json:"aws_credentials,omitempty"`
+	SsmTargetType string `json:"ssm_target_type"`
+
+	// mutually exclusive fields below
+	AwsSsmEc2TargetConfiguration *AwsSsmEc2TargetConfiguration `json:"aws_ssm_ec2_target_configuration,omitempty"`
+	AwsSsmEcsTargetConfiguration *AwsSsmEcsTargetConfiguration `json:"aws_ssm_ecs_target_configuration,omitempty"`
+}
+
+// AwsSsmEc2TargetConfiguration represents service configuration
+// for aws ssm ssh services (fka sockets) that have EC2 instances
+// as their ssm target.
+type AwsSsmEc2TargetConfiguration struct {
+	Ec2InstanceId     string          `json:"ec2_instance_id"`
+	Ec2InstanceRegion string          `json:"ec2_instance_region"`
+	AwsCredentials    *AwsCredentials `json:"aws_credentials,omitempty"`
+}
+
+// AwsSsmEcsTargetConfiguration represents service configuration
+// for aws ssm ssh services (fka sockets) that have ECS services
+// as their ssm target.
+type AwsSsmEcsTargetConfiguration struct {
+	EcsClusterRegion string          `json:"ecs_cluster_region"`
+	EcsClusterName   string          `json:"ecs_cluster_name"`
+	EcsServiceName   string          `json:"ecs_service_name"`
+	AwsCredentials   *AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
 // AwsEc2ICSshServiceConfiguration represents service configuration
 // for aws ec2 instance connect ssh services (fka sockets).
 type AwsEc2ICSshServiceConfiguration struct {
-	HostnameAndPort                 // inherited
-	AwsCredentials  *AwsCredentials `json:"aws_credentials,omitempty"`
+	HostnameAndPort                   // inherited
+	Ec2InstanceId     string          `json:"ec2_instance_id"`
+	Ec2InstanceRegion string          `json:"ec2_instance_region"`
+	AwsCredentials    *AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
 // BuiltInSshServiceConfiguration represents the service configuration
