@@ -13,9 +13,9 @@ const (
 	// type for aws ec2 instance connect ssh services.
 	SshServiceTypeAwsEc2InstanceConnect = "aws_ec2_instance_connect"
 
-	// SshServiceTypeConnectorBuiltIn is the ssh service
+	// SshServiceTypeBuiltIn is the ssh service
 	// type for the connector's built-in ssh service.
-	SshServiceTypeConnectorBuiltIn = "connector_built_in_ssh_service"
+	SshServiceTypeBuiltIn = "built_in_ssh_service"
 )
 
 const (
