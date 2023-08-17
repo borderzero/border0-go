@@ -3,7 +3,9 @@
 [![Run tests](https://github.com/borderzero/border0-go/actions/workflows/run_tests.yml/badge.svg)](https://github.com/borderzero/border0-go/actions/workflows/run_tests.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/borderzero/border0-go.svg)](https://pkg.go.dev/github.com/borderzero/border0-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/borderzero/border0-go)](https://goreportcard.com/report/github.com/borderzero/border0-go)
-[![license](https://img.shields.io/github/license/borderzero/border0-go)](https://github.com/borderzero/border0-go/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/borderzero/border0-go)](https://github.com/borderzero/border0-go/blob/master/LICENSE)
+[![Slack](https://img.shields.io/badge/slack-community-orange.svg?logo=slack)](https://join.slack.com/t/border0community/shared_invite/zt-zbx586ls-x44z7I3POLPQfesRWnig7Q)
+[![Border0 Docs](https://img.shields.io/badge/border0-docs-blue.svg)](https://docs.border0.com/docs)
 
 Border0 enables users to log into various services, including web, SSH, database, and generic TCP, using their existing Single Sign-On (SSO) credentials.
 If you haven't yet registered, [create a new account](https://portal.border0.com/register) and explore our [informative blog posts](https://www.border0.com/blog)
