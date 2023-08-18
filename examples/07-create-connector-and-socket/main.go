@@ -8,7 +8,7 @@ import (
 
 	"github.com/borderzero/border0-go"
 	"github.com/borderzero/border0-go/client"
-	"github.com/borderzero/border0-go/service"
+	"github.com/borderzero/border0-go/types/service"
 )
 
 func main() {

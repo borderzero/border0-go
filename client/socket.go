@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/borderzero/border0-go/service"
+	"github.com/borderzero/border0-go/types/service"
 )
 
 // SocketService is an interface for API client methods that interact with Border0 API to manage sockets.

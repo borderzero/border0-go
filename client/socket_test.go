@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/mocks"
-	"github.com/borderzero/border0-go/service"
+	"github.com/borderzero/border0-go/types/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
