@@ -8,7 +8,7 @@ import (
 
 	"github.com/borderzero/border0-go"
 	"github.com/borderzero/border0-go/client"
-	"github.com/borderzero/border0-go/service/connector/types"
+	"github.com/borderzero/border0-go/service"
 )
 
 func main() {
@@ -55,17 +55,21 @@ func main() {
 		Name:        "sdk-socket-ssh",
 		SocketType:  "ssh",
 		ConnectorID: createdConnector.ConnectorID,
-		UpstreamConfig: &types.ConnectorServiceUpstreamConfig{ // SSH upstream config with username and password
-			UpstreamConnectionType: types.UpstreamConnectionTypeSSH,
-			BaseUpstreamDetails: types.BaseUpstreamDetails{
-				Hostname: "127.0.0.1",
-				Port:     22,
-			},
-			SSHConfiguration: &types.SSHConfiguration{
-				UpstreamAuthenticationType: types.UpstreamAuthenticationTypeUsernamePassword,
-				BasicCredentials: &types.BasicCredentials{
-					Username: "test-username",
-					Password: "test-password",
+		UpstreamConfig: &service.Configuration{
+			ServiceType: service.ServiceTypeSsh,
+			SshServiceConfiguration: &service.SshServiceConfiguration{
+				SshServiceType: service.SshServiceTypeStandard,
+				StandardSshServiceConfiguration: &service.StandardSshServiceConfiguration{
+					HostnameAndPort: service.HostnameAndPort{
+						Hostname: "127.0.0.1",
+						Port:     22,
+					},
+					SshAuthenticationType: service.StandardSshServiceAuthenticationTypeUsernameAndPassword,
+					UsernameAndPasswordAuthConfiguration: &service.UsernameAndPasswordAuthConfiguration{
+						UsernameProvider: service.UsernameProviderDefined,
+						Username:         "test-username",
+						Password:         "test-password",
+					},
 				},
 			},
 		},

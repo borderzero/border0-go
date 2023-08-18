@@ -66,7 +66,7 @@ type SshServiceConfiguration struct {
 	StandardSshServiceConfiguration *StandardSshServiceConfiguration `json:"standard_ssh_service_configuration,omitempty"`
 	AwsSsmSshServiceConfiguration   *AwsSsmSshServiceConfiguration   `json:"aws_ssm_ssh_service_configuration,omitempty"`
 	AwsEc2ICSshServiceConfiguration *AwsEc2ICSshServiceConfiguration `json:"aws_ec2ic_ssh_service_configuration,omitempty"`
-	BuiltInSshServiceConfiguration  *BuiltInSshServiceConfiguration  `json:"built_in_ssh_service_configuration,omitmepty"`
+	BuiltInSshServiceConfiguration  *BuiltInSshServiceConfiguration  `json:"built_in_ssh_service_configuration,omitempty"`
 }
 
 // StandardSshServiceConfiguration represents service

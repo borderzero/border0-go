@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/mocks"
-	"github.com/borderzero/border0-go/service/connector/types"
+	"github.com/borderzero/border0-go/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -380,17 +380,20 @@ func Test_APIClient_SocketUpstreamConfigs(t *testing.T) {
 		List: []SocketUpstreamConfig{
 			// SSH upstream config with username and password
 			{
-				Config: types.ConnectorServiceUpstreamConfig{
-					UpstreamConnectionType: types.UpstreamConnectionTypeSSH,
-					BaseUpstreamDetails: types.BaseUpstreamDetails{
-						Hostname: "test-hostname",
-						Port:     22,
-					},
-					SSHConfiguration: &types.SSHConfiguration{
-						UpstreamAuthenticationType: types.UpstreamAuthenticationTypeUsernamePassword,
-						BasicCredentials: &types.BasicCredentials{
-							Username: "test-username",
-							Password: "test-password",
+				Config: service.Configuration{
+					ServiceType: service.ServiceTypeSsh,
+					SshServiceConfiguration: &service.SshServiceConfiguration{
+						SshServiceType: service.SshServiceTypeStandard,
+						StandardSshServiceConfiguration: &service.StandardSshServiceConfiguration{
+							SshAuthenticationType: service.StandardSshServiceAuthenticationTypeUsernameAndPassword,
+							UsernameAndPasswordAuthConfiguration: &service.UsernameAndPasswordAuthConfiguration{
+								Username: "test-username",
+								Password: "test-password",
+							},
+							HostnameAndPort: service.HostnameAndPort{
+								Hostname: "test-hostname",
+								Port:     22,
+							},
 						},
 					},
 				},
