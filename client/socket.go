@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/borderzero/border0-go/service/connector/types"
+	"github.com/borderzero/border0-go/service"
 )
 
 // SocketService is an interface for API client methods that interact with Border0 API to manage sockets.
@@ -124,8 +124,8 @@ type Socket struct {
 	Tags                           map[string]string `json:"tags,omitempty"`
 
 	// link to a connector with upstream config
-	ConnectorID    string                                `json:"connector_id,omitempty"`
-	UpstreamConfig *types.ConnectorServiceUpstreamConfig `json:"upstream_configuration,omitempty"`
+	ConnectorID    string                 `json:"connector_id,omitempty"`
+	UpstreamConfig *service.Configuration `json:"upstream_configuration,omitempty"`
 
 	// associated policies
 	Policies []Policy `json:"policies,omitempty"`
@@ -153,9 +153,9 @@ type SocketUpstreamConfigs struct {
 
 // SocketUpstreamConfig represents an upstream configuration for a socket.
 type SocketUpstreamConfig struct {
-	Config    types.ConnectorServiceUpstreamConfig `json:"config"`
-	CreatedAt time.Time                            `json:"created_at"`
-	UpdatedAt time.Time                            `json:"updated_at"`
+	Config    service.Configuration `json:"config"`
+	CreatedAt time.Time             `json:"created_at"`
+	UpdatedAt time.Time             `json:"updated_at"`
 }
 
 // SocketKeyToSign represents a SSH public key to sign.
