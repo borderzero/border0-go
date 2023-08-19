@@ -31,11 +31,11 @@ type Requester interface {
 }
 
 const (
-	defaultTimeout      = 10 * time.Second
-	defaultBaseURL      = "https://api.border0.com/api/v1"
-	defaultRetryWaitMin = 1 * time.Second
-	defaultRetryWaitMax = 30 * time.Second
-	defaultRetryMax     = 4
+	defaultTimeout      = 10 * time.Second                 // default timeout for requests
+	defaultBaseURL      = "https://api.border0.com/api/v1" // default base URL for Border0 API
+	defaultRetryWaitMin = 1 * time.Second                  // default minimum time to wait between retries
+	defaultRetryWaitMax = 30 * time.Second                 // default maximum time to wait between retries
+	defaultRetryMax     = 4                                // default maximum number of retries
 )
 
 // New creates a new Border0 API client.

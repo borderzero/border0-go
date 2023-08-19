@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/borderzero/border0-go/mocks"
+	"github.com/borderzero/border0-go/client/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

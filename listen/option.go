@@ -28,6 +28,18 @@ func WithSocketName(name string) Option {
 	}
 }
 
+// WithPolicies sets the policy names to use for the Listener's underlaying HTTP socket. Policies with the
+// given names will be attached to the socket. If the policy names list is empty, then no policies will be
+// attached. If there are any changes made to the policy names list between listener startups, they will get
+// properly handled. The listener will check the socket's already attached policies, and compare them with
+// the given policy names. Removed policies will be detached from the socket, and new policies will be checked
+// and made sure they exist, and then they will be attached to the listener's socket.
+func WithPolicies(names []string) Option {
+	return func(l *Listener) {
+		l.policyNames = names
+	}
+}
+
 // WithTunnelServer sets the tunnel server address for the Listener.
 func WithTunnelServer(server string) Option {
 	return func(l *Listener) {

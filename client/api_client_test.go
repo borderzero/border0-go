@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/borderzero/border0-go/mocks"
+	"github.com/borderzero/border0-go/client/mocks"
 	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 )
