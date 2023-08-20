@@ -14,6 +14,7 @@
 package border0
 
 import (
+	"context"
 	"net"
 
 	"github.com/borderzero/border0-go/client"
@@ -41,5 +42,5 @@ func NewAPIClient(options ...client.Option) client.Requester {
 // function with other HTTP libraries and frameworks.
 func Listen(options ...listen.Option) (net.Listener, error) {
 	l := listen.New(options...)
-	return l, l.Start()
+	return l, l.Start(context.Background())
 }

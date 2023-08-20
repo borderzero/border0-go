@@ -45,3 +45,34 @@ func CountWhere[T any](slice []T, condition func(T) bool) int {
 	}
 	return count
 }
+
+// Diff finds the difference between two slices, `original` and `changed`. It returns two new slices for the changes.
+// The first slice contains new items that are in `changed` but not in `original`, and the second slice contains removed
+// items that are in `original` but not in `changed`.
+func Diff[T comparable](original, changed []T) (newItems, removedItems []T) {
+	originalMap := make(map[T]bool)
+	changedMap := make(map[T]bool)
+
+	for _, item := range original {
+		originalMap[item] = true
+	}
+	for _, item := range changed {
+		changedMap[item] = true
+	}
+
+	// find items that are in b but not in a (new items)
+	for _, item := range changed {
+		if _, exists := originalMap[item]; !exists {
+			newItems = append(newItems, item)
+		}
+	}
+
+	// find items that are in a but not in b (removed items)
+	for _, item := range original {
+		if _, exists := changedMap[item]; !exists {
+			removedItems = append(removedItems, item)
+		}
+	}
+
+	return newItems, removedItems
+}

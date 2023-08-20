@@ -10,7 +10,7 @@
 //		listen.WithSocketName("sdk-socket-http"),              // http socket name the listener will be bound to, socket will be created if not exists
 //		listen.WithAuthToken(os.Getenv("BORDER0_AUTH_TOKEN")), // optional, if not provided, Border0 SDK will use BORDER0_AUTH_TOKEN env var
 //	)
-//	err := listener.Start()
+//	err := listener.Start(context.Background())
 //	if err != nil {
 //		// handle error
 //	}

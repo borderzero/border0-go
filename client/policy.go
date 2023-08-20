@@ -11,11 +11,14 @@ import (
 type PolicyService interface {
 	Policy(ctx context.Context, id string) (out *Policy, err error)
 	Policies(ctx context.Context) (out []Policy, err error)
+	PoliciesByNames(ctx context.Context, names ...string) (out []Policy, err error)
 	CreatePolicy(ctx context.Context, in *Policy) (out *Policy, err error)
 	UpdatePolicy(ctx context.Context, id string, in *Policy) (out *Policy, err error)
 	DeletePolicy(ctx context.Context, id string) (err error)
 	AttachPolicyToSocket(ctx context.Context, policyID string, socketID string) (err error)
 	RemovePolicyFromSocket(ctx context.Context, policyID string, socketID string) (err error)
+	AttachPoliciesToSocket(ctx context.Context, policyIDs []string, socketID string) (err error)
+	RemovePoliciesFromSocket(ctx context.Context, policyIDs []string, socketID string) (err error)
 }
 
 // Policy fetches a policy from your Border0 organization by policy ID.
@@ -36,6 +39,44 @@ func (api *APIClient) Policies(ctx context.Context) (out []Policy, err error) {
 	_, err = api.request(ctx, http.MethodGet, "/policies", nil, &out)
 	if err != nil {
 		return nil, err
+	}
+	return out, nil
+}
+
+// PoliciesByNames finds policies in your Border0 organization by policy names. If any of the policies does not exist,
+// an error will be returned. When only one policy name is provided, this method will use the /policies/find endpoint,
+// otherwise it will fetch all policies and filter them by name.
+func (api *APIClient) PoliciesByNames(ctx context.Context, names ...string) (out []Policy, err error) {
+	if len(names) == 0 {
+		return nil, fmt.Errorf("no policy names provided")
+	}
+
+	if len(names) == 1 {
+		var found Policy
+		_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/policies/find?name=%s", names[0]), nil, &found)
+		if err != nil {
+			if NotFound(err) {
+				return nil, fmt.Errorf("policy [%s] does not exist, please create the policy first", names[0])
+			}
+			return nil, err
+		}
+		return []Policy{found}, nil
+	}
+
+	policies, err := api.Policies(ctx)
+	if err != nil {
+		return nil, err
+	}
+	policiesMap := make(map[string]Policy)
+	for _, policy := range policies {
+		policiesMap[policy.Name] = policy
+	}
+	for _, name := range names {
+		policy, ok := policiesMap[name]
+		if !ok {
+			return nil, fmt.Errorf("policy [%s] does not exist, please create the policy first", name)
+		}
+		out = append(out, policy)
 	}
 	return out, nil
 }
@@ -92,6 +133,30 @@ func (api *APIClient) RemovePolicyFromSocket(ctx context.Context, policyID strin
 		},
 	}
 	_, err = api.request(ctx, http.MethodPut, fmt.Sprintf("/policy/%s/socket", policyID), &in, nil)
+	return err
+}
+
+// AttachPoliciesToSocket attaches multiple policies to a socket by policy IDs and socket ID.
+func (api *APIClient) AttachPoliciesToSocket(ctx context.Context, policyIDs []string, socketID string) (err error) {
+	in := PolicySocketAttachments{
+		Actions: []PolicySocketAttachment{},
+	}
+	for _, policyID := range policyIDs {
+		in.Actions = append(in.Actions, PolicySocketAttachment{Action: "add", ID: policyID})
+	}
+	_, err = api.request(ctx, http.MethodPut, fmt.Sprintf("/socket/%s/policy", socketID), &in, nil)
+	return err
+}
+
+// RemovePoliciesFromSocket detaches multiple policies from a socket by policy IDs and socket ID.
+func (api *APIClient) RemovePoliciesFromSocket(ctx context.Context, policyIDs []string, socketID string) (err error) {
+	in := PolicySocketAttachments{
+		Actions: []PolicySocketAttachment{},
+	}
+	for _, policyID := range policyIDs {
+		in.Actions = append(in.Actions, PolicySocketAttachment{Action: "remove", ID: policyID})
+	}
+	_, err = api.request(ctx, http.MethodPut, fmt.Sprintf("/socket/%s/policy", socketID), &in, nil)
 	return err
 }
 

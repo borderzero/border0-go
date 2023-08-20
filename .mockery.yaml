@@ -7,6 +7,11 @@ packages:
     interfaces:
       HTTPRequester:
         config:
-          dir: mocks
+          dir: client/mocks
           structname: ClientHTTPRequester
           filename: client_http_requester.go
+      Requester:
+        config:
+          dir: listen/mocks
+          structname: APIClientRequester
+          filename: api_client_requester.go

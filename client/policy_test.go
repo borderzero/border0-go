@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/borderzero/border0-go/mocks"
+	"github.com/borderzero/border0-go/client/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -174,6 +174,144 @@ func Test_APIClient_Policies(t *testing.T) {
 			api.http = requester
 
 			gotPolicies, gotErr := api.Policies(ctx)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+			assert.Equal(t, test.wantPolicies, gotPolicies)
+		})
+	}
+}
+
+func Test_APIClient_PoliciesByNames(t *testing.T) {
+	t.Parallel()
+
+	onlyOnePolicy := &Policy{Name: "test-name-1", Description: "Test description 1", PolicyData: testPolicyData}
+
+	multiplePolicies := []Policy{
+		{Name: "test-name-1", Description: "Test description 1", PolicyData: testPolicyData},
+		{Name: "test-name-2", Description: "Test description 2", PolicyData: testPolicyData},
+		{Name: "test-name-3", Description: "Test description 3", PolicyData: testPolicyData},
+	}
+
+	tests := []struct {
+		name          string
+		mockRequester func(context.Context, *mocks.ClientHTTPRequester)
+		givenNames    []string
+		wantPolicies  []Policy
+		wantErr       error
+	}{
+		{
+			name: "no policy names provided",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+			},
+			givenNames:   nil,
+			wantPolicies: nil,
+			wantErr:      errors.New("no policy names provided"),
+		},
+		{
+			name: "1 name provided but not found",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, defaultBaseURL+"/policies/find?name=test-name-1", nil, new(Policy)).
+					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "policy not found"})
+			},
+			givenNames:   []string{"test-name-1"},
+			wantPolicies: nil,
+			wantErr:      errors.New("policy [test-name-1] does not exist, please create the policy first"),
+		},
+		{
+			name: "1 name provided but failed to find policy",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, defaultBaseURL+"/policies/find?name=test-name-1", nil, new(Policy)).
+					Return(http.StatusInternalServerError, errors.New("failed to find policy"))
+			},
+			givenNames:   []string{"test-name-1"},
+			wantPolicies: nil,
+			wantErr:      errors.New("failed after 1 attempt: failed to find policy"),
+		},
+		{
+			name: "happy path - 1 name provided and found policy",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/policies/find?name=test-name-1", nil, new(Policy)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*Policy)
+						*output = *onlyOnePolicy
+					})
+			},
+			givenNames:   []string{"test-name-1"},
+			wantPolicies: []Policy{*onlyOnePolicy},
+			wantErr:      nil,
+		},
+		{
+			name: "multiple names provided but failed to fetch policies",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, defaultBaseURL+"/policies", nil, new([]Policy)).
+					Return(http.StatusInternalServerError, errors.New("failed to fetch policies"))
+			},
+			givenNames:   []string{"test-name-1", "test-name-2", "test-name-3"},
+			wantPolicies: nil,
+			wantErr:      errors.New("failed after 1 attempt: failed to fetch policies"),
+		},
+		{
+			name: "multiple names provided but one of them is not found",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/policies", nil, new([]Policy)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*[]Policy)
+						*output = multiplePolicies
+					})
+			},
+			givenNames:   []string{"not-exists", "test-name-1"},
+			wantPolicies: nil,
+			wantErr:      errors.New("policy [not-exists] does not exist, please create the policy first"),
+		},
+		{
+			name: "happy path - multiple names provided and found policies",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/policies", nil, new([]Policy)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*[]Policy)
+						*output = multiplePolicies
+					})
+			},
+			givenNames:   []string{"test-name-1", "test-name-2", "test-name-3"},
+			wantPolicies: multiplePolicies,
+			wantErr:      nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotPolicies, gotErr := api.PoliciesByNames(ctx, test.givenNames...)
 
 			if test.wantErr == nil {
 				assert.NoError(t, gotErr)
@@ -427,7 +565,7 @@ func Test_APIClient_AttachPolicySocket(t *testing.T) {
 		wantErr       error
 	}{
 		{
-			name: "failed to attach policy socket",
+			name: "failed to attach policy to socket",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPut, defaultBaseURL+"/policy/test-policy-id/socket", testPolicySocketInput, nil).
@@ -492,7 +630,7 @@ func Test_APIClient_RemovePolicySocket(t *testing.T) {
 		wantErr       error
 	}{
 		{
-			name: "failed to remove policy socket",
+			name: "failed to remove policy from socket",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPut, defaultBaseURL+"/policy/test-policy-id/socket", testPolicySocketInput, nil).
@@ -530,6 +668,140 @@ func Test_APIClient_RemovePolicySocket(t *testing.T) {
 			api.http = requester
 
 			gotErr := api.RemovePolicyFromSocket(ctx, test.givenPolicyID, test.givenSocketID)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+		})
+	}
+}
+
+func Test_APIClient_AttachPoliciesSocket(t *testing.T) {
+	t.Parallel()
+
+	testPolicySocketInput := &PolicySocketAttachments{
+		Actions: []PolicySocketAttachment{
+			{Action: "add", ID: "test-policy-id-1"},
+			{Action: "add", ID: "test-policy-id-2"},
+			{Action: "add", ID: "test-policy-id-3"},
+		},
+	}
+
+	tests := []struct {
+		name           string
+		mockRequester  func(context.Context, *mocks.ClientHTTPRequester)
+		givenPolicyIDs []string
+		givenSocketID  string
+		wantErr        error
+	}{
+		{
+			name: "failed to attach policies to socket",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, defaultBaseURL+"/socket/test-socket-id/policy", testPolicySocketInput, nil).
+					Return(http.StatusBadRequest, errors.New("failed to attach policies to socket"))
+			},
+			givenPolicyIDs: []string{"test-policy-id-1", "test-policy-id-2", "test-policy-id-3"},
+			givenSocketID:  "test-socket-id",
+			wantErr:        errors.New("failed after 1 attempt: failed to attach policies to socket"),
+		},
+		{
+			name: "happy path",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, defaultBaseURL+"/socket/test-socket-id/policy", testPolicySocketInput, nil).
+					Return(http.StatusOK, nil)
+			},
+			givenPolicyIDs: []string{"test-policy-id-1", "test-policy-id-2", "test-policy-id-3"},
+			givenSocketID:  "test-socket-id",
+			wantErr:        nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotErr := api.AttachPoliciesToSocket(ctx, test.givenPolicyIDs, test.givenSocketID)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+		})
+	}
+}
+
+func Test_APIClient_RemovePoliciesSocket(t *testing.T) {
+	t.Parallel()
+
+	testPolicySocketInput := &PolicySocketAttachments{
+		Actions: []PolicySocketAttachment{
+			{Action: "remove", ID: "test-policy-id-1"},
+			{Action: "remove", ID: "test-policy-id-2"},
+			{Action: "remove", ID: "test-policy-id-3"},
+		},
+	}
+
+	tests := []struct {
+		name           string
+		mockRequester  func(context.Context, *mocks.ClientHTTPRequester)
+		givenPolicyIDs []string
+		givenSocketID  string
+		wantErr        error
+	}{
+		{
+			name: "failed to remove policy from socket",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, defaultBaseURL+"/socket/test-socket-id/policy", testPolicySocketInput, nil).
+					Return(http.StatusBadRequest, errors.New("failed to remove policies from socket"))
+			},
+			givenPolicyIDs: []string{"test-policy-id-1", "test-policy-id-2", "test-policy-id-3"},
+			givenSocketID:  "test-socket-id",
+			wantErr:        errors.New("failed after 1 attempt: failed to remove policies from socket"),
+		},
+		{
+			name: "happy path",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, defaultBaseURL+"/socket/test-socket-id/policy", testPolicySocketInput, nil).
+					Return(http.StatusOK, nil)
+			},
+			givenPolicyIDs: []string{"test-policy-id-1", "test-policy-id-2", "test-policy-id-3"},
+			givenSocketID:  "test-socket-id",
+			wantErr:        nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotErr := api.RemovePoliciesFromSocket(ctx, test.givenPolicyIDs, test.givenSocketID)
 
 			if test.wantErr == nil {
 				assert.NoError(t, gotErr)
