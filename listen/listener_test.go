@@ -100,11 +100,6 @@ func Test_Listener_ensureSocketCreated(t *testing.T) {
 func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 	t.Parallel()
 
-	socket := &client.Socket{
-		SocketID:   "test-socket-id-1",
-		Name:       "test-socket-1",
-		SocketType: "http",
-	}
 	socketWithPolicies := &client.Socket{
 		SocketID:   "test-socket-id-2",
 		Name:       "test-socket-2",
@@ -121,25 +116,25 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 	}
 
 	tests := []struct {
-		name             string
-		mockRequester    func(context.Context, *mocks.APIClientRequester)
-		givenSocket      *client.Socket
-		givenPolicyNames []string
-		wantErr          error
+		name              string
+		mockRequester     func(context.Context, *mocks.APIClientRequester)
+		givenWithPolicies Option
+		givenSocket       *client.Socket
+		wantErr           error
 	}{
 		{
-			name:             "no-op, no policy names given",
-			mockRequester:    func(ctx context.Context, requester *mocks.APIClientRequester) {},
-			givenSocket:      socket,
-			givenPolicyNames: nil,
-			wantErr:          nil,
+			name:              "no-op, no policy names given",
+			mockRequester:     func(ctx context.Context, requester *mocks.APIClientRequester) {},
+			givenWithPolicies: nil,
+			givenSocket:       socketWithPolicies,
+			wantErr:           nil,
 		},
 		{
-			name:             "no-op, policy names given, but no changes",
-			mockRequester:    func(ctx context.Context, requester *mocks.APIClientRequester) {},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: []string{"test-policy-1", "test-policy-2"},
-			wantErr:          nil,
+			name:              "no-op, policy names given, but no changes",
+			mockRequester:     func(ctx context.Context, requester *mocks.APIClientRequester) {},
+			givenWithPolicies: WithPolicies([]string{"test-policy-1", "test-policy-2"}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           nil,
 		},
 		{
 			name: "attach new policies, but new policies are not found",
@@ -148,9 +143,9 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 					PoliciesByNames(ctx, "test-policy-3").
 					Return(nil, errors.New("policy [test-policy-3] does not exist, please create the policy first"))
 			},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: []string{"test-policy-1", "test-policy-2", "test-policy-3"},
-			wantErr:          errors.New("policy [test-policy-3] does not exist, please create the policy first"),
+			givenWithPolicies: WithPolicies([]string{"test-policy-1", "test-policy-2", "test-policy-3"}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           errors.New("policy [test-policy-3] does not exist, please create the policy first"),
 		},
 		{
 			name: "attach new policies, found new policies, but failed to attach",
@@ -162,9 +157,9 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 					AttachPoliciesToSocket(ctx, []string{"test-policy-id-3", "test-policy-id-4"}, "test-socket-id-2").
 					Return(errors.New("failed to attach policies to socket"))
 			},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: []string{"test-policy-1", "test-policy-2", "test-policy-3", "test-policy-4"},
-			wantErr:          errors.New("failed to attach policies to socket"),
+			givenWithPolicies: WithPolicies([]string{"test-policy-1", "test-policy-2", "test-policy-3", "test-policy-4"}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           errors.New("failed to attach policies to socket"),
 		},
 		{
 			name: "happy path - attach new policies, found new policies, and attached successfully",
@@ -176,9 +171,9 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 					AttachPoliciesToSocket(ctx, []string{"test-policy-id-3", "test-policy-id-4"}, "test-socket-id-2").
 					Return(nil)
 			},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: []string{"test-policy-1", "test-policy-2", "test-policy-3", "test-policy-4"},
-			wantErr:          nil,
+			givenWithPolicies: WithPolicies([]string{"test-policy-1", "test-policy-2", "test-policy-3", "test-policy-4"}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           nil,
 		},
 		{
 			name: "detach policies, but failed to detach",
@@ -187,9 +182,9 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 					RemovePoliciesFromSocket(ctx, []string{"test-policy-id-1", "test-policy-id-2"}, "test-socket-id-2").
 					Return(errors.New("failed to detach policies from socket"))
 			},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: nil,
-			wantErr:          errors.New("failed to detach policies from socket"),
+			givenWithPolicies: WithPolicies([]string{}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           errors.New("failed to detach policies from socket"),
 		},
 		{
 			name: "happy path - detach policies, and succeeded",
@@ -198,9 +193,9 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 					RemovePoliciesFromSocket(ctx, []string{"test-policy-id-1", "test-policy-id-2"}, "test-socket-id-2").
 					Return(nil)
 			},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: nil,
-			wantErr:          nil,
+			givenWithPolicies: WithPolicies([]string{}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           nil,
 		},
 		{
 			name: "happy path - attach 2 new policies and detach 1 policy",
@@ -215,9 +210,9 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 					RemovePoliciesFromSocket(ctx, []string{"test-policy-id-1"}, "test-socket-id-2").
 					Return(nil)
 			},
-			givenSocket:      socketWithPolicies,
-			givenPolicyNames: []string{"test-policy-2", "test-policy-3", "test-policy-4"},
-			wantErr:          nil,
+			givenWithPolicies: WithPolicies([]string{"test-policy-2", "test-policy-3", "test-policy-4"}),
+			givenSocket:       socketWithPolicies,
+			wantErr:           nil,
 		},
 	}
 
@@ -230,10 +225,13 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 			requester := new(mocks.APIClientRequester)
 			test.mockRequester(ctx, requester)
 
-			l := New(
+			options := []Option{
 				WithAPIClient(requester),
-				WithPolicies(test.givenPolicyNames),
-			)
+			}
+			if test.givenWithPolicies != nil {
+				options = append(options, test.givenWithPolicies)
+			}
+			l := New(options...)
 			gotErr := l.ensurePoliciesAttached(context.Background(), test.givenSocket)
 
 			if test.wantErr == nil {
