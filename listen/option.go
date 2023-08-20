@@ -2,6 +2,7 @@ package listen
 
 import (
 	"github.com/borderzero/border0-go/client"
+	"github.com/borderzero/border0-go/lib/types/pointer"
 )
 
 // Option is a function that configures a Listener.
@@ -36,7 +37,7 @@ func WithSocketName(name string) Option {
 // and made sure they exist, and then they will be attached to the listener's socket.
 func WithPolicies(names []string) Option {
 	return func(l *Listener) {
-		l.policyNames = names
+		l.policyNames = pointer.To(names)
 	}
 }
 

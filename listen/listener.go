@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/borderzero/border0-go/client"
+	"github.com/borderzero/border0-go/lib/types/pointer"
 	"github.com/borderzero/border0-go/lib/types/slice"
 	"github.com/cenkalti/backoff/v4"
 	"golang.org/x/crypto/ssh"
@@ -31,7 +32,7 @@ type Listener struct {
 	apiClient    client.Requester
 	authToken    string
 	socketName   string
-	policyNames  []string
+	policyNames  *[]string // optional, if not set then ensurePoliciesAttached method will be no-op
 	tunnelServer string
 	errChan      chan error
 	readyChan    chan bool
@@ -282,10 +283,13 @@ func (l *Listener) ensureSocketCreated(ctx context.Context) (*client.Socket, err
 // from the socket, and new policies will be checked and made sure they exist, and then they will be attached
 // to the listener's socket.
 func (l *Listener) ensurePoliciesAttached(ctx context.Context, socket *client.Socket) error {
-	// no-op if no policies are specified from WithPolicies option and socket doesn't have any policies attached
-	if len(l.policyNames) == 0 && len(socket.Policies) == 0 {
+	// no-op if WithPolicies option is not used and policyNames remains nil
+	if l.policyNames == nil {
 		return nil
 	}
+
+	// otherwise, let's make sure the policies are properly attached (and detached)
+	policyNames := pointer.ValueOrZero(l.policyNames)
 
 	var alreadyAttachedPolicyNames []string
 	alreadyAttachedPolicies := make(map[string]client.Policy)
@@ -294,7 +298,7 @@ func (l *Listener) ensurePoliciesAttached(ctx context.Context, socket *client.So
 		alreadyAttachedPolicies[policy.Name] = policy
 	}
 
-	toAdd, toRemove := slice.Diff(alreadyAttachedPolicyNames, l.policyNames)
+	toAdd, toRemove := slice.Diff(alreadyAttachedPolicyNames, policyNames)
 
 	if len(toAdd) > 0 {
 		policies, err := l.apiClient.PoliciesByNames(ctx, toAdd...)
