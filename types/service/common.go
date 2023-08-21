@@ -1,18 +1,15 @@
 package service
 
+import (
+	"fmt"
+
+	"github.com/borderzero/border0-go/lib/types/set"
+)
+
 // HostnameAndPort represents a host and port.
 type HostnameAndPort struct {
 	Hostname string `json:"hostname"`
 	Port     uint16 `json:"port"`
-}
-
-// AwsCredentials represents aws credentials.
-type AwsCredentials struct {
-	AwsAccessKeyId     string `json:"aws_access_key_id"`
-	AwsSecretAccessKey string `json:"aws_secret_access_key"`
-	AwsSessionToken    string `json:"aws_session_token,omitempty"`
-	AwsProfile         string `json:"aws_profile,omitempty"`
-	AwsRegion          string `json:"aws_region,omitempty"`
 }
 
 // UsernameAndPassword represents a username and password. Used for basic auth, for example, MySQL
@@ -28,4 +25,25 @@ type TlsConfig struct {
 	CaCertificate string `json:"ca_certificate"`
 	Certificate   string `json:"certificate"`
 	Key           string `json:"key"`
+}
+
+// validateUsernameWithProvider validates a username_provider, username pair.
+func validateUsernameWithProvider(
+	usernameProvider string,
+	username string,
+	allowedEmptyUserProviders set.Set[string],
+) error {
+	if usernameProvider == UsernameProviderDefined || usernameProvider == "" {
+		if username == "" {
+			return fmt.Errorf("username must be provided when username_provider is \"%s\"", UsernameProviderDefined)
+		}
+		return nil
+	}
+	if !allowedEmptyUserProviders.Has(usernameProvider) {
+		return fmt.Errorf("username_provider %s is not valid", usernameProvider)
+	}
+	if username != "" {
+		return fmt.Errorf("username must be empty when username_provider is %s", usernameProvider)
+	}
+	return nil
 }

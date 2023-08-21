@@ -28,7 +28,7 @@ type TlsServiceConfiguration struct {
 // StandardTlsServiceConfiguration represents service
 // configuration for standard tls services (fka sockets).
 type StandardTlsServiceConfiguration struct {
-	HostnameAndPort // inherited
+	HostnameAndPort
 }
 
 // VpnTlsServiceConfiguration represents service
@@ -42,4 +42,9 @@ type VpnTlsServiceConfiguration struct {
 // configuration for http proxy services over the tls socket.
 type HttpProxyTlsServiceConfiguration struct {
 	HostAllowlist []string `json:"host_allowlist,omitempty"`
+}
+
+func (c *TlsServiceConfiguration) Validate() error {
+	// TODO
+	return nil
 }
