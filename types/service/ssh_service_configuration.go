@@ -1,5 +1,15 @@
 package service
 
+import (
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
+
+	"github.com/borderzero/border0-go/lib/types/null"
+	"github.com/borderzero/border0-go/lib/types/set"
+	"github.com/borderzero/border0-go/types/common"
+)
+
 const (
 	// SshServiceTypeStandard is the ssh
 	// service type for standard ssh services.
@@ -72,9 +82,8 @@ type SshServiceConfiguration struct {
 // StandardSshServiceConfiguration represents service
 // configuration for standard ssh services (fka sockets).
 type StandardSshServiceConfiguration struct {
+	HostnameAndPort
 	SshAuthenticationType string `json:"ssh_authentication_type"`
-
-	HostnameAndPort // inherited
 
 	// mutually exclusive fields below
 	UsernameAndPasswordAuthConfiguration *UsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
@@ -96,28 +105,28 @@ type AwsSsmSshServiceConfiguration struct {
 // for aws ssm ssh services (fka sockets) that have EC2 instances
 // as their ssm target.
 type AwsSsmEc2TargetConfiguration struct {
-	Ec2InstanceId     string          `json:"ec2_instance_id"`
-	Ec2InstanceRegion string          `json:"ec2_instance_region"`
-	AwsCredentials    *AwsCredentials `json:"aws_credentials,omitempty"`
+	Ec2InstanceId     string                 `json:"ec2_instance_id"`
+	Ec2InstanceRegion string                 `json:"ec2_instance_region"`
+	AwsCredentials    *common.AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
 // AwsSsmEcsTargetConfiguration represents service configuration
 // for aws ssm ssh services (fka sockets) that have ECS services
 // as their ssm target.
 type AwsSsmEcsTargetConfiguration struct {
-	EcsClusterRegion string          `json:"ecs_cluster_region"`
-	EcsClusterName   string          `json:"ecs_cluster_name"`
-	EcsServiceName   string          `json:"ecs_service_name"`
-	AwsCredentials   *AwsCredentials `json:"aws_credentials,omitempty"`
+	EcsClusterRegion string                 `json:"ecs_cluster_region"`
+	EcsClusterName   string                 `json:"ecs_cluster_name"`
+	EcsServiceName   string                 `json:"ecs_service_name"`
+	AwsCredentials   *common.AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
 // AwsEc2ICSshServiceConfiguration represents service configuration
 // for aws ec2 instance connect ssh services (fka sockets).
 type AwsEc2ICSshServiceConfiguration struct {
-	HostnameAndPort                   // inherited
-	Ec2InstanceId     string          `json:"ec2_instance_id"`
-	Ec2InstanceRegion string          `json:"ec2_instance_region"`
-	AwsCredentials    *AwsCredentials `json:"aws_credentials,omitempty"`
+	HostnameAndPort
+	Ec2InstanceId     string                 `json:"ec2_instance_id"`
+	Ec2InstanceRegion string                 `json:"ec2_instance_region"`
+	AwsCredentials    *common.AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
 // BuiltInSshServiceConfiguration represents the service configuration
@@ -148,4 +157,309 @@ type PrivateKeyAuthConfiguration struct {
 type Border0CertificateAuthConfiguration struct {
 	UsernameProvider string `json:"username_provider,omitempty"`
 	Username         string `json:"username,omitempty"`
+}
+
+// Validate validates the SshServiceConfiguration.
+func (c *SshServiceConfiguration) Validate() error {
+	switch c.SshServiceType {
+
+	case SshServiceTypeAwsEc2InstanceConnect:
+		if !null.All(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+			return fmt.Errorf(
+				"ssh service type \"%s\" can only have aws ec2 instance connect ssh service configuration defined",
+				SshServiceTypeAwsEc2InstanceConnect)
+		}
+		if c.AwsEc2ICSshServiceConfiguration == nil {
+			return fmt.Errorf(
+				"ssh service configuration for ssh service type \"%s\" must have aws ec2 instance connect ssh service configuration defined",
+				SshServiceTypeAwsEc2InstanceConnect,
+			)
+		}
+		if err := c.AwsEc2ICSshServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid aws ec2 instance connect service configuration: %v", err)
+		}
+		return nil
+
+	case SshServiceTypeAwsSsm:
+		if !null.All(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+			return fmt.Errorf(
+				"ssh service type \"%s\" can only have aws ssm ssh service configuration defined",
+				SshServiceTypeAwsSsm)
+		}
+		if c.AwsSsmSshServiceConfiguration == nil {
+			return fmt.Errorf(
+				"ssh service configuration for ssh service type \"%s\" must have aws ssm ssh service configuration defined",
+				SshServiceTypeAwsSsm,
+			)
+		}
+		if err := c.AwsSsmSshServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid aws ssm service configuration: %v", err)
+		}
+		return nil
+
+	case SshServiceTypeConnectorBuiltIn:
+		if !null.All(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration) {
+			return fmt.Errorf(
+				"ssh service type \"%s\" can only have built in ssh service configuration defined",
+				SshServiceTypeConnectorBuiltIn)
+		}
+		if c.StandardSshServiceConfiguration == nil {
+			return fmt.Errorf(
+				"ssh service configuration for ssh service type \"%s\" must have built in ssh service configuration defined",
+				SshServiceTypeConnectorBuiltIn,
+			)
+		}
+		if err := c.BuiltInSshServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid built in ssh service configuration: %v", err)
+		}
+		return nil
+
+	case SshServiceTypeStandard:
+		if !null.All(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+			return fmt.Errorf(
+				"ssh service type \"%s\" can only have standard ssh service configuration defined",
+				SshServiceTypeStandard)
+		}
+		if c.StandardSshServiceConfiguration == nil {
+			return fmt.Errorf(
+				"ssh service configuration for ssh service type \"%s\" must have standard ssh service configuration defined",
+				SshServiceTypeStandard,
+			)
+		}
+		if err := c.StandardSshServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid standard ssh service configuration: %v", err)
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("ssh service configuration has invalid ssh service type \"%s\"", c.SshServiceType)
+	}
+}
+
+// Validate validates the AwsEc2ICSshServiceConfiguration.
+func (c *AwsEc2ICSshServiceConfiguration) Validate() error {
+	if c.HostnameAndPort.Hostname == "" {
+		return fmt.Errorf("hostname is a required field")
+	}
+	if c.HostnameAndPort.Port == 0 {
+		return fmt.Errorf("port is a required field")
+	}
+	if c.Ec2InstanceId == "" {
+		return fmt.Errorf("ec2_instance_id is a required field")
+	}
+	if c.Ec2InstanceRegion == "" {
+		return fmt.Errorf("ec2_instance_region is a required field")
+	}
+	if err := common.ValidateAwsRegions(c.Ec2InstanceRegion); err != nil {
+		return fmt.Errorf("invalid ec2_instance_region: %s", err)
+	}
+	if c.AwsCredentials != nil {
+		if err := c.AwsCredentials.Validate(); err != nil {
+			return fmt.Errorf("invalid aws_credentials: %v", err)
+		}
+	}
+	return nil
+}
+
+// Validate validates the AwsSsmSshServiceConfiguration.
+func (c *AwsSsmSshServiceConfiguration) Validate() error {
+	switch c.SsmTargetType {
+
+	case SsmTargetTypeEc2:
+		if !null.All(c.AwsSsmEcsTargetConfiguration) {
+			return fmt.Errorf("ssm services with ssm target type \"%s\" can only have ec2 target configuration defined", SsmTargetTypeEc2)
+		}
+		if c.AwsSsmEc2TargetConfiguration == nil {
+			return fmt.Errorf("ssm ec2 target configuration is required when ssm target type is \"%s\"", c.SsmTargetType)
+		}
+		if err := c.AwsSsmEc2TargetConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid aws ssm ec2 target configuration: %v", err)
+		}
+		return nil
+
+	case SsmTargetTypeEcs:
+		if !null.All(c.AwsSsmEcsTargetConfiguration) {
+			return fmt.Errorf("ssm services with ssm target type \"%s\" can only have ecs target configuration defined", SsmTargetTypeEcs)
+		}
+		if c.AwsSsmEcsTargetConfiguration == nil {
+			return fmt.Errorf("ssm ecs target configuration is required when ssm target type is \"%s\"", c.SsmTargetType)
+		}
+		if err := c.AwsSsmEcsTargetConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid aws ssm ecs target configuration: %v", err)
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("invalid ssm target type \"%s\"", c.SsmTargetType)
+	}
+}
+
+// Validate validates the BuiltInSshServiceConfiguration.
+func (c *BuiltInSshServiceConfiguration) Validate() error {
+	return validateUsernameWithProvider(
+		c.UsernameProvider,
+		c.Username,
+		set.New(
+			UsernameProviderPromptClient,
+			UsernameProviderUseConnectorUser,
+		),
+	)
+}
+
+func (c *StandardSshServiceConfiguration) Validate() error {
+	if c.HostnameAndPort.Hostname == "" {
+		return fmt.Errorf("hostname is a required field")
+	}
+	if c.HostnameAndPort.Port == 0 {
+		return fmt.Errorf("port is a required field")
+	}
+
+	switch c.SshAuthenticationType {
+	case StandardSshServiceAuthenticationTypeBorder0Certificate, "":
+		if !null.All(c.PrivateKeyAuthConfiguration, c.UsernameAndPasswordAuthConfiguration) {
+			return fmt.Errorf(
+				"ssh authentication type \"%s\" can only have border0 certificate auth configuration defined",
+				StandardSshServiceAuthenticationTypeBorder0Certificate,
+			)
+		}
+		if c.Border0CertificateAuthConfiguration == nil {
+			return fmt.Errorf(
+				"border0 certificate auth configuration is required when the ssh authentication type is \"%s\"",
+				StandardSshServiceAuthenticationTypeBorder0Certificate,
+			)
+		}
+		if err := c.Border0CertificateAuthConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid border0 certificate auth configuration: %v", err)
+		}
+		return nil
+
+	case StandardSshServiceAuthenticationTypePrivateKey:
+		if !null.All(c.Border0CertificateAuthConfiguration, c.UsernameAndPasswordAuthConfiguration) {
+			return fmt.Errorf(
+				"ssh authentication type \"%s\" can only have private key auth configuration defined",
+				StandardSshServiceAuthenticationTypePrivateKey,
+			)
+		}
+		if c.PrivateKeyAuthConfiguration == nil {
+			return fmt.Errorf(
+				"private key auth configuration is required when the ssh authentication type is \"%s\"",
+				StandardSshServiceAuthenticationTypePrivateKey,
+			)
+		}
+		if err := c.PrivateKeyAuthConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid private key auth configuration: %v", err)
+		}
+		return nil
+
+	case StandardSshServiceAuthenticationTypeUsernameAndPassword:
+		if !null.All(c.Border0CertificateAuthConfiguration, c.PrivateKeyAuthConfiguration) {
+			return fmt.Errorf(
+				"ssh authentication type \"%s\" can only have username and password auth configuration defined",
+				StandardSshServiceAuthenticationTypeUsernameAndPassword,
+			)
+		}
+		if c.UsernameAndPasswordAuthConfiguration == nil {
+			return fmt.Errorf(
+				"username and password auth configuration is required when the ssh authentication type is \"%s\"",
+				StandardSshServiceAuthenticationTypeUsernameAndPassword,
+			)
+		}
+		if err := c.UsernameAndPasswordAuthConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid username and password auth configuration: %v", err)
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("invalid value for ssh_authentication_type: %s", c.SshAuthenticationType)
+	}
+}
+
+// Validate validates the AwsSsmEc2TargetConfiguration.
+func (c *AwsSsmEc2TargetConfiguration) Validate() error {
+	if c.Ec2InstanceId == "" {
+		return fmt.Errorf("ec2_instance_id is a required field")
+	}
+	if c.Ec2InstanceRegion == "" {
+		return fmt.Errorf("ec2_instance_region is a required field")
+	}
+	if err := common.ValidateAwsRegions(c.Ec2InstanceRegion); err != nil {
+		return fmt.Errorf("invalid ec2_instance_region: %s", err)
+	}
+	if c.AwsCredentials != nil {
+		if err := c.AwsCredentials.Validate(); err != nil {
+			return fmt.Errorf("invalid aws_credentials: %v", err)
+		}
+	}
+	return nil
+}
+
+// Validate validates the AwsSsmEcsTargetConfiguration.
+func (c *AwsSsmEcsTargetConfiguration) Validate() error {
+	if c.EcsClusterName == "" {
+		return fmt.Errorf("ecs_cluster_name is a required field")
+	}
+	if c.EcsClusterRegion == "" {
+		return fmt.Errorf("ecs_cluster_region is a required field")
+	}
+	if err := common.ValidateAwsRegions(c.EcsClusterRegion); err != nil {
+		return fmt.Errorf("invalid ecs_cluster_region: %s", err)
+	}
+	if c.EcsServiceName == "" {
+		return fmt.Errorf("ecs_service_name is a required field")
+	}
+	if c.AwsCredentials != nil {
+		if err := c.AwsCredentials.Validate(); err != nil {
+			return fmt.Errorf("invalid aws credentials: %v", err)
+		}
+	}
+	return nil
+}
+
+// Validate validates the Border0CertificateAuthConfiguration.
+func (c *Border0CertificateAuthConfiguration) Validate() error {
+	return validateUsernameWithProvider(
+		c.UsernameProvider,
+		c.Username,
+		set.New(UsernameProviderPromptClient),
+	)
+}
+
+// Validate validates the PrivateKeyAuthConfiguration.
+func (c *PrivateKeyAuthConfiguration) Validate() error {
+	if err := validateUsernameWithProvider(
+		c.UsernameProvider,
+		c.Username,
+		set.New(UsernameProviderPromptClient),
+	); err != nil {
+		return err
+	}
+	if c.PrivateKey == "" {
+		return fmt.Errorf("private_key is a required field")
+	}
+
+	privKeyBytes := []byte(c.PrivateKey)
+	block, _ := pem.Decode(privKeyBytes)
+	if block != nil {
+		privKeyBytes = block.Bytes
+	}
+	if _, err := x509.ParsePKCS1PrivateKey(privKeyBytes); err != nil {
+		return fmt.Errorf("private_key is not a valid PEM or DER encoded private key")
+	}
+
+	return nil
+}
+
+// Validate validates the Border0CertificateAuthConfiguration.
+func (c *UsernameAndPasswordAuthConfiguration) Validate() error {
+	if err := validateUsernameWithProvider(
+		c.UsernameProvider,
+		c.Username,
+		set.New(UsernameProviderPromptClient),
+	); err != nil {
+		return err
+	}
+	if c.Password == "" {
+		return fmt.Errorf("password is a required field")
+	}
+	return nil
 }

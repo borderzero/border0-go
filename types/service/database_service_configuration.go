@@ -1,5 +1,7 @@
 package service
 
+import "github.com/borderzero/border0-go/types/common"
+
 // Database service types supported by Border0. Choose `standard` for self-managed databases.
 // Use `aws_rds` for AWS RDS databases, and select `google_cloudsql` for Google Cloud SQL databases.
 const (
@@ -226,9 +228,9 @@ type AwsRdsUsernameAndPasswordAuthConfiguration struct {
 // AwsRdsIamAuthConfiguration represents auth configuration for AWS RDS databases that use IAM authentication. You must
 // provide AWS credentials and a username. Optionally AWS CA bundle can be supplied to verify the server's certificate.
 type AwsRdsIamAuthConfiguration struct {
-	AwsCredentials
-	Username      string `json:"username"`
-	CaCertificate string `json:"ca_certificate,omitempty"`
+	AwsCredentials common.AwsCredentials `json:"aws_credentials"`
+	Username       string                `json:"username"`
+	CaCertificate  string                `json:"ca_certificate,omitempty"`
 }
 
 // GoogleCloudSqlUsernameAndPasswordAuthConfiguration represents auth configuration for Google Cloud SQL databases that
@@ -248,4 +250,10 @@ type GoogleCloudSqlIamAuthConfiguration struct {
 	Username           string `json:"username"`
 	InstanceId         string `json:"instance_id"`
 	GcpCredentialsJson string `json:"gcp_credentials_json"`
+}
+
+// Validate validates the DatabaseServiceConfiguration.
+func (c *DatabaseServiceConfiguration) Validate() error {
+	// TODO
+	return nil
 }

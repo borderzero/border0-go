@@ -31,3 +31,9 @@ type StandardHttpServiceConfiguration struct {
 type FileServerHttpServiceConfiguration struct {
 	TopLevelDirectory string `json:"top_level_directory,omitempty"`
 }
+
+// Validate validates the HttpServiceConfiguration.
+func (c *HttpServiceConfiguration) Validate() error {
+	// TODO
+	return nil
+}

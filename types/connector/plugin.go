@@ -1,5 +1,7 @@
 package connector
 
+import "github.com/borderzero/border0-go/types/common"
+
 const (
 	// PluginTypeAwsEc2Discovery is the plugin type for aws ec2 instance discovery.
 	PluginTypeAwsEc2Discovery = "aws_ec2_discovery"
@@ -30,14 +32,6 @@ type PluginConfiguration struct {
 	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"network_discovery_plugin_configuration,omitempty"`
 }
 
-// AwsCredentials represents credentials and configuration for authenticating against AWS APIs.
-type AwsCredentials struct {
-	AwsProfile         *string `json:"aws_profile,omitempty"`
-	AwsAccessKeyId     *string `json:"aws_access_key_id,omitempty"`
-	AwsSecretAccessKey *string `json:"aws_secret_access_key,omitempty"`
-	AwsSessionToken    *string `json:"aws_session_token,omitempty"`
-}
-
 // KubernetesCredentials represents credentials and configuration for authenticating against a Kubernetes API.
 type KubernetesCredentials struct {
 	MasterUrl      *string `json:"master_url,omitempty"`
@@ -46,8 +40,8 @@ type KubernetesCredentials struct {
 
 // BaseAwsPluginConfiguration represents configuration fields shared across all AWS related plugins.
 type BaseAwsPluginConfiguration struct {
-	AwsCredentials *AwsCredentials `json:"aws_credentials,omitempty"`
-	AwsRegions     []string        `json:"aws_regions,omitempty"`
+	AwsCredentials *common.AwsCredentials `json:"aws_credentials,omitempty"`
+	AwsRegions     []string               `json:"aws_regions,omitempty"`
 }
 
 // BaseDiscoveryPluginConfiguration represents configuration fields shared across all discovery related plugins.
