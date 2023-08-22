@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"github.com/borderzero/border0-go/lib/types/null"
+	"github.com/borderzero/border0-go/lib/types/nilcheck"
 )
 
 const (
@@ -44,7 +44,7 @@ func (c *HttpServiceConfiguration) Validate() error {
 	switch c.HttpServiceType {
 
 	case HttpServiceTypeStandard:
-		if !null.All(c.FileServerHttpServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.FileServerHttpServiceConfiguration) {
 			return fmt.Errorf(
 				"http service type \"%s\" can only have standard http service configuration defined",
 				HttpServiceTypeStandard,
@@ -62,7 +62,7 @@ func (c *HttpServiceConfiguration) Validate() error {
 		return nil
 
 	case HttpServiceTypeConnectorFileServer:
-		if !null.All(c.StandardHttpServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.StandardHttpServiceConfiguration) {
 			return fmt.Errorf(
 				"http service type \"%s\" can only have file server http service configuration defined",
 				HttpServiceTypeConnectorFileServer,

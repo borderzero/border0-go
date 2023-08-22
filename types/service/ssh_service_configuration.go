@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"github.com/borderzero/border0-go/lib/types/null"
+	"github.com/borderzero/border0-go/lib/types/nilcheck"
 	"github.com/borderzero/border0-go/lib/types/set"
 	"github.com/borderzero/border0-go/types/common"
 	"golang.org/x/crypto/ssh"
@@ -165,7 +165,7 @@ func (c *SshServiceConfiguration) Validate() error {
 	switch c.SshServiceType {
 
 	case SshServiceTypeAwsEc2InstanceConnect:
-		if !null.All(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have aws ec2 instance connect ssh service configuration defined",
 				SshServiceTypeAwsEc2InstanceConnect)
@@ -182,7 +182,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeAwsSsm:
-		if !null.All(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have aws ssm ssh service configuration defined",
 				SshServiceTypeAwsSsm)
@@ -199,7 +199,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeConnectorBuiltIn:
-		if !null.All(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have built in ssh service configuration defined",
 				SshServiceTypeConnectorBuiltIn)
@@ -216,7 +216,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeStandard:
-		if !null.All(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have standard ssh service configuration defined",
 				SshServiceTypeStandard)
@@ -271,7 +271,7 @@ func (c *AwsSsmSshServiceConfiguration) Validate() error {
 	switch c.SsmTargetType {
 
 	case SsmTargetTypeEc2:
-		if !null.All(c.AwsSsmEcsTargetConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsSsmEcsTargetConfiguration) {
 			return fmt.Errorf("ssm services with ssm target type \"%s\" can only have ec2 target configuration defined", SsmTargetTypeEc2)
 		}
 		if c.AwsSsmEc2TargetConfiguration == nil {
@@ -283,7 +283,7 @@ func (c *AwsSsmSshServiceConfiguration) Validate() error {
 		return nil
 
 	case SsmTargetTypeEcs:
-		if !null.All(c.AwsSsmEc2TargetConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsSsmEc2TargetConfiguration) {
 			return fmt.Errorf("ssm services with ssm target type \"%s\" can only have ecs target configuration defined", SsmTargetTypeEcs)
 		}
 		if c.AwsSsmEcsTargetConfiguration == nil {
@@ -318,7 +318,7 @@ func (c *StandardSshServiceConfiguration) Validate() error {
 
 	switch c.SshAuthenticationType {
 	case StandardSshServiceAuthenticationTypeBorder0Certificate, "":
-		if !null.All(c.PrivateKeyAuthConfiguration, c.UsernameAndPasswordAuthConfiguration) {
+		if nilcheck.AnyNotNil(c.PrivateKeyAuthConfiguration, c.UsernameAndPasswordAuthConfiguration) {
 			return fmt.Errorf(
 				"ssh authentication type \"%s\" can only have border0 certificate auth configuration defined",
 				StandardSshServiceAuthenticationTypeBorder0Certificate,
@@ -336,7 +336,7 @@ func (c *StandardSshServiceConfiguration) Validate() error {
 		return nil
 
 	case StandardSshServiceAuthenticationTypePrivateKey:
-		if !null.All(c.Border0CertificateAuthConfiguration, c.UsernameAndPasswordAuthConfiguration) {
+		if nilcheck.AnyNotNil(c.Border0CertificateAuthConfiguration, c.UsernameAndPasswordAuthConfiguration) {
 			return fmt.Errorf(
 				"ssh authentication type \"%s\" can only have private key auth configuration defined",
 				StandardSshServiceAuthenticationTypePrivateKey,
@@ -354,7 +354,7 @@ func (c *StandardSshServiceConfiguration) Validate() error {
 		return nil
 
 	case StandardSshServiceAuthenticationTypeUsernameAndPassword:
-		if !null.All(c.Border0CertificateAuthConfiguration, c.PrivateKeyAuthConfiguration) {
+		if nilcheck.AnyNotNil(c.Border0CertificateAuthConfiguration, c.PrivateKeyAuthConfiguration) {
 			return fmt.Errorf(
 				"ssh authentication type \"%s\" can only have username and password auth configuration defined",
 				StandardSshServiceAuthenticationTypeUsernameAndPassword,

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/borderzero/border0-go/lib/types/netaddr"
-	"github.com/borderzero/border0-go/lib/types/null"
+	"github.com/borderzero/border0-go/lib/types/nilcheck"
 )
 
 const (
@@ -56,7 +56,7 @@ func (c *TlsServiceConfiguration) Validate() error {
 	switch c.TlsServiceType {
 
 	case TlsServiceTypeStandard:
-		if !null.All(c.VpnTlsServiceConfiguration, c.HttpProxyTlsServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.VpnTlsServiceConfiguration, c.HttpProxyTlsServiceConfiguration) {
 			return fmt.Errorf(
 				"tls service type \"%s\" can only have standard tls service configuration defined",
 				TlsServiceTypeStandard)
@@ -73,7 +73,7 @@ func (c *TlsServiceConfiguration) Validate() error {
 		return nil
 
 	case TlsServiceTypeVpn:
-		if !null.All(c.StandardTlsServiceConfiguration, c.HttpProxyTlsServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.StandardTlsServiceConfiguration, c.HttpProxyTlsServiceConfiguration) {
 			return fmt.Errorf(
 				"tls service type \"%s\" can only have vpn tls service configuration defined",
 				TlsServiceTypeVpn)
@@ -90,7 +90,7 @@ func (c *TlsServiceConfiguration) Validate() error {
 		return nil
 
 	case TlsServiceTypeHttpProxy:
-		if !null.All(c.StandardTlsServiceConfiguration, c.VpnTlsServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.StandardTlsServiceConfiguration, c.VpnTlsServiceConfiguration) {
 			return fmt.Errorf(
 				"tls service type \"%s\" can only have http proxy tls service configuration defined",
 				TlsServiceTypeHttpProxy)

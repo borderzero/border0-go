@@ -1,13 +1,19 @@
 package service
 
-import "github.com/borderzero/border0-go/types/common"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/borderzero/border0-go/lib/types/nilcheck"
+	"github.com/borderzero/border0-go/types/common"
+)
 
 // Database service types supported by Border0. Choose `standard` for self-managed databases.
-// Use `aws_rds` for AWS RDS databases, and select `google_cloudsql` for Google Cloud SQL databases.
+// Use `aws_rds` for AWS RDS databases, and select `gcp_cloudsql` for Google Cloud SQL databases.
 const (
-	DatabaseServiceTypeStandard = "standard"        // standard MySQL or PostgreSQL, supports TLS and password auth
-	DatabaseServiceTypeRds      = "aws_rds"         // AWS RDS database, supports IAM and password auth
-	DatabaseServiceTypeCloudSql = "google_cloudsql" // Google Cloud SQL database, supports IAM, TLS and password auth
+	DatabaseServiceTypeStandard    = "standard"     // standard MySQL or PostgreSQL, supports TLS and password auth
+	DatabaseServiceTypeAwsRds      = "aws_rds"      // AWS RDS database, supports IAM and password auth
+	DatabaseServiceTypeGcpCloudSql = "gcp_cloudsql" // Google Cloud SQL database, supports IAM, TLS and password auth
 )
 
 const (
@@ -35,7 +41,7 @@ const (
 
 // =======================================================================================
 // Database service configuration schema
-// - database service type: standard, aws_rds, google_cloudsql
+// - database service type: standard, aws_rds, gcp_cloudsql
 // - standard (when database service type is standard)
 //     - hostname and port
 //     - database protocol: mysql, postgres
@@ -61,7 +67,7 @@ const (
 //         - aws credentials: aws_access_key_id, aws_secret_access_key, aws_region, aws_session_token, aws_profile
 //         - username
 //         - ca_certificate (optional)
-// - google cloud sql (when database service type is google_cloudsql)
+// - google cloud sql (when database service type is gcp_cloudsql)
 //     - cloudsql_connector_enabled
 //     - standard (when cloudsql_connector_enabled is false)
 //         - hostname and port
@@ -95,9 +101,43 @@ type DatabaseServiceConfiguration struct {
 	DatabaseServiceType string `json:"database_service_type"`
 
 	// mutually exclusive fields below
-	Standard       *StandardDatabaseServiceConfiguration       `json:"standard_database_service_configuration,omitempty"`
-	AwsRds         *AwsRdsDatabaseServiceConfiguration         `json:"aws_rds_database_service_configuration,omitempty"`
-	GoogleCloudSql *GoogleCloudSqlDatabaseServiceConfiguration `json:"google_cloudsql_database_service_configuration,omitempty"`
+	Standard    *StandardDatabaseServiceConfiguration    `json:"standard_database_service_configuration,omitempty"`
+	AwsRds      *AwsRdsDatabaseServiceConfiguration      `json:"aws_rds_database_service_configuration,omitempty"`
+	GcpCloudSql *GcpCloudSqlDatabaseServiceConfiguration `json:"gcp_cloudsql_database_service_configuration,omitempty"`
+}
+
+// Validate ensures that the `DatabaseServiceConfiguration` is valid.
+func (config DatabaseServiceConfiguration) Validate() error {
+	if config.DatabaseServiceType == "" {
+		return errors.New("database service type is required")
+	}
+	switch config.DatabaseServiceType {
+	case DatabaseServiceTypeStandard:
+		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql) {
+			return errors.New("database service type is standard, but AWS RDS or Google Cloud SQL configuration is provided")
+		}
+		if config.Standard == nil {
+			return errors.New("standard database service configuration is required")
+		}
+		return config.Standard.Validate()
+	case DatabaseServiceTypeAwsRds:
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql) {
+			return errors.New("database service type is aws_rds, but standard or Google Cloud SQL configuration is provided")
+		}
+		if config.AwsRds == nil {
+			return errors.New("AWS RDS database service configuration is required")
+		}
+		return config.AwsRds.Validate()
+	case DatabaseServiceTypeGcpCloudSql:
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds) {
+			return errors.New("database service type is gcp_cloudsql, but standard or AWS RDS configuration is provided")
+		}
+		if config.GcpCloudSql == nil {
+			return errors.New("Google Cloud SQL database service configuration is required")
+		}
+		return config.GcpCloudSql.Validate()
+	}
+	return fmt.Errorf("invalid database service type: %s", config.DatabaseServiceType)
 }
 
 // =======================================================================================
@@ -123,6 +163,37 @@ type StandardDatabaseServiceConfiguration struct {
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
 }
 
+// Validate ensures that the `StandardDatabaseServiceConfiguration` is valid.
+func (config StandardDatabaseServiceConfiguration) Validate() error {
+	if config.DatabaseProtocol == "" {
+		return errors.New("database protocol is required")
+	}
+
+	if err := config.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+
+	switch config.AuthenticationType {
+	case DatabaseAuthenticationTypeUsernameAndPassword:
+		if nilcheck.AnyNotNil(config.TlsAuth) {
+			return errors.New("authentication type is username_and_password, but TLS auth configuration is provided")
+		}
+		if config.UsernameAndPasswordAuth == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return config.UsernameAndPasswordAuth.Validate()
+	case DatabaseAuthenticationTypeTls:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
+			return errors.New("authentication type is tls, but username and password auth configuration is provided")
+		}
+		if config.TlsAuth == nil {
+			return errors.New("TLS auth configuration is required")
+		}
+		return config.TlsAuth.Validate()
+	}
+	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+}
+
 // AwsRdsDatabaseServiceConfiguration represents service configuration for AWS RDS databases. AWS RDS databases
 // are cloud managed MySQL or PostgreSQL databases.
 //
@@ -140,16 +211,70 @@ type AwsRdsDatabaseServiceConfiguration struct {
 	IamAuth                 *AwsRdsIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
 }
 
-// GoogleCloudSqlDatabaseServiceConfiguration represents service configuration for Google Cloud SQL databases.
+// Validate ensures that the `AwsRdsDatabaseServiceConfiguration` is valid.
+func (config AwsRdsDatabaseServiceConfiguration) Validate() error {
+	if config.DatabaseProtocol == "" {
+		return errors.New("database protocol is required")
+	}
+
+	if err := config.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+
+	switch config.AuthenticationType {
+	case DatabaseAuthenticationTypeUsernameAndPassword:
+		if nilcheck.AnyNotNil(config.IamAuth) {
+			return errors.New("authentication type is username_and_password, but IAM auth configuration is provided")
+		}
+		if config.UsernameAndPasswordAuth == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return config.UsernameAndPasswordAuth.Validate()
+	case DatabaseAuthenticationTypeIam:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
+			return errors.New("authentication type is iam, but username and password auth configuration is provided")
+		}
+		if config.IamAuth == nil {
+			return errors.New("IAM auth configuration is required")
+		}
+		return config.IamAuth.Validate()
+	}
+	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+}
+
+// GcpCloudSqlDatabaseServiceConfiguration represents service configuration for Google Cloud SQL databases.
 // Google Cloud SQL databases are cloud managed MySQL or PostgreSQL databases.
 //
 // Border0 currently supports two ways of connecting to Google Cloud SQL databases: with and without the Cloud SQL Connector.
 // Use the corresponding configuration fields to configure the upstream connection.
-type GoogleCloudSqlDatabaseServiceConfiguration struct {
+type GcpCloudSqlDatabaseServiceConfiguration struct {
 	CloudSqlConnectorEnabled bool `json:"cloudsql_connector_enabled"`
 
-	Standard  *GoogleCloudSqlStandardConfiguration  `json:"standard_configuration,omitempty"`
-	Connector *GoogleCloudSqlConnectorConfiguration `json:"connector_configuration,omitempty"`
+	Standard  *GcpCloudSqlStandardConfiguration  `json:"standard_configuration,omitempty"`
+	Connector *GcpCloudSqlConnectorConfiguration `json:"connector_configuration,omitempty"`
+}
+
+// Validate ensures that the `GcpCloudSqlDatabaseServiceConfiguration` is valid.
+func (config GcpCloudSqlDatabaseServiceConfiguration) Validate() error {
+	// when using the cloud sql connector, the connector configuration is required
+	if config.CloudSqlConnectorEnabled {
+		if nilcheck.AnyNotNil(config.Standard) {
+			return errors.New("cloudsql_connector_enabled is true, but standard configuration is provided")
+		}
+		if config.Connector == nil {
+			return errors.New("Google Cloud SQL connector configuration is required")
+		}
+		return config.Connector.Validate()
+	}
+
+	// when _NOT_ using the cloud sql connector, the standard configuration is required
+	if nilcheck.AnyNotNil(config.Connector) {
+		return errors.New("cloudsql_connector_enabled is false, but connector configuration is provided")
+	}
+	if config.Standard == nil {
+		return errors.New("standard Google Cloud SQL configuration is required")
+	}
+	return config.Standard.Validate()
 }
 
 // =======================================================================================
@@ -158,13 +283,13 @@ type GoogleCloudSqlDatabaseServiceConfiguration struct {
 // - connector: with cloud sql connector
 // =======================================================================================
 
-// GoogleCloudSqlStandardConfiguration represents service configuration for Google Cloud SQL databases that will
+// GcpCloudSqlStandardConfiguration represents service configuration for Google Cloud SQL databases that will
 // be connected to the upstream _WITHOUT_ using the Cloud SQL Connector.
 //
 // Supported database protocol is: `mysql`. For upstream authentication, supported auth types are: `username_password`,
 // and `tls`. When using TLS authentication, the client must provide a username, a password, a client certificate and a
 // client key.
-type GoogleCloudSqlStandardConfiguration struct {
+type GcpCloudSqlStandardConfiguration struct {
 	HostnameAndPort
 
 	DatabaseProtocol   string `json:"protocol"`
@@ -174,18 +299,76 @@ type GoogleCloudSqlStandardConfiguration struct {
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
 }
 
-// GoogleCloudSqlConnectorConfiguration represents service configuration for Google Cloud SQL databases that will be
+// Validate ensures that the `GcpCloudSqlStandardConfiguration` is valid.
+func (config GcpCloudSqlStandardConfiguration) Validate() error {
+	if config.DatabaseProtocol == "" {
+		return errors.New("database protocol is required")
+	}
+
+	if err := config.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+
+	switch config.AuthenticationType {
+	case DatabaseAuthenticationTypeUsernameAndPassword:
+		if nilcheck.AnyNotNil(config.TlsAuth) {
+			return errors.New("authentication type is username_and_password, but TLS auth configuration is provided")
+		}
+		if config.UsernameAndPasswordAuth == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return config.UsernameAndPasswordAuth.Validate()
+	case DatabaseAuthenticationTypeTls:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
+			return errors.New("authentication type is tls, but username and password auth configuration is provided")
+		}
+		if config.TlsAuth == nil {
+			return errors.New("TLS auth configuration is required")
+		}
+		return config.TlsAuth.Validate()
+	}
+	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+}
+
+// GcpCloudSqlConnectorConfiguration represents service configuration for Google Cloud SQL databases that will be
 // connected to the upstream using the Cloud SQL Connector.
 //
 // Supported database protocol is: `mysql`. For upstream authentication, supported auth types are: `username_password`,
 // and `iam`. When using IAM authentication, the client must provide a username and an instance ID. You will need to
-// supply google credentials that are copied from the JSON credentials file.
-type GoogleCloudSqlConnectorConfiguration struct {
+// supply Google credentials that are copied from the JSON credentials file.
+type GcpCloudSqlConnectorConfiguration struct {
 	DatabaseProtocol   string `json:"protocol"`
 	AuthenticationType string `json:"authentication_type"`
 
-	UsernameAndPasswordAuth *GoogleCloudSqlUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *GoogleCloudSqlIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
+	UsernameAndPasswordAuth *GcpCloudSqlUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	IamAuth                 *GcpCloudSqlIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
+}
+
+// Validate ensures that the `GcpCloudSqlConnectorConfiguration` is valid.
+func (config GcpCloudSqlConnectorConfiguration) Validate() error {
+	if config.DatabaseProtocol == "" {
+		return errors.New("database protocol is required")
+	}
+
+	switch config.AuthenticationType {
+	case DatabaseAuthenticationTypeUsernameAndPassword:
+		if nilcheck.AnyNotNil(config.IamAuth) {
+			return errors.New("authentication type is username_and_password, but IAM auth configuration is provided")
+		}
+		if config.UsernameAndPasswordAuth == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return config.UsernameAndPasswordAuth.Validate()
+	case DatabaseAuthenticationTypeIam:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
+			return errors.New("authentication type is iam, but username and password auth configuration is provided")
+		}
+		if config.IamAuth == nil {
+			return errors.New("IAM auth configuration is required")
+		}
+		return config.IamAuth.Validate()
+	}
+	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
 }
 
 // =======================================================================================
@@ -196,7 +379,7 @@ type GoogleCloudSqlConnectorConfiguration struct {
 // - aws_rds:
 //     - username_password: username, password, ca_certificate (optional)
 //     - iam: aws credentials, username, ca_certificate (optional)
-// - google_cloudsql:
+// - gcp_cloudsql:
 //     - without cloud sql connector:
 //         - username_password: username, password
 //         - tls: username, password, certificate, key
@@ -210,12 +393,40 @@ type DatabaseUsernameAndPasswordAuthConfiguration struct {
 	UsernameAndPassword
 }
 
+// Validate ensures that the `DatabaseUsernameAndPasswordAuthConfiguration` has all the required fields.
+func (config DatabaseUsernameAndPasswordAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	return nil
+}
+
 // DatabaseTlsAuthConfiguration represents auth configuration that uses TLS for securing the connection. You must
 // provide a username, a password, a client certificate and a client key. Optionally you can provide a CA certificate
 // to verify the server's certificate.
 type DatabaseTlsAuthConfiguration struct {
 	UsernameAndPassword
 	TlsConfig
+}
+
+// Validate ensures that the `DatabaseTlsAuthConfiguration` has all the required fields.
+func (config DatabaseTlsAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	if config.Certificate == "" {
+		return errors.New("TLS certificate is required")
+	}
+	if config.Key == "" {
+		return errors.New("TLS private key is required")
+	}
+	return nil
 }
 
 // AwsRdsUsernameAndPasswordAuthConfiguration represents auth configuration for AWS RDS databases that use username
@@ -225,35 +436,86 @@ type AwsRdsUsernameAndPasswordAuthConfiguration struct {
 	CaCertificate string `json:"ca_certificate,omitempty"`
 }
 
+// Validate ensures that the `AwsRdsUsernameAndPasswordAuthConfiguration` has all the required fields.
+func (config AwsRdsUsernameAndPasswordAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	return nil
+}
+
 // AwsRdsIamAuthConfiguration represents auth configuration for AWS RDS databases that use IAM authentication. You must
 // provide AWS credentials and a username. Optionally AWS CA bundle can be supplied to verify the server's certificate.
 type AwsRdsIamAuthConfiguration struct {
 	AwsCredentials common.AwsCredentials `json:"aws_credentials"`
+	AwsRegion      string                `json:"aws_region"`
 	Username       string                `json:"username"`
 	CaCertificate  string                `json:"ca_certificate,omitempty"`
 }
 
-// GoogleCloudSqlUsernameAndPasswordAuthConfiguration represents auth configuration for Google Cloud SQL databases that
+// Validate ensures that the `AwsRdsIamAuthConfiguration` has the required field and that the AWS credentials are valid.
+func (config AwsRdsIamAuthConfiguration) Validate() error {
+	if config.AwsRegion == "" {
+		return errors.New("AWS region is required")
+	}
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if err := config.AwsCredentials.Validate(); err != nil {
+		return fmt.Errorf("invalid AWS credentials: %w", err)
+	}
+	return nil
+}
+
+// GcpCloudSqlUsernameAndPasswordAuthConfiguration represents auth configuration for Google Cloud SQL databases that
 // use username and password for authentication, and are connected to the upstream using the Cloud SQL Connector.
 // You must provide a username, a password, an Cloud SQL instance ID and Google credentials that are copied from the JSON
 // credentials file.
-type GoogleCloudSqlUsernameAndPasswordAuthConfiguration struct {
+type GcpCloudSqlUsernameAndPasswordAuthConfiguration struct {
 	UsernameAndPassword
 	InstanceId         string `json:"instance_id"`
 	GcpCredentialsJson string `json:"gcp_credentials_json"`
 }
 
-// GoogleCloudSqlIamAuthConfiguration represents auth configuration for Google Cloud SQL databases that use IAM authentication,
+// Validate ensures that the `GcpCloudSqlUsernameAndPasswordAuthConfiguration` has all the required fields.
+func (config GcpCloudSqlUsernameAndPasswordAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	if config.InstanceId == "" {
+		return errors.New("instance ID is required")
+	}
+	if config.GcpCredentialsJson == "" {
+		return errors.New("GCP credentials JSON is required")
+	}
+	return nil
+}
+
+// GcpCloudSqlIamAuthConfiguration represents auth configuration for Google Cloud SQL databases that use IAM authentication,
 // and are connected to the upstream using the Cloud SQL Connector. You must provide a username, an Cloud SQL instance ID
 // and Google credentials that are copied from the JSON credentials file.
-type GoogleCloudSqlIamAuthConfiguration struct {
+type GcpCloudSqlIamAuthConfiguration struct {
 	Username           string `json:"username"`
 	InstanceId         string `json:"instance_id"`
 	GcpCredentialsJson string `json:"gcp_credentials_json"`
 }
 
-// Validate validates the DatabaseServiceConfiguration.
-func (c *DatabaseServiceConfiguration) Validate() error {
-	// TODO
+// Validate ensures that the `GcpCloudSqlIamAuthConfiguration` has all the required fields.
+func (config GcpCloudSqlIamAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.InstanceId == "" {
+		return errors.New("instance ID is required")
+	}
+	if config.GcpCredentialsJson == "" {
+		return errors.New("GCP credentials JSON is required")
+	}
 	return nil
 }
