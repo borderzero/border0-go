@@ -238,11 +238,8 @@ func (c *SshServiceConfiguration) Validate() error {
 
 // Validate validates the AwsEc2ICSshServiceConfiguration.
 func (c *AwsEc2ICSshServiceConfiguration) Validate() error {
-	if c.HostnameAndPort.Hostname == "" {
-		return fmt.Errorf("hostname is a required field")
-	}
-	if c.HostnameAndPort.Port == 0 {
-		return fmt.Errorf("port is a required field")
+	if err := c.HostnameAndPort.Validate(); err != nil {
+		return err
 	}
 	if c.Ec2InstanceId == "" {
 		return fmt.Errorf("ec2_instance_id is a required field")
@@ -307,11 +304,8 @@ func (c *BuiltInSshServiceConfiguration) Validate() error {
 }
 
 func (c *StandardSshServiceConfiguration) Validate() error {
-	if c.HostnameAndPort.Hostname == "" {
-		return fmt.Errorf("hostname is a required field")
-	}
-	if c.HostnameAndPort.Port == 0 {
-		return fmt.Errorf("port is a required field")
+	if err := c.HostnameAndPort.Validate(); err != nil {
+		return err
 	}
 
 	switch c.SshAuthenticationType {

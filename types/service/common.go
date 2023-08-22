@@ -27,6 +27,17 @@ type TlsConfig struct {
 	Key           string `json:"key"`
 }
 
+// Validate validates the HostnameAndPort.
+func (c *HostnameAndPort) Validate() error {
+	if c.Hostname == "" {
+		return fmt.Errorf("hostname is a required field")
+	}
+	if c.Port == 0 {
+		return fmt.Errorf("port is a required field")
+	}
+	return nil
+}
+
 // validateUsernameWithProvider validates a username_provider, username pair.
 func validateUsernameWithProvider(
 	usernameProvider string,
