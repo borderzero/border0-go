@@ -24,6 +24,7 @@ type HttpServiceConfiguration struct {
 // configuration for standard http services (fka sockets).
 type StandardHttpServiceConfiguration struct {
 	HostnameAndPort // inherited
+	HostSniHeader   string
 }
 
 // FileServerHttpServiceConfiguration represents service
