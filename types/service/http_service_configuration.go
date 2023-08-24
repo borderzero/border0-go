@@ -64,13 +64,13 @@ func (c *HttpServiceConfiguration) Validate() error {
 	case HttpServiceTypeConnectorFileServer:
 		if !null.All(c.StandardHttpServiceConfiguration) {
 			return fmt.Errorf(
-				"http service type \"%s\" can only have vpn http service configuration defined",
+				"http service type \"%s\" can only have file server http service configuration defined",
 				HttpServiceTypeConnectorFileServer,
 			)
 		}
 		if c.FileServerHttpServiceConfiguration == nil {
 			return fmt.Errorf(
-				"http service configuration for http service type \"%s\" must have vpn http service configuration defined",
+				"http service configuration for http service type \"%s\" must have file server http service configuration defined",
 				HttpServiceTypeConnectorFileServer,
 			)
 		}
