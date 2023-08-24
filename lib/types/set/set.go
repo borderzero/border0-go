@@ -8,4 +8,5 @@ type Set[T comparable] interface {
 	Join(Set[T]) Set[T]
 	Copy() Set[T]
 	Slice() []T
+	Size() int
 }
