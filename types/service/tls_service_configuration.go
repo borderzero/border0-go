@@ -93,12 +93,12 @@ func (c *TlsServiceConfiguration) Validate() error {
 		if !null.All(c.StandardTlsServiceConfiguration, c.VpnTlsServiceConfiguration) {
 			return fmt.Errorf(
 				"tls service type \"%s\" can only have http proxy tls service configuration defined",
-				TlsServiceTypeStandard)
+				TlsServiceTypeHttpProxy)
 		}
 		if c.HttpProxyTlsServiceConfiguration == nil {
 			return fmt.Errorf(
 				"tls service configuration for tls service type \"%s\" must have http proxy tls service configuration defined",
-				TlsServiceTypeStandard,
+				TlsServiceTypeHttpProxy,
 			)
 		}
 		if err := c.HttpProxyTlsServiceConfiguration.Validate(); err != nil {
