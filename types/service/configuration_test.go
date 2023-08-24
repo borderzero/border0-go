@@ -16,7 +16,7 @@ func Test_Validate(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name: "Should succeed for valid ssh socket",
+			name: "Should succeed for valid standard ssh socket",
 			configuration: &Configuration{
 				ServiceType: ServiceTypeSsh,
 				SshServiceConfiguration: &SshServiceConfiguration{
@@ -31,6 +31,19 @@ func Test_Validate(t *testing.T) {
 							Username: "root",
 							Password: "mypassword",
 						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Should succeed for valid built-in ssh socket",
+			configuration: &Configuration{
+				ServiceType: ServiceTypeSsh,
+				SshServiceConfiguration: &SshServiceConfiguration{
+					SshServiceType: SshServiceTypeConnectorBuiltIn,
+					BuiltInSshServiceConfiguration: &BuiltInSshServiceConfiguration{
+						UsernameProvider: UsernameProviderUseConnectorUser,
 					},
 				},
 			},

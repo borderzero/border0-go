@@ -203,7 +203,7 @@ func (c *SshServiceConfiguration) Validate() error {
 				"ssh service type \"%s\" can only have built in ssh service configuration defined",
 				SshServiceTypeConnectorBuiltIn)
 		}
-		if c.StandardSshServiceConfiguration == nil {
+		if c.BuiltInSshServiceConfiguration == nil {
 			return fmt.Errorf(
 				"ssh service configuration for ssh service type \"%s\" must have built in ssh service configuration defined",
 				SshServiceTypeConnectorBuiltIn,
