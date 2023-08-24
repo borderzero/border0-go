@@ -37,8 +37,10 @@ func (s SimpleSet[T]) Remove(ss ...T) Set[T] {
 
 // Join joins two sets
 func (s SimpleSet[T]) Join(ss Set[T]) Set[T] {
-	for _, k := range ss.Slice() {
-		s[k] = struct{}{}
+	if ss != nil {
+		for _, k := range ss.Slice() {
+			s[k] = struct{}{}
+		}
 	}
 	return s
 }
@@ -55,4 +57,9 @@ func (s SimpleSet[T]) Slice() []T {
 		slice = append(slice, k)
 	}
 	return slice
+}
+
+// Size returns the number of elements in the set
+func (s SimpleSet[T]) Size() int {
+	return len(s)
 }
