@@ -1,13 +1,12 @@
 package service
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 
 	"github.com/borderzero/border0-go/lib/types/null"
 	"github.com/borderzero/border0-go/lib/types/set"
 	"github.com/borderzero/border0-go/types/common"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -403,7 +402,7 @@ func (c *AwsSsmEcsTargetConfiguration) Validate() error {
 	}
 	if c.AwsCredentials != nil {
 		if err := c.AwsCredentials.Validate(); err != nil {
-			return fmt.Errorf("invalid aws credentials: %v", err)
+			return fmt.Errorf("invalid aws_credentials: %v", err)
 		}
 	}
 	return nil
@@ -431,12 +430,8 @@ func (c *PrivateKeyAuthConfiguration) Validate() error {
 		return fmt.Errorf("private_key is a required field")
 	}
 
-	privKeyBytes := []byte(c.PrivateKey)
-	block, _ := pem.Decode(privKeyBytes)
-	if block != nil {
-		privKeyBytes = block.Bytes
-	}
-	if _, err := x509.ParsePKCS1PrivateKey(privKeyBytes); err != nil {
+	_, err := ssh.ParseRawPrivateKey([]byte(c.PrivateKey))
+	if err != nil {
 		return fmt.Errorf("private_key is not a valid PEM or DER encoded private key")
 	}
 
