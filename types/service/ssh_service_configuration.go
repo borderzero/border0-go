@@ -123,6 +123,8 @@ type AwsSsmEcsTargetConfiguration struct {
 // for aws ec2 instance connect ssh services (fka sockets).
 type AwsEc2ICSshServiceConfiguration struct {
 	HostnameAndPort
+	UsernameProvider  string                 `json:"username_provider,omitempty"`
+	Username          string                 `json:"username,omitempty"`
 	Ec2InstanceId     string                 `json:"ec2_instance_id"`
 	Ec2InstanceRegion string                 `json:"ec2_instance_region"`
 	AwsCredentials    *common.AwsCredentials `json:"aws_credentials,omitempty"`
@@ -238,6 +240,13 @@ func (c *SshServiceConfiguration) Validate() error {
 // Validate validates the AwsEc2ICSshServiceConfiguration.
 func (c *AwsEc2ICSshServiceConfiguration) Validate() error {
 	if err := c.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+	if err := validateUsernameWithProvider(
+		c.UsernameProvider,
+		c.Username,
+		set.New(UsernameProviderPromptClient),
+	); err != nil {
 		return err
 	}
 	if c.Ec2InstanceId == "" {
