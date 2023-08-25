@@ -274,7 +274,7 @@ func (c *AwsSsmSshServiceConfiguration) Validate() error {
 		return nil
 
 	case SsmTargetTypeEcs:
-		if !null.All(c.AwsSsmEcsTargetConfiguration) {
+		if !null.All(c.AwsSsmEc2TargetConfiguration) {
 			return fmt.Errorf("ssm services with ssm target type \"%s\" can only have ecs target configuration defined", SsmTargetTypeEcs)
 		}
 		if c.AwsSsmEcsTargetConfiguration == nil {
