@@ -40,7 +40,6 @@ func Test_ValidateHttpServiceConfiguration(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-
 		{
 			name:          "Should fail for http service type standard with missing config",
 			configuration: &HttpServiceConfiguration{HttpServiceType: HttpServiceTypeStandard},
@@ -50,6 +49,22 @@ func Test_ValidateHttpServiceConfiguration(t *testing.T) {
 			name:          "Should fail for http service type connector-file-server with missing config",
 			configuration: &HttpServiceConfiguration{HttpServiceType: HttpServiceTypeConnectorFileServer},
 			expectedError: fmt.Errorf("http service configuration for http service type \"%s\" must have file server http service configuration defined", HttpServiceTypeConnectorFileServer),
+		},
+		{
+			name: "Should fail for http service type standard with invalid config",
+			configuration: &HttpServiceConfiguration{
+				HttpServiceType:                  HttpServiceTypeStandard,
+				StandardHttpServiceConfiguration: &StandardHttpServiceConfiguration{},
+			},
+			expectedError: errors.New("invalid standard http service configuration: host_header is a required field"),
+		},
+		{
+			name: "Should fail for http service type connector-file-server with invalid config",
+			configuration: &HttpServiceConfiguration{
+				HttpServiceType:                    HttpServiceTypeConnectorFileServer,
+				FileServerHttpServiceConfiguration: &FileServerHttpServiceConfiguration{},
+			},
+			expectedError: errors.New("invalid file server http service configuration: top_level_directory is a required field"),
 		},
 		{
 			name: "Should fail for tls service type standard with extraneous config",

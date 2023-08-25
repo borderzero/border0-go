@@ -12,7 +12,7 @@ import (
 const (
 	externalVarPattern                   = `^\$\{(from:).+\}$`
 	awsAccessKeyIdPattern                = `^AKIA[0-9A-Z]{16}$`
-	awsSecretAccessKeyPattern            = `^[A-Za-z0-9]{40}$`
+	awsSecretAccessKeyPattern            = `^[A-Za-z0-9+/]{40}$`
 	awsProfilePattern                    = `^[a-zA-Z0-9-_]+$`
 	awsSessionTokenConservativeMaxLength = 2048
 )
@@ -47,7 +47,7 @@ func (c *AwsCredentials) Validate() error {
 		if !regex.MatchAny(awsAccessKeyId, []string{externalVarPattern, awsAccessKeyIdPattern}...) {
 			return errors.New("invalid aws_access_key_id")
 		}
-		if !regex.MatchAny(awsSecretAccessKey, []string{externalVarPattern, awsSecretAccessKey}...) {
+		if !regex.MatchAny(awsSecretAccessKey, []string{externalVarPattern, awsSecretAccessKeyPattern}...) {
 			return errors.New("invalid aws_secret_access_key")
 		}
 	}
