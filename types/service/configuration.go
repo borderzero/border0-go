@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"github.com/borderzero/border0-go/lib/types/null"
+	"github.com/borderzero/border0-go/lib/types/nilcheck"
 )
 
 const (
@@ -35,7 +35,7 @@ func (c *Configuration) Validate() error {
 	switch c.ServiceType {
 
 	case ServiceTypeDatabase:
-		if !null.All(c.HttpServiceConfiguration, c.SshServiceConfiguration, c.TlsServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.HttpServiceConfiguration, c.SshServiceConfiguration, c.TlsServiceConfiguration) {
 			return fmt.Errorf("service configuration for service type \"database\" can only have database service configuration defined")
 		}
 		if c.DatabaseServiceConfiguration == nil {
@@ -47,7 +47,7 @@ func (c *Configuration) Validate() error {
 		return nil
 
 	case ServiceTypeHttp:
-		if !null.All(c.DatabaseServiceConfiguration, c.SshServiceConfiguration, c.TlsServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.DatabaseServiceConfiguration, c.SshServiceConfiguration, c.TlsServiceConfiguration) {
 			return fmt.Errorf("service configuration for service type \"http\" can only have http service configuration defined")
 		}
 		if c.HttpServiceConfiguration == nil {
@@ -59,7 +59,7 @@ func (c *Configuration) Validate() error {
 		return nil
 
 	case ServiceTypeSsh:
-		if !null.All(c.HttpServiceConfiguration, c.DatabaseServiceConfiguration, c.TlsServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.HttpServiceConfiguration, c.DatabaseServiceConfiguration, c.TlsServiceConfiguration) {
 			return fmt.Errorf("service configuration for service type \"ssh\" can only have ssh service configuration defined")
 		}
 		if c.SshServiceConfiguration == nil {
@@ -71,7 +71,7 @@ func (c *Configuration) Validate() error {
 		return nil
 
 	case ServiceTypeTls:
-		if !null.All(c.HttpServiceConfiguration, c.DatabaseServiceConfiguration, c.SshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.HttpServiceConfiguration, c.DatabaseServiceConfiguration, c.SshServiceConfiguration) {
 			return fmt.Errorf("service configuration for service type \"tls\" can only have tls service configuration defined")
 		}
 		if c.TlsServiceConfiguration == nil {
