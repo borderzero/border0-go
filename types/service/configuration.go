@@ -20,7 +20,7 @@ const (
 	ServiceTypeTls = "tls"
 )
 
-// Configuration represents service configuration.
+// Configuration represents upstream service configuration.
 type Configuration struct {
 	ServiceType string `json:"service_type"`
 
@@ -85,4 +85,18 @@ func (c *Configuration) Validate() error {
 	default:
 		return fmt.Errorf("service configuration has invalid service type \"%s\"", c.ServiceType)
 	}
+}
+
+// ConnectorServiceConfiguration includes both the connector socket and upstream service configuration
+type ConnectorServiceConfiguration struct {
+	ConnectorAuthenticationEnabled bool          `json:"connector_authentication_enabled"`
+	Upstream                       Configuration `json:"upstream_configuration"`
+}
+
+// Validate validates the ConnectorServiceConfiguration.
+func (c *ConnectorServiceConfiguration) Validate() error {
+	if err := c.Upstream.Validate(); err != nil {
+		return fmt.Errorf("invalid upstream configuration: %w", err)
+	}
+	return nil
 }
