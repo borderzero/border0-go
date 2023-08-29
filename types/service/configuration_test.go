@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Validate(t *testing.T) {
+func Test_Configuration_Validate(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -79,6 +79,60 @@ func Test_Validate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, test.expectedError, test.configuration.Validate())
+		})
+	}
+}
+
+func Test_ConnectorSocketConfiguration_Validate(t *testing.T) {
+	t.Parallel()
+
+	badUpstreamConfig := Configuration{
+		ServiceType: ServiceTypeSsh,
+		// SSH configuration is missing
+	}
+	goodUpstreamConfig := Configuration{
+		ServiceType: ServiceTypeSsh,
+		SshServiceConfiguration: &SshServiceConfiguration{
+			SshServiceType: SshServiceTypeConnectorBuiltIn,
+			BuiltInSshServiceConfiguration: &BuiltInSshServiceConfiguration{
+				UsernameProvider: UsernameProviderUseConnectorUser,
+			},
+		},
+	}
+
+	tests := []struct {
+		name          string
+		configuration *ConnectorServiceConfiguration
+		expectedError error
+	}{
+		{
+			name: "failed the upstream config validation",
+			configuration: &ConnectorServiceConfiguration{
+				ConnectorAuthenticationEnabled: true,
+				Upstream:                       badUpstreamConfig,
+			},
+			expectedError: errors.New(`invalid upstream configuration: service configuration for service type "ssh" must have ssh service configuration defined`),
+		},
+		{
+			name: "happy path",
+			configuration: &ConnectorServiceConfiguration{
+				ConnectorAuthenticationEnabled: true,
+				Upstream:                       goodUpstreamConfig,
+			},
+			expectedError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			err := test.configuration.Validate()
+			if test.expectedError == nil {
+				assert.Nil(t, err)
+			} else {
+				assert.EqualError(t, test.expectedError, err.Error())
+			}
 		})
 	}
 }

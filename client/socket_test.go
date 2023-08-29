@@ -376,27 +376,29 @@ func Test_APIClient_DeleteSocket(t *testing.T) {
 func Test_APIClient_SocketUpstreamConfigs(t *testing.T) {
 	t.Parallel()
 
+	// SSH upstream config with username and password
+	testConfig := service.Configuration{
+		ServiceType: service.ServiceTypeSsh,
+		SshServiceConfiguration: &service.SshServiceConfiguration{
+			SshServiceType: service.SshServiceTypeStandard,
+			StandardSshServiceConfiguration: &service.StandardSshServiceConfiguration{
+				SshAuthenticationType: service.StandardSshServiceAuthenticationTypeUsernameAndPassword,
+				UsernameAndPasswordAuthConfiguration: &service.UsernameAndPasswordAuthConfiguration{
+					Username: "test-username",
+					Password: "test-password",
+				},
+				HostnameAndPort: service.HostnameAndPort{
+					Hostname: "test-hostname",
+					Port:     22,
+				},
+			},
+		},
+	}
+
 	testConfigs := &SocketUpstreamConfigs{
 		List: []SocketUpstreamConfig{
-			// SSH upstream config with username and password
 			{
-				Config: service.Configuration{
-					ServiceType: service.ServiceTypeSsh,
-					SshServiceConfiguration: &service.SshServiceConfiguration{
-						SshServiceType: service.SshServiceTypeStandard,
-						StandardSshServiceConfiguration: &service.StandardSshServiceConfiguration{
-							SshAuthenticationType: service.StandardSshServiceAuthenticationTypeUsernameAndPassword,
-							UsernameAndPasswordAuthConfiguration: &service.UsernameAndPasswordAuthConfiguration{
-								Username: "test-username",
-								Password: "test-password",
-							},
-							HostnameAndPort: service.HostnameAndPort{
-								Hostname: "test-hostname",
-								Port:     22,
-							},
-						},
-					},
-				},
+				Config: testConfig,
 			},
 		},
 	}
