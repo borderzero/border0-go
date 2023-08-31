@@ -90,6 +90,8 @@ func (c *Configuration) Validate() error {
 // ConnectorServiceConfiguration includes both the connector socket and upstream service configuration
 type ConnectorServiceConfiguration struct {
 	ConnectorAuthenticationEnabled bool          `json:"connector_authentication_enabled"`
+	EndToEndEncryptionEnabled      bool          `json:"end_to_end_encryption_enabled"`
+	RecordingEnabled               bool          `json:"recording_enabled"`
 	Upstream                       Configuration `json:"upstream_configuration"`
 }
 
