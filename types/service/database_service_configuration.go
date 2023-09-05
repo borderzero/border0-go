@@ -450,22 +450,24 @@ func (config AwsRdsUsernameAndPasswordAuthConfiguration) Validate() error {
 // AwsRdsIamAuthConfiguration represents auth configuration for AWS RDS databases that use IAM authentication. You must
 // provide AWS credentials and a username. Optionally AWS CA bundle can be supplied to verify the server's certificate.
 type AwsRdsIamAuthConfiguration struct {
-	AwsCredentials common.AwsCredentials `json:"aws_credentials"`
-	AwsRegion      string                `json:"aws_region"`
-	Username       string                `json:"username"`
-	CaCertificate  string                `json:"ca_certificate,omitempty"`
+	AwsCredentials *common.AwsCredentials `json:"aws_credentials,omitempty"`
+	InstanceRegion string                 `json:"instance_region"`
+	Username       string                 `json:"username"`
+	CaCertificate  string                 `json:"ca_certificate,omitempty"`
 }
 
 // Validate ensures that the `AwsRdsIamAuthConfiguration` has the required field and that the AWS credentials are valid.
 func (config AwsRdsIamAuthConfiguration) Validate() error {
-	if config.AwsRegion == "" {
-		return errors.New("AWS region is required")
+	if config.InstanceRegion == "" {
+		return errors.New("AWS RDS instance region is required")
 	}
 	if config.Username == "" {
 		return errors.New("username is required")
 	}
-	if err := config.AwsCredentials.Validate(); err != nil {
-		return fmt.Errorf("invalid AWS credentials: %w", err)
+	if config.AwsCredentials != nil {
+		if err := config.AwsCredentials.Validate(); err != nil {
+			return fmt.Errorf("invalid AWS credentials: %w", err)
+		}
 	}
 	return nil
 }
