@@ -38,9 +38,9 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 		},
 		AuthenticationType: DatabaseAuthenticationTypeIam,
 		IamAuth: &AwsRdsIamAuthConfiguration{
-			Username:  "username",
-			AwsRegion: "us-east-1",
-			AwsCredentials: common.AwsCredentials{
+			Username:       "username",
+			InstanceRegion: "us-east-1",
+			AwsCredentials: &common.AwsCredentials{
 				AwsAccessKeyId:     pointer.To("AKIA000FAKE00KEY00ID"),
 				AwsSecretAccessKey: pointer.To("Secret+Access+Key/0000000000000000000000"),
 			},
@@ -327,9 +327,9 @@ func Test_AwsRdsDatabaseServiceConfiguration_Validate(t *testing.T) {
 		},
 	}
 	testIamAuth := &AwsRdsIamAuthConfiguration{
-		Username:  "username",
-		AwsRegion: "us-east-1",
-		AwsCredentials: common.AwsCredentials{
+		Username:       "username",
+		InstanceRegion: "us-east-1",
+		AwsCredentials: &common.AwsCredentials{
 			AwsAccessKeyId:     pointer.To("AKIA000FAKE00KEY00ID"),
 			AwsSecretAccessKey: pointer.To("Secret+Access+Key/0000000000000000000000"),
 		},
@@ -994,7 +994,7 @@ func Test_AwsRdsUsernameAndPasswordAuthConfiguration_Validate(t *testing.T) {
 func Test_AwsRdsIamAuthConfiguration_Validate(t *testing.T) {
 	t.Parallel()
 
-	testAwsRegion := "us-east-1"
+	testInstanceRegion := "us-east-1"
 	testUsername := "username"
 	testBadAwsCredentials := common.AwsCredentials{
 		AwsAccessKeyId: pointer.To("AKIA000FAKE00KEY00ID"),
@@ -1011,46 +1011,46 @@ func Test_AwsRdsIamAuthConfiguration_Validate(t *testing.T) {
 		want  error
 	}{
 		{
-			name: "aws region is missing",
+			name: "aws rds instance region is missing",
 			given: AwsRdsIamAuthConfiguration{
 				Username: testUsername,
-				// aws region is missing
-				AwsCredentials: testGoodAwsCredentials,
+				// aws rds instance region is missing
+				AwsCredentials: &testGoodAwsCredentials,
 			},
-			want: errors.New("AWS region is required"),
+			want: errors.New("AWS RDS instance region is required"),
 		},
 		{
 			name: "username is missing",
 			given: AwsRdsIamAuthConfiguration{
 				// username is missing
-				AwsRegion:      testAwsRegion,
-				AwsCredentials: testGoodAwsCredentials,
+				InstanceRegion: testInstanceRegion,
+				AwsCredentials: &testGoodAwsCredentials,
 			},
 			want: errors.New("username is required"),
 		},
 		{
 			name: "bad aws credentials",
 			given: AwsRdsIamAuthConfiguration{
-				AwsRegion:      testAwsRegion,
+				InstanceRegion: testInstanceRegion,
 				Username:       testUsername,
-				AwsCredentials: testBadAwsCredentials,
+				AwsCredentials: &testBadAwsCredentials,
 			},
 			want: errors.New("invalid AWS credentials: aws_secret_access_key is required when aws_access_key_id is provided"),
 		},
 		{
 			name: "happy path - with aws credentials",
 			given: AwsRdsIamAuthConfiguration{
-				AwsRegion:      testAwsRegion,
+				InstanceRegion: testInstanceRegion,
 				Username:       testUsername,
-				AwsCredentials: testGoodAwsCredentials,
+				AwsCredentials: &testGoodAwsCredentials,
 			},
 			want: nil,
 		},
 		{
 			name: "happy path - without aws credentials",
 			given: AwsRdsIamAuthConfiguration{
-				AwsRegion: testAwsRegion,
-				Username:  testUsername,
+				InstanceRegion: testInstanceRegion,
+				Username:       testUsername,
 			},
 			want: nil,
 		},
