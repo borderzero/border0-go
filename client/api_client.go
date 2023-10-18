@@ -87,7 +87,7 @@ func (api *APIClient) request(ctx context.Context, method, path string, input, o
 
 		code, err = api.http.Request(ctx, method, api.baseURL+path, input, output)
 		if err != nil {
-			if code == http.StatusUnauthorized || code == http.StatusNotFound {
+			if code >= http.StatusBadRequest && code < http.StatusInternalServerError {
 				shouldRetry = false
 			} else {
 				shouldRetry = true
