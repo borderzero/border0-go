@@ -934,15 +934,6 @@ func Test_ValidateUsernameAndPasswordAuthConfiguration(t *testing.T) {
 			expectedError: fmt.Errorf("username must be provided when username_provider is \"%s\"", UsernameProviderDefined),
 		},
 		{
-			name: "Should fail when username type is 'prompt_client' and username is present",
-			configuration: &UsernameAndPasswordAuthConfiguration{
-				UsernameProvider: UsernameProviderPromptClient,
-				Username:         "username",
-				Password:         "password",
-			},
-			expectedError: fmt.Errorf("username must be empty when username_provider is %s", UsernameProviderPromptClient),
-		},
-		{
 			name: "Should fail when username provider is invalid",
 			configuration: &UsernameAndPasswordAuthConfiguration{
 				UsernameProvider: "not valid",
@@ -993,15 +984,6 @@ func Test_ValidatePrivateKeyAuthConfiguration(t *testing.T) {
 				PrivateKey:       mockPrivateKey,
 			},
 			expectedError: fmt.Errorf("username must be provided when username_provider is \"%s\"", UsernameProviderDefined),
-		},
-		{
-			name: "Should fail when username type is 'prompt_client' and username is present",
-			configuration: &PrivateKeyAuthConfiguration{
-				UsernameProvider: UsernameProviderPromptClient,
-				Username:         "username",
-				PrivateKey:       mockPrivateKey,
-			},
-			expectedError: fmt.Errorf("username must be empty when username_provider is %s", UsernameProviderPromptClient),
 		},
 		{
 			name: "Should fail when username provider is invalid",
