@@ -431,7 +431,7 @@ func (c *PrivateKeyAuthConfiguration) Validate() error {
 	if err := validateUsernameWithProvider(
 		c.UsernameProvider,
 		c.Username,
-		set.New(UsernameProviderPromptClient),
+		set.New[string](),
 	); err != nil {
 		return err
 	}
@@ -452,7 +452,7 @@ func (c *UsernameAndPasswordAuthConfiguration) Validate() error {
 	if err := validateUsernameWithProvider(
 		c.UsernameProvider,
 		c.Username,
-		set.New(UsernameProviderPromptClient),
+		set.New[string](),
 	); err != nil {
 		return err
 	}
