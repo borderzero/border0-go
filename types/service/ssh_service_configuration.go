@@ -158,24 +158,18 @@ type KubectlExecSshServiceConfiguration struct {
 	AwsEksKubectlExecTargetConfiguration   *AwsEksKubectlExecTargetConfiguration   `json:"aws_eks_kubectl_exec_target_configuration,omitempty"`
 }
 
-// PodAccessAllowlist is a map of pod name to
-// containers allowed to be accessed in that pod.
-type PodAccessAllowlist map[string][]string
-
-// NamespacePodAccessAllowlist is a map of namespace
-// name to PodAccessAllowlist for that namespace.
-type NamespacePodAccessAllowlist map[string]PodAccessAllowlist
-
-// NamespaceServiceAccessAllowlist is a map of namespace name
-// to services allowed to be accessed in that namespace.
-type NamespaceServiceAccessAllowlist map[string][]string
-
 // BaseKubectlExecTargetConfiguration represents base configuration for kubectl exec
 // services (fka sockets), i.e. this configuration is common regardless of how the k8s
 // cluster is hosted (aws, on prem, kind, etc...).
 type BaseKubectlExecTargetConfiguration struct {
-	NamespacePodAccessAllowlist     NamespacePodAccessAllowlist     `json:"namespace_pod_access_allowlist,omitempty"`
-	NamespaceServiceAccessAllowlist NamespaceServiceAccessAllowlist `json:"namespace_service_access_allowlist,omitempty"`
+	// slice of allowed namespaces.
+	NamespaceAllowlist []string `json:"namespace_allowlist,omitempty"`
+
+	// map of namespace to allowed services in that namespace.
+	NamespaceServiceAllowlist map[string][]string `json:"namespace_service_allowlist,omitempty"`
+
+	// map of namespace to map of allowed containers in a pod within that namespace.
+	NamespacePodAllowlist map[string]map[string][]string `json:"namespace_pod_allowlist,omitempty"`
 }
 
 // StandardKubectlExecTargetConfiguration represents service
