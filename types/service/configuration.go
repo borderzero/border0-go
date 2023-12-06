@@ -31,7 +31,7 @@ type Configuration struct {
 }
 
 // Validate validates the Configuration.
-func (c *Configuration) Validate() error {
+func (c *Configuration) Validate(allowExperimentalFeatures bool) error {
 	switch c.ServiceType {
 
 	case ServiceTypeDatabase:
@@ -65,7 +65,7 @@ func (c *Configuration) Validate() error {
 		if c.SshServiceConfiguration == nil {
 			return fmt.Errorf("service configuration for service type \"ssh\" must have ssh service configuration defined")
 		}
-		if err := c.SshServiceConfiguration.Validate(); err != nil {
+		if err := c.SshServiceConfiguration.Validate(allowExperimentalFeatures); err != nil {
 			return fmt.Errorf("invalid ssh service configuration: %v", err)
 		}
 		return nil
@@ -96,8 +96,8 @@ type ConnectorServiceConfiguration struct {
 }
 
 // Validate validates the ConnectorServiceConfiguration.
-func (c *ConnectorServiceConfiguration) Validate() error {
-	if err := c.Upstream.Validate(); err != nil {
+func (c *ConnectorServiceConfiguration) Validate(allowExperimentalFeatures bool) error {
+	if err := c.Upstream.Validate(allowExperimentalFeatures); err != nil {
 		return fmt.Errorf("invalid upstream configuration: %w", err)
 	}
 	return nil
