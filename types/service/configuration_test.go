@@ -78,7 +78,7 @@ func Test_Configuration_Validate(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, test.expectedError, test.configuration.Validate())
+			assert.Equal(t, test.expectedError, test.configuration.Validate(false))
 		})
 	}
 }
@@ -127,7 +127,7 @@ func Test_ConnectorSocketConfiguration_Validate(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			err := test.configuration.Validate()
+			err := test.configuration.Validate(false)
 			if test.expectedError == nil {
 				assert.Nil(t, err)
 			} else {

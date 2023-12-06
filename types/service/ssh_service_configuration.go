@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/borderzero/border0-go/lib/types/nilcheck"
 	"github.com/borderzero/border0-go/lib/types/set"
@@ -22,6 +23,10 @@ const (
 	// type for aws ec2 instance connect ssh services.
 	SshServiceTypeAwsEc2InstanceConnect = "aws_ec2_instance_connect"
 
+	// SshServiceTypeKubectlExec is the ssh service
+	// type for kubectl exec ssh services.
+	SshServiceTypeKubectlExec = "kubectl_exec"
+
 	// SshServiceTypeConnectorBuiltIn is the ssh service
 	// type for the connector's built-in ssh service.
 	SshServiceTypeConnectorBuiltIn = "connector_built_in_ssh_service"
@@ -33,6 +38,16 @@ const (
 
 	// SsmTargetTypeEcs is the ssm target type for ecs targets.
 	SsmTargetTypeEcs = "ecs"
+)
+
+const (
+	// KubectlExecTargetTypeStandard is the kubectl
+	// exec target type for standard k8s clusters.
+	KubectlExecTargetTypeStandard = "standard"
+
+	// KubectlExecTargetTypeAwsEks is the kubectl
+	// exec target type for aws eks k8s clusters.
+	KubectlExecTargetTypeAwsEks = "aws_eks"
 )
 
 const (
@@ -72,10 +87,11 @@ type SshServiceConfiguration struct {
 	SshServiceType string `json:"ssh_service_type"`
 
 	// mutually exclusive fields below
-	StandardSshServiceConfiguration *StandardSshServiceConfiguration `json:"standard_ssh_service_configuration,omitempty"`
-	AwsSsmSshServiceConfiguration   *AwsSsmSshServiceConfiguration   `json:"aws_ssm_ssh_service_configuration,omitempty"`
-	AwsEc2ICSshServiceConfiguration *AwsEc2ICSshServiceConfiguration `json:"aws_ec2ic_ssh_service_configuration,omitempty"`
-	BuiltInSshServiceConfiguration  *BuiltInSshServiceConfiguration  `json:"built_in_ssh_service_configuration,omitempty"`
+	StandardSshServiceConfiguration    *StandardSshServiceConfiguration    `json:"standard_ssh_service_configuration,omitempty"`
+	AwsSsmSshServiceConfiguration      *AwsSsmSshServiceConfiguration      `json:"aws_ssm_ssh_service_configuration,omitempty"`
+	AwsEc2ICSshServiceConfiguration    *AwsEc2ICSshServiceConfiguration    `json:"aws_ec2ic_ssh_service_configuration,omitempty"`
+	KubectlExecSshServiceConfiguration *KubectlExecSshServiceConfiguration `json:"kubectl_exec_ssh_service_configuration,omitempty"`
+	BuiltInSshServiceConfiguration     *BuiltInSshServiceConfiguration     `json:"built_in_ssh_service_configuration,omitempty"`
 }
 
 // StandardSshServiceConfiguration represents service
@@ -130,6 +146,53 @@ type AwsEc2ICSshServiceConfiguration struct {
 	AwsCredentials    *common.AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
+// KubectlExecSshServiceConfiguration represents service
+// configuration for kubectl exec ssh services (fka sockets).
+type KubectlExecSshServiceConfiguration struct {
+	KubectlExecTargetType string `json:"kubectl_exec_target_type"`
+
+	BaseKubectlExecTargetConfiguration
+
+	// mutually exclusive fields below
+	StandardKubectlExecTargetConfiguration *StandardKubectlExecTargetConfiguration `json:"standard_kubectl_exec_target_configuration,omitempty"`
+	AwsEksKubectlExecTargetConfiguration   *AwsEksKubectlExecTargetConfiguration   `json:"aws_eks_kubectl_exec_target_configuration,omitempty"`
+}
+
+// PodAccessAllowlist is a map of pod name to
+// containers allowed to be accessed in that pod.
+type PodAccessAllowlist map[string][]string
+
+// NamespacePodAccessAllowlist is a map of namespace
+// name to PodAccessAllowlist for that namespace.
+type NamespacePodAccessAllowlist map[string]PodAccessAllowlist
+
+// NamespaceServiceAccessAllowlist is a map of namespace name
+// to services allowed to be accessed in that namespace.
+type NamespaceServiceAccessAllowlist map[string][]string
+
+// BaseKubectlExecTargetConfiguration represents base configuration for kubectl exec
+// services (fka sockets), i.e. this configuration is common regardless of how the k8s
+// cluster is hosted (aws, on prem, kind, etc...).
+type BaseKubectlExecTargetConfiguration struct {
+	NamespacePodAccessAllowlist     NamespacePodAccessAllowlist     `json:"namespace_pod_access_allowlist,omitempty"`
+	NamespaceServiceAccessAllowlist NamespaceServiceAccessAllowlist `json:"namespace_service_access_allowlist,omitempty"`
+}
+
+// StandardKubectlExecTargetConfiguration represents service
+// configuration for standard kubectl exec ssh services (fka sockets).
+type StandardKubectlExecTargetConfiguration struct {
+	MasterUrl      string `json:"master_url,omitempty"`
+	KubeconfigPath string `json:"kubeconfig_path,omitempty"`
+}
+
+// AwsEksKubectlExecTargetConfiguration represents service
+// configuration for aws eks kubectl exec ssh services (fka sockets).
+type AwsEksKubectlExecTargetConfiguration struct {
+	EksClusterName   string                 `json:"eks_cluster_name"`
+	EksClusterRegion string                 `json:"eks_cluster_region"`
+	AwsCredentials   *common.AwsCredentials `json:"aws_credentials,omitempty"`
+}
+
 // BuiltInSshServiceConfiguration represents the service configuration
 // for the connector built-in ssh services (fka sockets).
 type BuiltInSshServiceConfiguration struct {
@@ -161,11 +224,11 @@ type Border0CertificateAuthConfiguration struct {
 }
 
 // Validate validates the SshServiceConfiguration.
-func (c *SshServiceConfiguration) Validate() error {
+func (c *SshServiceConfiguration) Validate(allowExperimentalFeatures bool) error {
 	switch c.SshServiceType {
 
 	case SshServiceTypeAwsEc2InstanceConnect:
-		if nilcheck.AnyNotNil(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have aws ec2 instance connect ssh service configuration defined",
 				SshServiceTypeAwsEc2InstanceConnect)
@@ -182,7 +245,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeAwsSsm:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have aws ssm ssh service configuration defined",
 				SshServiceTypeAwsSsm)
@@ -199,7 +262,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeConnectorBuiltIn:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have built in ssh service configuration defined",
 				SshServiceTypeConnectorBuiltIn)
@@ -216,7 +279,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeStandard:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have standard ssh service configuration defined",
 				SshServiceTypeStandard)
@@ -229,6 +292,27 @@ func (c *SshServiceConfiguration) Validate() error {
 		}
 		if err := c.StandardSshServiceConfiguration.Validate(); err != nil {
 			return fmt.Errorf("invalid standard ssh service configuration: %v", err)
+		}
+		return nil
+	case SshServiceTypeKubectlExec:
+		if !allowExperimentalFeatures {
+			return fmt.Errorf(
+				"ssh service type \"%s\" is currently an experimental feature you are not allowed to use",
+				SshServiceTypeKubectlExec)
+		}
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.StandardSshServiceConfiguration) {
+			return fmt.Errorf(
+				"ssh service type \"%s\" can only have kubectl exec ssh service configuration defined",
+				SshServiceTypeKubectlExec)
+		}
+		if c.KubectlExecSshServiceConfiguration == nil {
+			return fmt.Errorf(
+				"ssh service configuration for ssh service type \"%s\" must have kubectl exec ssh service configuration defined",
+				SshServiceTypeKubectlExec,
+			)
+		}
+		if err := c.KubectlExecSshServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid kubectl exec ssh service configuration: %v", err)
 		}
 		return nil
 
@@ -374,6 +458,67 @@ func (c *StandardSshServiceConfiguration) Validate() error {
 	default:
 		return fmt.Errorf("invalid value for ssh_authentication_type: %s", c.SshAuthenticationType)
 	}
+}
+
+// Validate validates a KubectlExecSshServiceConfiguration.
+func (c *KubectlExecSshServiceConfiguration) Validate() error {
+	// note: c.BaseKubectlExecTargetConfiguration is always valid
+
+	switch c.KubectlExecTargetType {
+	case KubectlExecTargetTypeStandard, "":
+		// note: c.StandardKubectlExecTargetConfiguration can be nil
+		if c.StandardKubectlExecTargetConfiguration != nil {
+			if err := c.StandardKubectlExecTargetConfiguration.Validate(); err != nil {
+				return fmt.Errorf("invalid standard kubectl exec target configuration: %v", err)
+			}
+		}
+		return nil
+
+	case KubectlExecTargetTypeAwsEks:
+		if nilcheck.AnyNotNil(c.AwsEksKubectlExecTargetConfiguration) {
+			return fmt.Errorf("kubectl exec ssh services with kubectl exec target type \"%s\" can only have aws eks kubectl exec target configuration defined", KubectlExecTargetTypeAwsEks)
+		}
+		if c.AwsEksKubectlExecTargetConfiguration == nil {
+			return fmt.Errorf("aws eks kubectl exec target configuration is required when kubectl exec target type is \"%s\"", KubectlExecTargetTypeAwsEks)
+		}
+		if err := c.AwsEksKubectlExecTargetConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid aws eks kubectl exec target configuration: %v", err)
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("invalid value for kubectl_exec_target_type: %s", c.KubectlExecTargetType)
+	}
+}
+
+// Validate validates a StandardKubectlExecTargetConfiguration.
+func (c *StandardKubectlExecTargetConfiguration) Validate() error {
+	if c.MasterUrl != "" {
+		if _, err := url.Parse(c.MasterUrl); err != nil {
+			return fmt.Errorf("invalid value for master_url, invalid URL: %v", err)
+		}
+	}
+	// note: can't really validate c.KubeconfigPath
+	return nil
+}
+
+// Validate validates a AwsEksKubectlExecTargetConfiguration.
+func (c *AwsEksKubectlExecTargetConfiguration) Validate() error {
+	if c.EksClusterName == "" {
+		return fmt.Errorf("eks_cluster_name is a required field")
+	}
+	if c.EksClusterRegion == "" {
+		return fmt.Errorf("eks_cluster_region is a required field")
+	}
+	if err := common.ValidateAwsRegions(c.EksClusterRegion); err != nil {
+		return fmt.Errorf("invalid eks_cluster_region: %s", err)
+	}
+	if c.AwsCredentials != nil {
+		if err := c.AwsCredentials.Validate(); err != nil {
+			return fmt.Errorf("invalid aws_credentials: %v", err)
+		}
+	}
+	return nil
 }
 
 // Validate validates the AwsSsmEc2TargetConfiguration.
