@@ -6,8 +6,11 @@ const (
 	// PluginTypeAwsEc2Discovery is the plugin type for aws ec2 instance discovery.
 	PluginTypeAwsEc2Discovery = "aws_ec2_discovery"
 
-	// PluginTypeAwsEcsDiscovery is the plugin type for aws ecs cluster discovery.
+	// PluginTypeAwsEcsDiscovery is the plugin type for aws ecs service discovery.
 	PluginTypeAwsEcsDiscovery = "aws_ecs_discovery"
+
+	// PluginTypeAwsEksDiscovery is the plugin type for aws eks cluster discovery.
+	PluginTypeAwsEksDiscovery = "aws_eks_discovery"
 
 	// PluginTypeAwsRdsDiscovery is the plugin type for aws rds db instance discovery.
 	PluginTypeAwsRdsDiscovery = "aws_rds_discovery"
@@ -27,6 +30,7 @@ type PluginConfiguration struct {
 	AwsEc2DiscoveryPluginConfiguration     *AwsEc2DiscoveryPluginConfiguration     `json:"aws_ec2_discovery_plugin_configuration,omitempty"`
 	AwsEcsDiscoveryPluginConfiguration     *AwsEcsDiscoveryPluginConfiguration     `json:"aws_ecs_discovery_plugin_configuration,omitempty"`
 	AwsRdsDiscoveryPluginConfiguration     *AwsRdsDiscoveryPluginConfiguration     `json:"aws_rds_discovery_plugin_configuration,omitempty"`
+	AwsEksDiscoveryPluginConfiguration     *AwsEksDiscoveryPluginConfiguration     `json:"aws_eks_discovery_plugin_configuration,omitempty"`
 	DockerDiscoveryPluginConfiguration     *DockerDiscoveryPluginConfiguration     `json:"docker_discovery_plugin_configuration,omitempty"`
 	KubernetesDiscoveryPluginConfiguration *KubernetesDiscoveryPluginConfiguration `json:"kubernetes_discovery_plugin_configuration,omitempty"`
 	NetworkDiscoveryPluginConfiguration    *NetworkDiscoveryPluginConfiguration    `json:"network_discovery_plugin_configuration,omitempty"`
@@ -62,6 +66,15 @@ type AwsEc2DiscoveryPluginConfiguration struct {
 
 // AwsEcsDiscoveryPluginConfiguration represents configuration for the aws_ecs_discovery plugin.
 type AwsEcsDiscoveryPluginConfiguration struct {
+	BaseAwsPluginConfiguration       // extends
+	BaseDiscoveryPluginConfiguration // extends
+
+	IncludeWithTags map[string][]string `json:"include_with_tags,omitempty"`
+	ExcludeWithTags map[string][]string `json:"exclude_with_tags,omitempty"`
+}
+
+// AwsEksDiscoveryPluginConfiguration represents configuration for the aws_eks_discovery plugin.
+type AwsEksDiscoveryPluginConfiguration struct {
 	BaseAwsPluginConfiguration       // extends
 	BaseDiscoveryPluginConfiguration // extends
 
