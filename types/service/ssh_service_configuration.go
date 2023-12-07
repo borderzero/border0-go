@@ -165,11 +165,8 @@ type BaseKubectlExecTargetConfiguration struct {
 	// slice of allowed namespaces.
 	NamespaceAllowlist []string `json:"namespace_allowlist,omitempty"`
 
-	// map of namespace to allowed services in that namespace.
-	NamespaceServiceAllowlist map[string][]string `json:"namespace_service_allowlist,omitempty"`
-
-	// map of namespace to map of allowed containers in a pod within that namespace.
-	NamespacePodAllowlist map[string]map[string][]string `json:"namespace_pod_allowlist,omitempty"`
+	// map of namespace to selectors in that namespace.
+	NamespaceSelectorsAllowlist map[string]map[string][]string `json:"namespace_selectors_allowlist,omitempty"`
 }
 
 // StandardKubectlExecTargetConfiguration represents service
