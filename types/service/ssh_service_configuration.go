@@ -452,6 +452,9 @@ func (c *KubectlExecSshServiceConfiguration) Validate() error {
 
 	switch c.KubectlExecTargetType {
 	case KubectlExecTargetTypeStandard, "":
+		if nilcheck.AnyNotNil(c.AwsEksKubectlExecTargetConfiguration) {
+			return fmt.Errorf("kubectl exec ssh services with kubectl exec target type \"%s\" can only have standard kubectl exec target configuration defined", KubectlExecTargetTypeStandard)
+		}
 		// note: c.StandardKubectlExecTargetConfiguration can be nil
 		if c.StandardKubectlExecTargetConfiguration != nil {
 			if err := c.StandardKubectlExecTargetConfiguration.Validate(); err != nil {
@@ -461,7 +464,7 @@ func (c *KubectlExecSshServiceConfiguration) Validate() error {
 		return nil
 
 	case KubectlExecTargetTypeAwsEks:
-		if nilcheck.AnyNotNil(c.AwsEksKubectlExecTargetConfiguration) {
+		if nilcheck.AnyNotNil(c.StandardKubectlExecTargetConfiguration) {
 			return fmt.Errorf("kubectl exec ssh services with kubectl exec target type \"%s\" can only have aws eks kubectl exec target configuration defined", KubectlExecTargetTypeAwsEks)
 		}
 		if c.AwsEksKubectlExecTargetConfiguration == nil {
