@@ -286,11 +286,6 @@ func (c *SshServiceConfiguration) Validate(allowExperimentalFeatures bool) error
 		}
 		return nil
 	case SshServiceTypeKubectlExec:
-		if !allowExperimentalFeatures {
-			return fmt.Errorf(
-				"ssh service type \"%s\" is currently an experimental feature you are not allowed to use",
-				SshServiceTypeKubectlExec)
-		}
 		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.StandardSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have kubectl exec ssh service configuration defined",
