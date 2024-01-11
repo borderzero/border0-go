@@ -14,6 +14,8 @@ const (
 	DatabaseServiceTypeStandard    = "standard"     // standard MySQL or PostgreSQL, supports TLS and password auth
 	DatabaseServiceTypeAwsRds      = "aws_rds"      // AWS RDS database, supports IAM and password auth
 	DatabaseServiceTypeGcpCloudSql = "gcp_cloudsql" // Google Cloud SQL database, supports IAM, TLS and password auth
+	DatabaseServiceTypeAzureSql    = "azure_sql"    // Azure SQL database, supports SQL authentication, azure password auth
+	DatabaseServiceTypeSqlServer   = "sqlserver"    // Microsoft SQL Server database, supports SQL authentication and kerberos auth
 )
 
 const (
@@ -22,6 +24,9 @@ const (
 
 	// DatabaseServiceTypePostgres is the database service protocol for postgresql databases.
 	DatabaseProtocolPostgres = "postgres"
+
+	// DatabaseProtocolTypeMSSql is the database service protocol for mssql databases.
+	DatabaseProtocolSqlserver = "mssql"
 )
 
 const (
@@ -37,11 +42,27 @@ const (
 	// DatabaseAuthenticationTypeUsernameAndPassword is the authentication type
 	// for databases that use username and password for authentication.
 	DatabaseAuthenticationTypeUsernameAndPassword = "username_and_password"
+
+	// DatabaseAuthenticationTypeSqlAuthentication is the authentication type
+	// for databases that use SQL authentication for authentication.
+	DatabaseAuthenticationTypeSqlAuthentication = "sql_authentication"
+
+	// DatabaseAuthenticationTypeAzureADPassword is the authentication type
+	// for databases that use Azure Active Directory with password for authentication.
+	DatabaseAuthenticationTypeAzureADPassword = "azure_active_directory_password"
+
+	// DatabaseAuthenticationTypeAzureADIntegrated is the authentication type
+	// for databases that use Azure Active Directory Integrated for authentication.
+	DatabaseAuthenticationTypeAzureADIntegrated = "azure_active_directory_integrated"
+
+	// DatabaseAuthenticationTypeKerberos is the authentication type
+	// for databases that use kerberos for authentication.
+	DatabaseAuthenticationTypeKerberos = "kerberos"
 )
 
 // =======================================================================================
 // Database service configuration schema
-// - database service type: standard, aws_rds, gcp_cloudsql
+// - database service type: standard, aws_rds, gcp_cloudsql, azure_sql
 // - standard (when database service type is standard)
 //     - hostname and port
 //     - database protocol: mysql, postgres
@@ -55,6 +76,16 @@ const (
 //         - certificate
 //         - key
 //         - ca_certificate (optional)
+// - sqlserver (when database service type is sqlserver)
+//     - hostname and port
+//     - authentication type: sql_server, kerberos
+//     - sql_server auth (when authentication type is sql_server)
+//         - username
+//         - password
+//         - ca_certificate (optional)
+//     - kerberos auth (when authentication type is kerberos)
+//         - username
+//         - password
 // - aws rds (when database service type is aws_rds)
 //     - hostname and port
 //     - database protocol: mysql, postgres
@@ -91,10 +122,24 @@ const (
 //             - password
 //             - instance_id
 //             - gcp_credentials_json
-//         - iam auth (when authentication type is iam)
-// 	       - username
+//	   - iam auth (when authentication type is iam)
+// 	    	   - username
 //             - instance_id
 //             - gcp_credentials_json
+// - azure sql (when database service type is azure_sql)
+//     - hostname and port
+//     - database protocol: mssql
+//     - authentication type: sql_authentication, azure_active_directory_password, azure_active_directory_integrated, kerberos
+//     - sql authentication (when authentication type is sql_authentication)
+//         - username
+//         - password
+//     - azure active directory password (when authentication type is azure_active_directory_password)
+//         - username
+//         - password
+//     - azure active directory integrated (when authentication type is azure_active_directory_integrated)
+//     - kerberos (when authentication type is kerberos)
+//         - username
+//         - password
 // =======================================================================================
 
 // DatabaseServiceConfiguration represents service configuration for database services (aka sockets).
@@ -103,8 +148,10 @@ type DatabaseServiceConfiguration struct {
 
 	// mutually exclusive fields below
 	Standard    *StandardDatabaseServiceConfiguration    `json:"standard_database_service_configuration,omitempty"`
+	SQLServer   *SQLServerDatabaseServiceConfiguration   `json:"sql_server_database_service_configuration,omitempty"`
 	AwsRds      *AwsRdsDatabaseServiceConfiguration      `json:"aws_rds_database_service_configuration,omitempty"`
 	GcpCloudSql *GcpCloudSqlDatabaseServiceConfiguration `json:"gcp_cloudsql_database_service_configuration,omitempty"`
+	AzureSql    *AzureSqlDatabaseServiceConfiguration    `json:"azure_sql_database_service_configuration,omitempty"`
 }
 
 // Validate ensures that the `DatabaseServiceConfiguration` is valid.
@@ -114,29 +161,46 @@ func (config DatabaseServiceConfiguration) Validate() error {
 	}
 	switch config.DatabaseServiceType {
 	case DatabaseServiceTypeStandard:
-		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql) {
-			return errors.New("database service type is standard, but AWS RDS or Google Cloud SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql, config.SQLServer) {
+			return errors.New("database service type is standard, but AWS RDS, Google Cloud SQL, Microsoft SQL Server or Azure SQL configuration is provided")
 		}
 		if config.Standard == nil {
 			return errors.New("standard database service configuration is required")
 		}
 		return config.Standard.Validate()
 	case DatabaseServiceTypeAwsRds:
-		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql) {
-			return errors.New("database service type is aws_rds, but standard or Google Cloud SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.SQLServer) {
+			return errors.New("database service type is aws_rds, but standard, Google Cloud SQL, Microsoft SQL Server or Azure SQL configuration is provided")
 		}
 		if config.AwsRds == nil {
 			return errors.New("AWS RDS database service configuration is required")
 		}
 		return config.AwsRds.Validate()
 	case DatabaseServiceTypeGcpCloudSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds) {
-			return errors.New("database service type is gcp_cloudsql, but standard or AWS RDS configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql, config.SQLServer) {
+			return errors.New("database service type is gcp_cloudsql, but standard, AWS RDS, Microsoft SQL Server or Azure SQL configuration is provided")
 		}
 		if config.GcpCloudSql == nil {
 			return errors.New("Google Cloud SQL database service configuration is required")
 		}
 		return config.GcpCloudSql.Validate()
+	case DatabaseServiceTypeAzureSql:
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.SQLServer) {
+			return errors.New("database service type is azure_sql, but standard, AWS RDS, Microsoft SQL Server or Google Cloud SQL configuration is provided")
+		}
+		if config.AzureSql == nil {
+			return errors.New("Azure SQL database service configuration is required")
+		}
+		return config.AzureSql.Validate()
+	case DatabaseServiceTypeSqlServer:
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AzureSql) {
+			return errors.New("database service type is sqlserver, but standard, AWS RDS, Google Cloud SQL or Azure SQL configuration is provided")
+		}
+		if config.SQLServer == nil {
+			return errors.New("SQL Server database service configuration is required")
+		}
+		return config.SQLServer.Validate()
+
 	}
 	return fmt.Errorf("invalid database service type: %s", config.DatabaseServiceType)
 }
@@ -146,13 +210,14 @@ func (config DatabaseServiceConfiguration) Validate() error {
 // - standard
 // - aws rds
 // - google cloud sql
+// - azure sql
 // =======================================================================================
 
 // StandardDatabaseServiceConfiguration represents service configuration for self-managed databases.
 // Self-managed databases are databases that are not managed by a cloud provider. For example, a MySQL
 // or PostgreSQL database running on your laptop, or in a VM running in your data center or in the cloud.
 //
-// Supported database protocols are: `mysql` and `postgres`. For upstream authentication, supported auth
+// Supported database protocols are: `mysql`, `postgres` and `mssql`. For upstream authentication, supported auth
 // types are: `username_and_password` and `tls`.
 type StandardDatabaseServiceConfiguration struct {
 	HostnameAndPort
@@ -370,6 +435,93 @@ func (config GcpCloudSqlConnectorConfiguration) Validate() error {
 		return config.IamAuth.Validate()
 	}
 	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+}
+
+// SQLServerDatabaseServiceConfiguration represents service configuration for Microsoft SQL Server databases.
+//
+// Border0 currently supports two ways of connecting to Microsoft SQL Server databases.
+// Use the corresponding configuration fields to configure the upstream connection.
+type SQLServerDatabaseServiceConfiguration struct {
+	HostnameAndPort
+
+	Kerberos          *UsernameAndPassword `json:"kerberos_configuration,omitempty"`
+	SqlAuthentication *UsernameAndPassword `json:"sql_authentication_configuration,omitempty"`
+}
+
+// Validate ensures that the `AzureSqlDatabaseServiceConfiguration` is valid.
+func (config SQLServerDatabaseServiceConfiguration) Validate() error {
+	if err := config.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+
+	switch {
+	case config.Kerberos != nil:
+		if nilcheck.AnyNotNil(config.SqlAuthentication) {
+			return errors.New("authentication type is kerberos_configuration, but sql_authentication_configuration is provided")
+		}
+
+		return nil
+	case config.SqlAuthentication != nil:
+		if nilcheck.AnyNotNil(config.Kerberos) {
+			return errors.New("authentication type is sql_authentication_configuration, but kerberos_configuration is provided")
+		}
+
+		return nil
+	default:
+		return errors.New("one of the following authentication types is required: kerberos, sql_authentication")
+	}
+}
+
+// AzureSqlDatabaseServiceConfiguration represents service configuration for Azure SQL Server databases.
+//
+// Border0 currently supports four ways of connecting to Azure SQL Server databases.
+// Use the corresponding configuration fields to configure the upstream connection.
+type AzureSqlDatabaseServiceConfiguration struct {
+	HostnameAndPort
+
+	AzureActiveDirectoryPassword   *UsernameAndPassword `json:"azure_active_directory_password_configuration,omitempty"`
+	AzureActiveDirectoryIntegrated *struct{}            `json:"azure_active_directory_integrated_configuration,omitempty"`
+	Kerberos                       *UsernameAndPassword `json:"kerberos_configuration,omitempty"`
+	SqlAuthentication              *UsernameAndPassword `json:"sql_authentication_configuration,omitempty"`
+}
+
+// Validate ensures that the `AzureSqlDatabaseServiceConfiguration` is valid.
+func (config AzureSqlDatabaseServiceConfiguration) Validate() error {
+	if err := config.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+
+	switch {
+	case config.AzureActiveDirectoryPassword != nil:
+		if nilcheck.AnyNotNil(config.AzureActiveDirectoryIntegrated, config.Kerberos, config.SqlAuthentication) {
+			return errors.New("authentication type is azure_active_directory_password_configuration, but azure_active_directory_integrated_configuration, kerberos_configuration or sql_authentication_configuration is provided")
+		}
+
+		if config.AzureActiveDirectoryPassword == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return nil
+	case config.AzureActiveDirectoryIntegrated != nil:
+		if nilcheck.AnyNotNil(config.AzureActiveDirectoryPassword, config.Kerberos, config.SqlAuthentication) {
+			return errors.New("authentication type is azure_active_directory_integrated_configuration, but azure_active_directory_password_configuration, kerberos_configuration or sql_authentication_configuration is provided")
+		}
+
+		return nil
+	case config.Kerberos != nil:
+		if nilcheck.AnyNotNil(config.AzureActiveDirectoryPassword, config.AzureActiveDirectoryIntegrated, config.SqlAuthentication) {
+			return errors.New("authentication type is kerberos_configuration, but azure_active_directory_password_configuration, azure_active_directory_integrated_configuration or sql_authentication_configuration is provided")
+		}
+
+		return nil
+	case config.SqlAuthentication != nil:
+		if nilcheck.AnyNotNil(config.AzureActiveDirectoryPassword, config.AzureActiveDirectoryIntegrated, config.Kerberos) {
+			return errors.New("authentication type is sql_authentication_configuration, but azure_active_directory_password_configuration, azure_active_directory_integrated_configuration or kerberos_configuration is provided")
+		}
+
+		return nil
+	default:
+		return errors.New("one of the following authentication types is required: azure_active_directory_password, azure_active_directory_integrated, kerberos, sql_authentication")
+	}
 }
 
 // =======================================================================================
