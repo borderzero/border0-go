@@ -24,10 +24,11 @@ type AwsEc2IdentityMetadata struct {
 // of the connector, the date the connector was built, the IP address of the connector, and the metadata
 // for the IP address.
 type ConnectorInternalMetadata struct {
-	Version    string      `json:"version,omitempty"`
-	BuiltDate  string      `json:"built_date,omitempty"`
-	IPAddress  string      `json:"ip_address,omitempty"`
-	IPMetadata *IPMetadata `json:"ip_metadata,omitempty"`
+	Version      string        `json:"version,omitempty"`
+	BuiltDate    string        `json:"built_date,omitempty"`
+	IPAddress    string        `json:"ip_address,omitempty"`
+	IPMetadata   *IPMetadata   `json:"ip_metadata,omitempty"`
+	HostMetadata *HostMetadata `json:"host_metadata,omitempty"`
 }
 
 // IPMetadata represents metadata for an IP address. This includes the country name, country code, region
@@ -42,4 +43,16 @@ type IPMetadata struct {
 	Latitude    float64 `json:"latitude,omitempty"`
 	Longitude   float64 `json:"longitude,omitempty"`
 	ISP         string  `json:"isp,omitempty"`
+}
+
+// HostMetadata represents metadata for the host the connector is running on. This includes the hostname,
+// uptime, OS, platform, platform version, kernel version, and kernel architecture.
+type HostMetadata struct {
+	Hostname        string `json:"hostname,omitempty"`
+	Uptime          uint64 `json:"uptime,omitempty"`
+	OS              string `json:"os"`               // eg. freebsd, linux, darwin
+	Platform        string `json:"platform"`         // eg. ubuntu, linuxmint, darwin
+	PlatformVersion string `json:"platform_version"` // version of the complete OS, eg. 14.2.1
+	KernelVersion   string `json:"kernel_version"`   // version of the OS kernel (if available)
+	KernelArch      string `json:"kernel_arch"`      // native cpu architecture queried at runtime, as returned by `uname -m` or empty string in case of error
 }
