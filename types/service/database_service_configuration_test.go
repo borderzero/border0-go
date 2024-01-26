@@ -95,7 +95,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				AwsRds:              testAwsRdsConfig,
 				GcpCloudSql:         testGcpCloudSqlConfig,
 			},
-			want: errors.New("database service type is standard, but AWS RDS or Google Cloud SQL configuration is provided"),
+			want: errors.New("database service type is standard, but AWS RDS, Google Cloud SQL or Azure SQL configuration is provided"),
 		},
 		{
 			name: "standard type is picked, but standard config is missing",
@@ -113,7 +113,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				AwsRds:              testAwsRdsConfig,
 				GcpCloudSql:         testGcpCloudSqlConfig,
 			},
-			want: errors.New("database service type is aws_rds, but standard or Google Cloud SQL configuration is provided"),
+			want: errors.New("database service type is aws_rds, but standard, Google Cloud SQL or Azure SQL configuration is provided"),
 		},
 		{
 			name: "aws rds type is picked, but aws rds config is missing",
@@ -131,7 +131,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				AwsRds:              testAwsRdsConfig,
 				GcpCloudSql:         testGcpCloudSqlConfig,
 			},
-			want: errors.New("database service type is gcp_cloudsql, but standard or AWS RDS configuration is provided"),
+			want: errors.New("database service type is gcp_cloudsql, but standard, AWS RDS or Azure SQL configuration is provided"),
 		},
 		{
 			name: "google cloud sql type is picked, but google cloud sql config is missing",
@@ -246,7 +246,7 @@ func Test_StandardDatabaseServiceConfiguration_Validate(t *testing.T) {
 				UsernameAndPasswordAuth: testPasswordAuth,
 				TlsAuth:                 testTlsAuth,
 			},
-			want: errors.New("authentication type is username_and_password, but TLS auth configuration is provided"),
+			want: errors.New("authentication type is username_and_password, but tls_auth, kerberos or sql_authentication configuration is provided"),
 		},
 		{
 			name: "username and password auth is picked, but username and password auth config is missing",
@@ -267,7 +267,7 @@ func Test_StandardDatabaseServiceConfiguration_Validate(t *testing.T) {
 				UsernameAndPasswordAuth: testPasswordAuth,
 				TlsAuth:                 testTlsAuth,
 			},
-			want: errors.New("authentication type is tls, but username and password auth configuration is provided"),
+			want: errors.New("authentication type is tls, but username_and_password, kerberos or sql_authentication configuration is provided"),
 		},
 		{
 			name: "tls auth is picked, but tls auth config is missing",
