@@ -15,7 +15,6 @@ const (
 	DatabaseServiceTypeAwsRds      = "aws_rds"      // AWS RDS database, supports IAM and password auth
 	DatabaseServiceTypeGcpCloudSql = "gcp_cloudsql" // Google Cloud SQL database, supports IAM, TLS and password auth
 	DatabaseServiceTypeAzureSql    = "azure_sql"    // Azure SQL database, supports SQL authentication, azure password auth
-	DatabaseServiceTypeSqlServer   = "sqlserver"    // Microsoft SQL Server database, supports SQL authentication and kerberos auth
 )
 
 const (
@@ -148,7 +147,6 @@ type DatabaseServiceConfiguration struct {
 
 	// mutually exclusive fields below
 	Standard    *StandardDatabaseServiceConfiguration    `json:"standard_database_service_configuration,omitempty"`
-	SQLServer   *SQLServerDatabaseServiceConfiguration   `json:"sql_server_database_service_configuration,omitempty"`
 	AwsRds      *AwsRdsDatabaseServiceConfiguration      `json:"aws_rds_database_service_configuration,omitempty"`
 	GcpCloudSql *GcpCloudSqlDatabaseServiceConfiguration `json:"gcp_cloudsql_database_service_configuration,omitempty"`
 	AzureSql    *AzureSqlDatabaseServiceConfiguration    `json:"azure_sql_database_service_configuration,omitempty"`
@@ -161,46 +159,37 @@ func (config DatabaseServiceConfiguration) Validate() error {
 	}
 	switch config.DatabaseServiceType {
 	case DatabaseServiceTypeStandard:
-		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql, config.SQLServer) {
-			return errors.New("database service type is standard, but AWS RDS, Google Cloud SQL, Microsoft SQL Server or Azure SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql) {
+			return errors.New("database service type is standard, but AWS RDS, Google Cloud SQL or Azure SQL configuration is provided")
 		}
 		if config.Standard == nil {
 			return errors.New("standard database service configuration is required")
 		}
 		return config.Standard.Validate()
 	case DatabaseServiceTypeAwsRds:
-		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.SQLServer) {
-			return errors.New("database service type is aws_rds, but standard, Google Cloud SQL, Microsoft SQL Server or Azure SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql) {
+			return errors.New("database service type is aws_rds, but standard, Google Cloud SQL or Azure SQL configuration is provided")
 		}
 		if config.AwsRds == nil {
 			return errors.New("AWS RDS database service configuration is required")
 		}
 		return config.AwsRds.Validate()
 	case DatabaseServiceTypeGcpCloudSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql, config.SQLServer) {
-			return errors.New("database service type is gcp_cloudsql, but standard, AWS RDS, Microsoft SQL Server or Azure SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql) {
+			return errors.New("database service type is gcp_cloudsql, but standard, AWS RDS or Azure SQL configuration is provided")
 		}
 		if config.GcpCloudSql == nil {
 			return errors.New("Google Cloud SQL database service configuration is required")
 		}
 		return config.GcpCloudSql.Validate()
 	case DatabaseServiceTypeAzureSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.SQLServer) {
-			return errors.New("database service type is azure_sql, but standard, AWS RDS, Microsoft SQL Server or Google Cloud SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql) {
+			return errors.New("database service type is azure_sql, but standard, AWS RDS or Google Cloud SQL configuration is provided")
 		}
 		if config.AzureSql == nil {
 			return errors.New("Azure SQL database service configuration is required")
 		}
 		return config.AzureSql.Validate()
-	case DatabaseServiceTypeSqlServer:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AzureSql) {
-			return errors.New("database service type is sqlserver, but standard, AWS RDS, Google Cloud SQL or Azure SQL configuration is provided")
-		}
-		if config.SQLServer == nil {
-			return errors.New("SQL Server database service configuration is required")
-		}
-		return config.SQLServer.Validate()
-
 	}
 	return fmt.Errorf("invalid database service type: %s", config.DatabaseServiceType)
 }
@@ -227,6 +216,8 @@ type StandardDatabaseServiceConfiguration struct {
 
 	UsernameAndPasswordAuth *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
+	Kerberos                *UsernameAndPassword                          `json:"kerberos_configuration,omitempty"`
+	SqlAuthentication       *UsernameAndPassword                          `json:"sql_authentication_configuration,omitempty"`
 }
 
 // Validate ensures that the `StandardDatabaseServiceConfiguration` is valid.
@@ -239,25 +230,52 @@ func (config StandardDatabaseServiceConfiguration) Validate() error {
 		return err
 	}
 
-	switch config.AuthenticationType {
-	case DatabaseAuthenticationTypeUsernameAndPassword:
-		if nilcheck.AnyNotNil(config.TlsAuth) {
-			return errors.New("authentication type is username_and_password, but TLS auth configuration is provided")
+	switch config.DatabaseProtocol {
+	case DatabaseProtocolMySql, DatabaseProtocolPostgres:
+		switch config.AuthenticationType {
+		case DatabaseAuthenticationTypeUsernameAndPassword:
+			if nilcheck.AnyNotNil(config.TlsAuth, config.Kerberos, config.SqlAuthentication) {
+				return errors.New("authentication type is username_and_password, but tls_auth, kerberos or sql_authentication configuration is provided")
+			}
+			if config.UsernameAndPasswordAuth == nil {
+				return errors.New("username and password auth configuration is required")
+			}
+			return config.UsernameAndPasswordAuth.Validate()
+		case DatabaseAuthenticationTypeTls:
+			if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth, config.Kerberos, config.SqlAuthentication) {
+				return errors.New("authentication type is tls, but username_and_password, kerberos or sql_authentication configuration is provided")
+			}
+			if config.TlsAuth == nil {
+				return errors.New("TLS auth configuration is required")
+			}
+			return config.TlsAuth.Validate()
+		default:
+			return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
 		}
-		if config.UsernameAndPasswordAuth == nil {
-			return errors.New("username and password auth configuration is required")
+	case DatabaseProtocolSqlserver:
+		switch config.AuthenticationType {
+		case DatabaseAuthenticationTypeKerberos:
+			if nilcheck.AnyNotNil(config.TlsAuth, config.UsernameAndPasswordAuth, config.SqlAuthentication) {
+				return errors.New("authentication type is kerberos, but username_and_password, tls_auth or sql_authentication configuration is provided")
+			}
+			if config.Kerberos == nil {
+				return errors.New("kerberos configuration is required")
+			}
+			return config.UsernameAndPasswordAuth.Validate()
+		case DatabaseAuthenticationTypeSqlAuthentication:
+			if nilcheck.AnyNotNil(config.TlsAuth, config.UsernameAndPasswordAuth, config.Kerberos) {
+				return errors.New("authentication type is sql_authentication, but username_and_password, tls_auth or kerberos configuration is provided")
+			}
+			if config.SqlAuthentication == nil {
+				return errors.New("sql_authentication configuration is required")
+			}
+			return config.UsernameAndPasswordAuth.Validate()
+		default:
+			return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
 		}
-		return config.UsernameAndPasswordAuth.Validate()
-	case DatabaseAuthenticationTypeTls:
-		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
-			return errors.New("authentication type is tls, but username and password auth configuration is provided")
-		}
-		if config.TlsAuth == nil {
-			return errors.New("TLS auth configuration is required")
-		}
-		return config.TlsAuth.Validate()
 	}
-	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+
+	return fmt.Errorf("invalid database protocol: %s", config.DatabaseProtocol)
 }
 
 // AwsRdsDatabaseServiceConfiguration represents service configuration for AWS RDS databases. AWS RDS databases
@@ -573,10 +591,10 @@ func (config DatabaseTlsAuthConfiguration) Validate() error {
 	if config.Password == "" {
 		return errors.New("password is required")
 	}
-	if config.Certificate == "" {
+	if config.Certificate == "" && config.Key != "" {
 		return errors.New("TLS certificate is required")
 	}
-	if config.Key == "" {
+	if config.Key == "" && config.Certificate != "" {
 		return errors.New("TLS private key is required")
 	}
 	return nil
