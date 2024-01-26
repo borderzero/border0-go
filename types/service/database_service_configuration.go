@@ -147,7 +147,6 @@ type DatabaseServiceConfiguration struct {
 
 	// mutually exclusive fields below
 	Standard    *StandardDatabaseServiceConfiguration    `json:"standard_database_service_configuration,omitempty"`
-	SQLServer   *SQLServerDatabaseServiceConfiguration   `json:"sql_server_database_service_configuration,omitempty"`
 	AwsRds      *AwsRdsDatabaseServiceConfiguration      `json:"aws_rds_database_service_configuration,omitempty"`
 	GcpCloudSql *GcpCloudSqlDatabaseServiceConfiguration `json:"gcp_cloudsql_database_service_configuration,omitempty"`
 	AzureSql    *AzureSqlDatabaseServiceConfiguration    `json:"azure_sql_database_service_configuration,omitempty"`
