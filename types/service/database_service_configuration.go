@@ -216,8 +216,8 @@ type StandardDatabaseServiceConfiguration struct {
 
 	UsernameAndPasswordAuth *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
-	Kerberos                *UsernameAndPassword                          `json:"kerberos_configuration,omitempty"`
-	SqlAuthentication       *UsernameAndPassword                          `json:"sql_authentication_configuration,omitempty"`
+	Kerberos                *DatabaseKerberosAuthConfiguration            `json:"kerberos_configuration,omitempty"`
+	SqlAuthentication       *DatabaseSqlAuthConfiguration                 `json:"sql_authentication_configuration,omitempty"`
 }
 
 // Validate ensures that the `StandardDatabaseServiceConfiguration` is valid.
@@ -261,7 +261,7 @@ func (config StandardDatabaseServiceConfiguration) Validate() error {
 			if config.Kerberos == nil {
 				return errors.New("kerberos configuration is required")
 			}
-			return config.UsernameAndPasswordAuth.Validate()
+			return config.Kerberos.Validate()
 		case DatabaseAuthenticationTypeSqlAuthentication:
 			if nilcheck.AnyNotNil(config.TlsAuth, config.UsernameAndPasswordAuth, config.Kerberos) {
 				return errors.New("authentication type is sql_authentication, but username_and_password, tls_auth or kerberos configuration is provided")
@@ -269,7 +269,7 @@ func (config StandardDatabaseServiceConfiguration) Validate() error {
 			if config.SqlAuthentication == nil {
 				return errors.New("sql_authentication configuration is required")
 			}
-			return config.UsernameAndPasswordAuth.Validate()
+			return config.SqlAuthentication.Validate()
 		default:
 			return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
 		}
@@ -566,6 +566,38 @@ type DatabaseUsernameAndPasswordAuthConfiguration struct {
 
 // Validate ensures that the `DatabaseUsernameAndPasswordAuthConfiguration` has all the required fields.
 func (config DatabaseUsernameAndPasswordAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	return nil
+}
+
+// DatabaseKerberosAuthConfiguration represents auth configuration that based on username and password.
+type DatabaseKerberosAuthConfiguration struct {
+	UsernameAndPassword
+}
+
+// Validate ensures that the `DatabaseKerberosAuthConfiguration` has all the required fields.
+func (config DatabaseKerberosAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	return nil
+}
+
+// DatabaseSqlAuthConfiguration represents auth configuration that based on username and password.
+type DatabaseSqlAuthConfiguration struct {
+	UsernameAndPassword
+}
+
+// Validate ensures that the `DatabaseSqlAuthConfiguration` has all the required fields.
+func (config DatabaseSqlAuthConfiguration) Validate() error {
 	if config.Username == "" {
 		return errors.New("username is required")
 	}
