@@ -1,5 +1,24 @@
 package maps
 
+// Reverse returns a new map where the keys and values are reversed
+// from the original input map. This is useful when we want to index
+// a particular search on both keys and values e.g. mapping of public
+// identifiers to internal identifiers and viceversa.
+//
+// Note that if values are not unique in the input map, the retured
+// map will only have a key-value pair for the last ocurrence of the
+// value (which is the key in the generated map) in the input map.
+func Reverse[K, V comparable](m map[K]V) map[V]K {
+	if m == nil {
+		return nil
+	}
+	reversed := make(map[V]K)
+	for k, v := range m {
+		reversed[v] = k
+	}
+	return reversed
+}
+
 // EnsureNotNil ensures a given map is not nil. Returns a
 // new empty (but non-nil) map if the original map was nil.
 func EnsureNotNil[K comparable, V any](m map[K]V) map[K]V {
