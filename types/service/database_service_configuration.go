@@ -333,6 +333,7 @@ func (config AwsRdsDatabaseServiceConfiguration) Validate() error {
 // Use the corresponding configuration fields to configure the upstream connection.
 type GcpCloudSqlDatabaseServiceConfiguration struct {
 	HostnameAndPort
+	DatabaseProtocol string `json:"protocol"`
 
 	UsernameAndPasswordAuth     *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	TlsAuth                     *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
@@ -431,6 +432,7 @@ func (config GcpCloudSqlConnectorIamAuthConfiguration) Validate() error {
 // Use the corresponding configuration fields to configure the upstream connection.
 type AzureSqlDatabaseServiceConfiguration struct {
 	HostnameAndPort
+	DatabaseProtocol string `json:"protocol"`
 
 	AzureActiveDirectoryPassword   *DatabaseUsernameAndPasswordAuthConfiguration `json:"azure_active_directory_password_configuration,omitempty"`
 	AzureActiveDirectoryIntegrated *struct{}                                     `json:"azure_active_directory_integrated_configuration,omitempty"`
