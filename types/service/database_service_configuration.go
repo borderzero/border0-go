@@ -332,162 +332,98 @@ func (config AwsRdsDatabaseServiceConfiguration) Validate() error {
 // Border0 currently supports two ways of connecting to Google Cloud SQL databases: with and without the Cloud SQL Connector.
 // Use the corresponding configuration fields to configure the upstream connection.
 type GcpCloudSqlDatabaseServiceConfiguration struct {
-	CloudSqlConnectorEnabled bool `json:"cloudsql_connector_enabled"`
+	HostnameAndPort
+	DatabaseProtocol string `json:"protocol"`
 
-	Standard  *GcpCloudSqlStandardConfiguration  `json:"standard_configuration,omitempty"`
-	Connector *GcpCloudSqlConnectorConfiguration `json:"connector_configuration,omitempty"`
+	UsernameAndPasswordAuth     *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	TlsAuth                     *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
+	GcpCloudSQLConnectorAuth    *GcpCloudSqlConnectorAuthConfiguration        `json:"cloudsql_connector_configuration,omitempty"`
+	GcpCloudSQLConnectorIAMAuth *GcpCloudSqlConnectorIamAuthConfiguration     `json:"cloudsql_connector_iam_configuration,omitempty"`
 }
 
 // Validate ensures that the `GcpCloudSqlDatabaseServiceConfiguration` is valid.
 func (config GcpCloudSqlDatabaseServiceConfiguration) Validate() error {
-	// when using the cloud sql connector, the connector configuration is required
-	if config.CloudSqlConnectorEnabled {
-		if nilcheck.AnyNotNil(config.Standard) {
-			return errors.New("cloudsql_connector_enabled is true, but standard configuration is provided")
-		}
-		if config.Connector == nil {
-			return errors.New("Google Cloud SQL connector configuration is required")
-		}
-		return config.Connector.Validate()
-	}
-
-	// when _NOT_ using the cloud sql connector, the standard configuration is required
-	if nilcheck.AnyNotNil(config.Connector) {
-		return errors.New("cloudsql_connector_enabled is false, but connector configuration is provided")
-	}
-	if config.Standard == nil {
-		return errors.New("standard Google Cloud SQL configuration is required")
-	}
-	return config.Standard.Validate()
-}
-
-// =======================================================================================
-// Configurations specifically made for Google Cloud SQL
-// - standard: without cloud sql connector
-// - connector: with cloud sql connector
-// =======================================================================================
-
-// GcpCloudSqlStandardConfiguration represents service configuration for Google Cloud SQL databases that will
-// be connected to the upstream _WITHOUT_ using the Cloud SQL Connector.
-//
-// Supported database protocol is: `mysql`. For upstream authentication, supported auth types are: `username_password`,
-// and `tls`. When using TLS authentication, the client must provide a username, a password, a client certificate and a
-// client key.
-type GcpCloudSqlStandardConfiguration struct {
-	HostnameAndPort
-
-	DatabaseProtocol   string `json:"protocol"`
-	AuthenticationType string `json:"authentication_type"`
-
-	UsernameAndPasswordAuth *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
-}
-
-// Validate ensures that the `GcpCloudSqlStandardConfiguration` is valid.
-func (config GcpCloudSqlStandardConfiguration) Validate() error {
-	if config.DatabaseProtocol == "" {
-		return errors.New("database protocol is required")
-	}
-
-	if err := config.HostnameAndPort.Validate(); err != nil {
-		return err
-	}
-
-	switch config.AuthenticationType {
-	case DatabaseAuthenticationTypeUsernameAndPassword:
-		if nilcheck.AnyNotNil(config.TlsAuth) {
-			return errors.New("authentication type is username_and_password, but TLS auth configuration is provided")
-		}
-		if config.UsernameAndPasswordAuth == nil {
-			return errors.New("username and password auth configuration is required")
-		}
-		return config.UsernameAndPasswordAuth.Validate()
-	case DatabaseAuthenticationTypeTls:
-		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
-			return errors.New("authentication type is tls, but username and password auth configuration is provided")
-		}
-		if config.TlsAuth == nil {
-			return errors.New("TLS auth configuration is required")
-		}
-		return config.TlsAuth.Validate()
-	}
-	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
-}
-
-// GcpCloudSqlConnectorConfiguration represents service configuration for Google Cloud SQL databases that will be
-// connected to the upstream using the Cloud SQL Connector.
-//
-// Supported database protocol is: `mysql`. For upstream authentication, supported auth types are: `username_password`,
-// and `iam`. When using IAM authentication, the client must provide a username and an instance ID. You will need to
-// supply Google credentials that are copied from the JSON credentials file.
-type GcpCloudSqlConnectorConfiguration struct {
-	DatabaseProtocol   string `json:"protocol"`
-	AuthenticationType string `json:"authentication_type"`
-
-	UsernameAndPasswordAuth *GcpCloudSqlUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *GcpCloudSqlIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
-}
-
-// Validate ensures that the `GcpCloudSqlConnectorConfiguration` is valid.
-func (config GcpCloudSqlConnectorConfiguration) Validate() error {
-	if config.DatabaseProtocol == "" {
-		return errors.New("database protocol is required")
-	}
-
-	switch config.AuthenticationType {
-	case DatabaseAuthenticationTypeUsernameAndPassword:
-		if nilcheck.AnyNotNil(config.IamAuth) {
-			return errors.New("authentication type is username_and_password, but IAM auth configuration is provided")
-		}
-		if config.UsernameAndPasswordAuth == nil {
-			return errors.New("username and password auth configuration is required")
-		}
-		return config.UsernameAndPasswordAuth.Validate()
-	case DatabaseAuthenticationTypeIam:
-		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
-			return errors.New("authentication type is iam, but username and password auth configuration is provided")
-		}
-		if config.IamAuth == nil {
-			return errors.New("IAM auth configuration is required")
-		}
-		return config.IamAuth.Validate()
-	}
-	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
-}
-
-// SQLServerDatabaseServiceConfiguration represents service configuration for Microsoft SQL Server databases.
-//
-// Border0 currently supports two ways of connecting to Microsoft SQL Server databases.
-// Use the corresponding configuration fields to configure the upstream connection.
-type SQLServerDatabaseServiceConfiguration struct {
-	HostnameAndPort
-
-	Kerberos          *UsernameAndPassword `json:"kerberos_configuration,omitempty"`
-	SqlAuthentication *UsernameAndPassword `json:"sql_authentication_configuration,omitempty"`
-}
-
-// Validate ensures that the `AzureSqlDatabaseServiceConfiguration` is valid.
-func (config SQLServerDatabaseServiceConfiguration) Validate() error {
-	if err := config.HostnameAndPort.Validate(); err != nil {
-		return err
-	}
-
 	switch {
-	case config.Kerberos != nil:
-		if nilcheck.AnyNotNil(config.SqlAuthentication) {
-			return errors.New("authentication type is kerberos_configuration, but sql_authentication_configuration is provided")
+	case config.UsernameAndPasswordAuth != nil:
+		if nilcheck.AnyNotNil(config.TlsAuth, config.GcpCloudSQLConnectorAuth, config.GcpCloudSQLConnectorIAMAuth) {
+			return errors.New("authentication type is username_and_password_auth_configuration, but tls_auth_configuration, cloudsql_auth_configuration or cloudsql_iam_auth_configuration is provided")
 		}
 
-		return nil
-	case config.SqlAuthentication != nil:
-		if nilcheck.AnyNotNil(config.Kerberos) {
-			return errors.New("authentication type is sql_authentication_configuration, but kerberos_configuration is provided")
+		if err := config.HostnameAndPort.Validate(); err != nil {
+			return err
 		}
 
-		return nil
+		return config.UsernameAndPasswordAuth.Validate()
+	case config.TlsAuth != nil:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth, config.GcpCloudSQLConnectorAuth, config.GcpCloudSQLConnectorIAMAuth) {
+			return errors.New("authentication type is tls_auth_configuration, but username_and_password_auth_configuration, cloudsql_auth_configuration or cloudsql_iam_auth_configuration is provided")
+		}
+
+		if err := config.HostnameAndPort.Validate(); err != nil {
+			return err
+		}
+
+		return config.TlsAuth.Validate()
+	case config.GcpCloudSQLConnectorAuth != nil:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth, config.TlsAuth, config.GcpCloudSQLConnectorIAMAuth) {
+			return errors.New("authentication type is cloudsql_auth_configuration, but username_and_password_auth_configuration, tls_auth_configuration or cloudsql_iam_auth_configuration is provided")
+		}
+
+		return config.GcpCloudSQLConnectorAuth.Validate()
+	case config.GcpCloudSQLConnectorIAMAuth != nil:
+		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth, config.TlsAuth, config.GcpCloudSQLConnectorAuth) {
+			return errors.New("authentication type is cloudsql_iam_auth_configuration, but username_and_password_auth_configuration, tls_auth_configuration or cloudsql_auth_configuration is provided")
+		}
+
+		return config.GcpCloudSQLConnectorIAMAuth.Validate()
 	default:
-		return errors.New("one of the following authentication types is required: kerberos, sql_authentication")
+		return errors.New("one of the following authentication types is required: azure_active_directory_password, azure_active_directory_integrated, kerberos, sql_authentication")
 	}
+}
+
+// GcpCloudSqlConnectorAuthConfiguration represents service configuration for Google Cloud SQL database that will
+// be connected to the upstream using the Cloud SQL Connector.
+type GcpCloudSqlConnectorAuthConfiguration struct {
+	Username           string `json:"username"`
+	Password           string `json:"password"`
+	InstanceId         string `json:"instance_id"`
+	GcpCredentialsJson string `json:"gcp_credentials_json"`
+}
+
+// Validate ensures that the `GcpCloudSqlConnectorAuthConfiguration` has all the required fields.
+func (config GcpCloudSqlConnectorAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
+	}
+	if config.InstanceId == "" {
+		return errors.New("instance ID is required")
+	}
+
+	return nil
+}
+
+// GcpCloudSqlConnectorIamAuthConfiguration represents service configuration for Google Cloud SQL database that will
+// be connected to the upstream using the Cloud SQL Connector and IAM authentication.
+type GcpCloudSqlConnectorIamAuthConfiguration struct {
+	Username           string `json:"username"`
+	InstanceId         string `json:"instance_id"`
+	GcpCredentialsJson string `json:"gcp_credentials_json"`
+}
+
+// Validate ensures that the `GcpCloudSqlConnectorIamAuthConfiguration` has all the required fields.
+func (config GcpCloudSqlConnectorIamAuthConfiguration) Validate() error {
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+
+	if config.InstanceId == "" {
+		return errors.New("instance ID is required")
+	}
+
+	return nil
 }
 
 // AzureSqlDatabaseServiceConfiguration represents service configuration for Azure SQL Server databases.
@@ -496,11 +432,12 @@ func (config SQLServerDatabaseServiceConfiguration) Validate() error {
 // Use the corresponding configuration fields to configure the upstream connection.
 type AzureSqlDatabaseServiceConfiguration struct {
 	HostnameAndPort
+	DatabaseProtocol string `json:"protocol"`
 
-	AzureActiveDirectoryPassword   *UsernameAndPassword `json:"azure_active_directory_password_configuration,omitempty"`
-	AzureActiveDirectoryIntegrated *struct{}            `json:"azure_active_directory_integrated_configuration,omitempty"`
-	Kerberos                       *UsernameAndPassword `json:"kerberos_configuration,omitempty"`
-	SqlAuthentication              *UsernameAndPassword `json:"sql_authentication_configuration,omitempty"`
+	AzureActiveDirectoryPassword   *DatabaseUsernameAndPasswordAuthConfiguration `json:"azure_active_directory_password_configuration,omitempty"`
+	AzureActiveDirectoryIntegrated *struct{}                                     `json:"azure_active_directory_integrated_configuration,omitempty"`
+	Kerberos                       *DatabaseKerberosAuthConfiguration            `json:"kerberos_configuration,omitempty"`
+	SqlAuthentication              *DatabaseSqlAuthConfiguration                 `json:"sql_authentication_configuration,omitempty"`
 }
 
 // Validate ensures that the `AzureSqlDatabaseServiceConfiguration` is valid.
@@ -515,10 +452,7 @@ func (config AzureSqlDatabaseServiceConfiguration) Validate() error {
 			return errors.New("authentication type is azure_active_directory_password_configuration, but azure_active_directory_integrated_configuration, kerberos_configuration or sql_authentication_configuration is provided")
 		}
 
-		if config.AzureActiveDirectoryPassword == nil {
-			return errors.New("username and password auth configuration is required")
-		}
-		return nil
+		return config.AzureActiveDirectoryPassword.Validate()
 	case config.AzureActiveDirectoryIntegrated != nil:
 		if nilcheck.AnyNotNil(config.AzureActiveDirectoryPassword, config.Kerberos, config.SqlAuthentication) {
 			return errors.New("authentication type is azure_active_directory_integrated_configuration, but azure_active_directory_password_configuration, kerberos_configuration or sql_authentication_configuration is provided")
@@ -530,13 +464,13 @@ func (config AzureSqlDatabaseServiceConfiguration) Validate() error {
 			return errors.New("authentication type is kerberos_configuration, but azure_active_directory_password_configuration, azure_active_directory_integrated_configuration or sql_authentication_configuration is provided")
 		}
 
-		return nil
+		return config.Kerberos.Validate()
 	case config.SqlAuthentication != nil:
 		if nilcheck.AnyNotNil(config.AzureActiveDirectoryPassword, config.AzureActiveDirectoryIntegrated, config.Kerberos) {
 			return errors.New("authentication type is sql_authentication_configuration, but azure_active_directory_password_configuration, azure_active_directory_integrated_configuration or kerberos_configuration is provided")
 		}
 
-		return nil
+		return config.SqlAuthentication.Validate()
 	default:
 		return errors.New("one of the following authentication types is required: azure_active_directory_password, azure_active_directory_integrated, kerberos, sql_authentication")
 	}
@@ -671,56 +605,6 @@ func (config AwsRdsIamAuthConfiguration) Validate() error {
 		if err := config.AwsCredentials.Validate(); err != nil {
 			return fmt.Errorf("invalid AWS credentials: %w", err)
 		}
-	}
-	return nil
-}
-
-// GcpCloudSqlUsernameAndPasswordAuthConfiguration represents auth configuration for Google Cloud SQL databases that
-// use username and password for authentication, and are connected to the upstream using the Cloud SQL Connector.
-// You must provide a username, a password, an Cloud SQL instance ID and Google credentials that are copied from the JSON
-// credentials file.
-type GcpCloudSqlUsernameAndPasswordAuthConfiguration struct {
-	UsernameAndPassword
-	InstanceId         string `json:"instance_id"`
-	GcpCredentialsJson string `json:"gcp_credentials_json"`
-}
-
-// Validate ensures that the `GcpCloudSqlUsernameAndPasswordAuthConfiguration` has all the required fields.
-func (config GcpCloudSqlUsernameAndPasswordAuthConfiguration) Validate() error {
-	if config.Username == "" {
-		return errors.New("username is required")
-	}
-	if config.Password == "" {
-		return errors.New("password is required")
-	}
-	if config.InstanceId == "" {
-		return errors.New("instance ID is required")
-	}
-	if config.GcpCredentialsJson == "" {
-		return errors.New("GCP credentials JSON is required")
-	}
-	return nil
-}
-
-// GcpCloudSqlIamAuthConfiguration represents auth configuration for Google Cloud SQL databases that use IAM authentication,
-// and are connected to the upstream using the Cloud SQL Connector. You must provide a username, an Cloud SQL instance ID
-// and Google credentials that are copied from the JSON credentials file.
-type GcpCloudSqlIamAuthConfiguration struct {
-	Username           string `json:"username"`
-	InstanceId         string `json:"instance_id"`
-	GcpCredentialsJson string `json:"gcp_credentials_json"`
-}
-
-// Validate ensures that the `GcpCloudSqlIamAuthConfiguration` has all the required fields.
-func (config GcpCloudSqlIamAuthConfiguration) Validate() error {
-	if config.Username == "" {
-		return errors.New("username is required")
-	}
-	if config.InstanceId == "" {
-		return errors.New("instance ID is required")
-	}
-	if config.GcpCredentialsJson == "" {
-		return errors.New("GCP credentials JSON is required")
 	}
 	return nil
 }
