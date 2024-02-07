@@ -197,6 +197,7 @@ type PolicyCondition struct {
 type PolicyWho struct {
 	Email  []string `json:"email,omitempty"`
 	Domain []string `json:"domain,omitempty"`
+	Group  []string `json:"group,omitempty"`
 }
 
 // PolicyWhere represents the policy condition "where" schema. It specifies where the policy applies to, based on allowed
