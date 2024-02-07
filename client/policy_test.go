@@ -18,6 +18,7 @@ var testPolicyData = PolicyData{
 		Who: PolicyWho{
 			Email:  []string{"johndoe@example.com"},
 			Domain: []string{"example.com"},
+			Group:  []string{"707a6c88-5675-4c5f-9db2-13b91c1a43e8"},
 		},
 		Where: PolicyWhere{
 			AllowedIP:  []string{"0.0.0.0/0", "::/0"},
