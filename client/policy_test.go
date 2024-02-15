@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -70,7 +71,7 @@ func Test_APIClient_Policy(t *testing.T) {
 					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "policy not found"})
 			},
 			givenID: "test-id",
-			wantErr: errors.New("policy [test-id] not found: failed after 1 attempt: 404: policy not found"),
+			wantErr: fmt.Errorf("policy [test-id] not found: failed after %d %s: 404: policy not found", notFoundRetryMax+1, attemptOrAttempts(notFoundRetryMax+1)),
 		},
 		{
 			name: "happy path",

@@ -31,6 +31,13 @@ type Requester interface {
 }
 
 const (
+	notFoundRetryMax     = 3
+	notFoundRetryWaitMin = time.Millisecond * 500
+	notFoundRetryWaitMax = time.Millisecond * 1000
+)
+
+// default config setting values
+const (
 	defaultTimeout      = 10 * time.Second                 // default timeout for requests
 	defaultBaseURL      = "https://api.border0.com/api/v1" // default base URL for Border0 API
 	defaultRetryWaitMin = 1 * time.Second                  // default minimum time to wait between retries
@@ -75,22 +82,29 @@ func (api *APIClient) TokenClaims() (jwt.MapClaims, error) {
 }
 
 func (api *APIClient) request(ctx context.Context, method, path string, input, output any) (code int, err error) {
-	var (
-		attemptedCount int
-		shouldRetry    bool
-	)
 
-	for i := 0; ; i++ {
-		attemptedCount++
+	shouldRetry := false
+	retryMax := api.retryMax
+	waitMin := api.retryWaitMin
+	waitMax := api.retryWaitMax
+	retryCount := 0
+
+	for ; ; retryCount++ {
 
 		shouldRetry = false
-
 		code, err = api.http.Request(ctx, method, api.baseURL+path, input, output)
 		if err != nil {
-			if code >= http.StatusBadRequest && code < http.StatusInternalServerError {
-				shouldRetry = false
-			} else {
+			if code == http.StatusNotFound {
 				shouldRetry = true
+				retryMax = notFoundRetryMax
+				waitMin = notFoundRetryWaitMin
+				waitMax = notFoundRetryWaitMax
+			}
+			if code >= http.StatusInternalServerError {
+				shouldRetry = true
+				retryMax = api.retryMax
+				waitMin = api.retryWaitMin
+				waitMax = api.retryWaitMax
 			}
 		}
 
@@ -98,12 +112,12 @@ func (api *APIClient) request(ctx context.Context, method, path string, input, o
 			break
 		}
 
-		remain := api.retryMax - i
+		remain := retryMax - retryCount
 		if remain <= 0 {
 			break
 		}
 
-		wait := api.backoff(api.retryWaitMin, api.retryWaitMax, i)
+		wait := api.backoff(waitMin, waitMax, retryCount)
 		timer := time.NewTimer(wait)
 		select {
 		case <-ctx.Done():
@@ -119,7 +133,7 @@ func (api *APIClient) request(ctx context.Context, method, path string, input, o
 		return code, nil
 	}
 
-	return code, fmt.Errorf("failed after %d %s: %w", attemptedCount, attemptOrAttempts(attemptedCount), err)
+	return code, fmt.Errorf("failed after %d %s: %w", retryCount+1, attemptOrAttempts(retryCount+1), err)
 }
 
 func attemptOrAttempts(attempt int) string {

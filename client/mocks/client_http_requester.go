@@ -57,6 +57,10 @@ func (_c *ClientHTTPRequester_Close_Call) RunAndReturn(run func()) *ClientHTTPRe
 func (_m *ClientHTTPRequester) Request(ctx context.Context, method string, path string, input interface{}, output interface{}) (int, error) {
 	ret := _m.Called(ctx, method, path, input, output)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Request")
+	}
+
 	var r0 int
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, interface{}, interface{}) (int, error)); ok {
@@ -109,13 +113,12 @@ func (_c *ClientHTTPRequester_Request_Call) RunAndReturn(run func(context.Contex
 	return _c
 }
 
-type mockConstructorTestingTNewClientHTTPRequester interface {
+// NewClientHTTPRequester creates a new instance of ClientHTTPRequester. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewClientHTTPRequester(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// NewClientHTTPRequester creates a new instance of ClientHTTPRequester. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func NewClientHTTPRequester(t mockConstructorTestingTNewClientHTTPRequester) *ClientHTTPRequester {
+}) *ClientHTTPRequester {
 	mock := &ClientHTTPRequester{}
 	mock.Mock.Test(t)
 
