@@ -2,6 +2,8 @@ package client
 
 import (
 	"time"
+
+	"github.com/borderzero/border0-go/lib/types/set"
 )
 
 // Option is a function that can be passed to NewAPIClient to configure it.
@@ -54,5 +56,13 @@ func WithRetryMax(attempts int) Option {
 func WithBackoff(fn Backoff) Option {
 	return func(api *APIClient) {
 		api.backoff = fn
+	}
+}
+
+// WithRetryCodes sets the HTTP response status codes
+// that will result in retrying requests.
+func WithRetryCodes(codes ...int) Option {
+	return func(api *APIClient) {
+		api.retryCodes = set.New(codes...)
 	}
 }
