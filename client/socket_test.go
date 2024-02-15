@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -47,7 +48,7 @@ func Test_APIClient_Socket(t *testing.T) {
 					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "socket not found"})
 			},
 			givenIDOrName: "test-name",
-			wantErr:       errors.New("socket [test-name] not found: failed after 1 attempt: 404: socket not found"),
+			wantErr:       fmt.Errorf("socket [test-name] not found: failed after %d %s: 404: socket not found", notFoundRetryMax+1, attemptOrAttempts(notFoundRetryMax+1)),
 		},
 		{
 			name: "happy path",

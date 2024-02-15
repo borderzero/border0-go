@@ -8,10 +8,10 @@ packages:
       HTTPRequester:
         config:
           dir: client/mocks
-          structname: ClientHTTPRequester
+          mockname: ClientHTTPRequester
           filename: client_http_requester.go
       Requester:
         config:
           dir: listen/mocks
-          structname: APIClientRequester
+          mockname: APIClientRequester
           filename: api_client_requester.go

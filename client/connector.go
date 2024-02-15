@@ -14,6 +14,7 @@ type ConnectorService interface {
 	UpdateConnector(ctx context.Context, in *Connector) (out *Connector, err error)
 	DeleteConnector(ctx context.Context, id string) (err error)
 	ConnectorTokens(ctx context.Context, connectorID string) (out *ConnectorTokens, err error)
+	ConnectorToken(ctx context.Context, connectorID string, tokenID string) (out *ConnectorToken, err error)
 	CreateConnectorToken(ctx context.Context, in *ConnectorToken) (out *ConnectorToken, err error)
 	DeleteConnectorToken(ctx context.Context, connectorID, tokenID string) (err error)
 }
@@ -77,6 +78,16 @@ func (api *APIClient) DeleteConnector(ctx context.Context, id string) (err error
 func (api *APIClient) ConnectorTokens(ctx context.Context, connectorID string) (out *ConnectorTokens, err error) {
 	out = new(ConnectorTokens)
 	_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/connector/%s/tokens", connectorID), nil, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ConnectorToken fetches a connector's token by connector UUID and token UUID.
+func (api *APIClient) ConnectorToken(ctx context.Context, connectorID string, tokenID string) (out *ConnectorToken, err error) {
+	out = new(ConnectorToken)
+	_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/connector/%s/token/%s", connectorID, tokenID), nil, out)
 	if err != nil {
 		return nil, err
 	}

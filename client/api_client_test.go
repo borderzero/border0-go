@@ -139,12 +139,12 @@ func Test_APIClient_request(t *testing.T) {
 			wantErr:  fmt.Errorf("failed after 1 attempt: %w", errUnitTest),
 		},
 		{
-			name: "404 not found request and should not retry",
+			name: "404 not found request and should retry",
 			mockRequester: func(requester *mocks.ClientHTTPRequester, ctx context.Context, _ context.CancelFunc) {
 				requester.EXPECT().
 					Request(ctx, testMethod, testURL, testInput, testOutput).
 					Return(http.StatusNotFound, errUnitTest).
-					Once()
+					Times(4) // 1 initial + 3 retries
 			},
 			givenOptions: []Option{
 				WithRetryMax(3),
@@ -152,7 +152,7 @@ func Test_APIClient_request(t *testing.T) {
 				WithBaseURL(testBaseURL),
 			},
 			wantCode: http.StatusNotFound,
-			wantErr:  fmt.Errorf("failed after 1 attempt: %w", errUnitTest),
+			wantErr:  fmt.Errorf("failed after %d %s: %w", notFoundRetryMax+1, attemptOrAttempts(notFoundRetryMax+1), errUnitTest),
 		},
 		{
 			name: "failed request with 3 max retries configured",

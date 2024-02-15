@@ -47,7 +47,7 @@ func Test_APIClient_Connector(t *testing.T) {
 					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "connector not found"})
 			},
 			givenID: "test-id",
-			wantErr: errors.New("connector [test-id] not found: failed after 1 attempt: 404: connector not found"),
+			wantErr: errors.New("connector [test-id] not found: failed after 4 attempts: 404: connector not found"),
 		},
 		{
 			name: "happy path",
@@ -456,6 +456,89 @@ func Test_APIClient_ConnectorTokens(t *testing.T) {
 				assert.EqualError(t, gotErr, test.wantErr.Error())
 			}
 			assert.Equal(t, test.wantConnectorTokens, gotConnectorTokens)
+		})
+	}
+}
+
+func Test_APIClient_ConnectorToken(t *testing.T) {
+	t.Parallel()
+
+	expiresAt, err := FlexibleTimeFrom("2030-01-01T00:00:00Z")
+	require.NoError(t, err)
+
+	createdAt, err := FlexibleTimeFrom("2020-01-01T00:00:00Z")
+	require.NoError(t, err)
+
+	testConnectorToken := &ConnectorToken{
+		ID:        "test-id-1",
+		Name:      "test-name-1",
+		ExpiresAt: expiresAt,
+		CreatedBy: "test-created-by",
+		CreatedAt: createdAt,
+	}
+
+	tests := []struct {
+		name                  string
+		mockRequester         func(context.Context, *mocks.ClientHTTPRequester)
+		givenConnectorID      string
+		givenConnectorTokenID string
+		wantConnectorToken    *ConnectorToken
+		wantErr               error
+	}{
+		{
+			name: "failed to get connector token",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, defaultBaseURL+"/connector/test-id/token/"+testConnectorToken.ID, nil, new(ConnectorToken)).
+					Return(http.StatusInternalServerError, errors.New("failed to get connector tokens"))
+			},
+			givenConnectorID:      "test-id",
+			givenConnectorTokenID: testConnectorToken.ID,
+			wantConnectorToken:    nil,
+			wantErr:               errors.New("failed after 1 attempt: failed to get connector tokens"),
+		},
+		{
+			name: "happy path",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/connector/test-id/token/"+testConnectorToken.ID, nil, new(ConnectorToken)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*ConnectorToken)
+						*output = *testConnectorToken
+					})
+			},
+			givenConnectorID:      "test-id",
+			givenConnectorTokenID: testConnectorToken.ID,
+			wantConnectorToken:    testConnectorToken,
+			wantErr:               nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotConnectorToken, gotErr := api.ConnectorToken(ctx, test.givenConnectorID, test.givenConnectorTokenID)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+			assert.Equal(t, test.wantConnectorToken, gotConnectorToken)
 		})
 	}
 }
