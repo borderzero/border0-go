@@ -5,4 +5,5 @@ const (
 	SocketTypeSSH      = "ssh"      // SSH socket type
 	SocketTypeDatabase = "database" // Database socket type
 	SocketTypeTLS      = "tls"      // TLS socket type
+	SocketTypeTCP      = "tcp"      // TCP socket type
 )
