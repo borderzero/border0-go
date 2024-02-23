@@ -50,6 +50,22 @@ func Test_Configuration_Validate(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "Should succeed for valid tls socket",
+			configuration: &Configuration{
+				ServiceType: ServiceTypeTls,
+				TlsServiceConfiguration: &TlsServiceConfiguration{
+					TlsServiceType: TlsServiceTypeStandard,
+					StandardTlsServiceConfiguration: &StandardTlsServiceConfiguration{
+						HostnameAndPort: HostnameAndPort{
+							Hostname: "192.0.2.2",
+							Port:     5900,
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		{
 			name: "Should fail when multiple socket type configurations are present",
 			configuration: &Configuration{
 				ServiceType: ServiceTypeSsh,

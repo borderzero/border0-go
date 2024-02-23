@@ -120,7 +120,7 @@ func (c *Configuration) Validate(allowExperimentalFeatures bool) error {
 
 	// deprecated: now referred to as tcp sockets
 	case ServiceTypeTls:
-		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeTls)) {
+		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeTls)...) {
 			return fmt.Errorf("service configuration for service type \"tls\" can only have tls service configuration defined")
 		}
 		if c.TlsServiceConfiguration == nil {
