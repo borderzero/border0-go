@@ -21,6 +21,9 @@ const (
 
 	// ServiceTypeTls is the service type for tls services (fka sockets).
 	ServiceTypeTls = "tls"
+
+	// ServiceTypeVnc is the service type for vnc services (fka sockets).
+	ServiceTypeVnc = "vnc"
 )
 
 // Configuration represents upstream service configuration.
@@ -32,6 +35,7 @@ type Configuration struct {
 	SshServiceConfiguration      *SshServiceConfiguration      `json:"ssh_service_configuration,omitempty"`
 	TcpServiceConfiguration      *TcpServiceConfiguration      `json:"tcp_service_configuration,omitempty"`
 	TlsServiceConfiguration      *TlsServiceConfiguration      `json:"tls_service_configuration,omitempty"`
+	VncServiceConfiguration      *VncServiceConfiguration      `json:"vnc_service_configuration,omitempty"`
 }
 
 // Validate validates the Configuration.
@@ -86,6 +90,18 @@ func (c *Configuration) Validate(allowExperimentalFeatures bool) error {
 		}
 		return nil
 
+	case ServiceTypeVnc:
+		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeVnc)...) {
+			return fmt.Errorf("service configuration for service type \"%s\" can only have %s service configuration defined", ServiceTypeVnc, ServiceTypeVnc)
+		}
+		if c.VncServiceConfiguration == nil {
+			return fmt.Errorf("service configuration for service type \"%s\" must have %s service configuration defined", ServiceTypeVnc, ServiceTypeVnc)
+		}
+		if err := c.VncServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid %s service configuration: %v", ServiceTypeVnc, err)
+		}
+		return nil
+
 	// deprecated: now referred to as tcp sockets
 	case ServiceTypeTls:
 		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeTls)) {
@@ -137,6 +153,9 @@ func allConfigsExcept(c *Configuration, svcType string) []any {
 	}
 	if svcType != ServiceTypeTls {
 		all = append(all, c.TlsServiceConfiguration)
+	}
+	if svcType != ServiceTypeVnc {
+		all = append(all, c.VncServiceConfiguration)
 	}
 
 	return all

@@ -6,4 +6,5 @@ const (
 	SocketTypeDatabase = "database" // Database socket type
 	SocketTypeTLS      = "tls"      // TLS socket type
 	SocketTypeTCP      = "tcp"      // TCP socket type
+	SocketTypeVNC      = "vnc"      // VNC socket type
 )
