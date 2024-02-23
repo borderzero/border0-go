@@ -25,6 +25,9 @@ const (
 	// ServiceTypeVnc is the service type for vnc services (fka sockets).
 	ServiceTypeVnc = "vnc"
 
+	// ServiceTypeVpn is the service type for vpn services (fka sockets).
+	ServiceTypeVpn = "vpn"
+
 	// ServiceTypeRdp is the service type for rdp services (fka sockets).
 	ServiceTypeRdp = "rdp"
 )
@@ -39,6 +42,7 @@ type Configuration struct {
 	TcpServiceConfiguration      *TcpServiceConfiguration      `json:"tcp_service_configuration,omitempty"`
 	TlsServiceConfiguration      *TlsServiceConfiguration      `json:"tls_service_configuration,omitempty"`
 	VncServiceConfiguration      *VncServiceConfiguration      `json:"vnc_service_configuration,omitempty"`
+	VpnServiceConfiguration      *VpnServiceConfiguration      `json:"vpn_service_configuration,omitempty"`
 	RdpServiceConfiguration      *RdpServiceConfiguration      `json:"rdp_service_configuration,omitempty"`
 }
 
@@ -103,6 +107,18 @@ func (c *Configuration) Validate(allowExperimentalFeatures bool) error {
 		}
 		if err := c.VncServiceConfiguration.Validate(); err != nil {
 			return fmt.Errorf("invalid %s service configuration: %v", ServiceTypeVnc, err)
+		}
+		return nil
+
+	case ServiceTypeVpn:
+		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeVpn)...) {
+			return fmt.Errorf("service configuration for service type \"%s\" can only have %s service configuration defined", ServiceTypeVpn, ServiceTypeVpn)
+		}
+		if c.VpnServiceConfiguration == nil {
+			return fmt.Errorf("service configuration for service type \"%s\" must have %s service configuration defined", ServiceTypeVpn, ServiceTypeVpn)
+		}
+		if err := c.VpnServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid %s service configuration: %v", ServiceTypeVpn, err)
 		}
 		return nil
 
@@ -172,6 +188,9 @@ func allConfigsExcept(c *Configuration, svcType string) []any {
 	}
 	if svcType != ServiceTypeVnc {
 		all = append(all, c.VncServiceConfiguration)
+	}
+	if svcType != ServiceTypeVpn {
+		all = append(all, c.VpnServiceConfiguration)
 	}
 	if svcType != ServiceTypeRdp {
 		all = append(all, c.RdpServiceConfiguration)
