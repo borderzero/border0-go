@@ -7,4 +7,5 @@ const (
 	SocketTypeTLS      = "tls"      // TLS socket type
 	SocketTypeTCP      = "tcp"      // TCP socket type
 	SocketTypeVNC      = "vnc"      // VNC socket type
+	SocketTypeRDP      = "rdp"      // RDP socket type
 )

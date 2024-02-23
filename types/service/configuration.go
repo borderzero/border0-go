@@ -24,6 +24,9 @@ const (
 
 	// ServiceTypeVnc is the service type for vnc services (fka sockets).
 	ServiceTypeVnc = "vnc"
+
+	// ServiceTypeRdp is the service type for rdp services (fka sockets).
+	ServiceTypeRdp = "rdp"
 )
 
 // Configuration represents upstream service configuration.
@@ -36,6 +39,7 @@ type Configuration struct {
 	TcpServiceConfiguration      *TcpServiceConfiguration      `json:"tcp_service_configuration,omitempty"`
 	TlsServiceConfiguration      *TlsServiceConfiguration      `json:"tls_service_configuration,omitempty"`
 	VncServiceConfiguration      *VncServiceConfiguration      `json:"vnc_service_configuration,omitempty"`
+	RdpServiceConfiguration      *RdpServiceConfiguration      `json:"rdp_service_configuration,omitempty"`
 }
 
 // Validate validates the Configuration.
@@ -102,6 +106,18 @@ func (c *Configuration) Validate(allowExperimentalFeatures bool) error {
 		}
 		return nil
 
+	case ServiceTypeRdp:
+		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeRdp)...) {
+			return fmt.Errorf("service configuration for service type \"%s\" can only have %s service configuration defined", ServiceTypeRdp, ServiceTypeRdp)
+		}
+		if c.RdpServiceConfiguration == nil {
+			return fmt.Errorf("service configuration for service type \"%s\" must have %s service configuration defined", ServiceTypeRdp, ServiceTypeRdp)
+		}
+		if err := c.RdpServiceConfiguration.Validate(); err != nil {
+			return fmt.Errorf("invalid %s service configuration: %v", ServiceTypeRdp, err)
+		}
+		return nil
+
 	// deprecated: now referred to as tcp sockets
 	case ServiceTypeTls:
 		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeTls)) {
@@ -156,6 +172,9 @@ func allConfigsExcept(c *Configuration, svcType string) []any {
 	}
 	if svcType != ServiceTypeVnc {
 		all = append(all, c.VncServiceConfiguration)
+	}
+	if svcType != ServiceTypeRdp {
+		all = append(all, c.RdpServiceConfiguration)
 	}
 
 	return all
