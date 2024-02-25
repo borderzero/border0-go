@@ -31,3 +31,8 @@ func AreAllNil(values ...any) bool {
 func AnyNotNil(values ...any) bool {
 	return !AreAllNil(values...)
 }
+
+// Nil returns true if the given value is nil.
+func Nil(value any) bool {
+	return AreAllNil(value)
+}
