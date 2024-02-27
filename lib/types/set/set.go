@@ -9,4 +9,5 @@ type Set[T comparable] interface {
 	Copy() Set[T]
 	Slice() []T
 	Size() int
+	Equals(Set[T]) bool
 }

@@ -387,3 +387,52 @@ func Test_ConcurrencySafeSetSize(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConcurrencySafeSetEquals(t *testing.T) {
+	t.Parallel()
+
+	mockElemA := "a"
+	mockElemB := "b"
+
+	testCCSet := NewConcurrencySafe(mockElemA)
+
+	tests := []struct {
+		name string
+		seta *ConcurrencySafeSet[string]
+		setb *ConcurrencySafeSet[string]
+		eq   bool
+	}{
+		{
+			name: "Empty sets should be equal",
+			seta: NewConcurrencySafe[string](),
+			setb: NewConcurrencySafe[string](),
+			eq:   true,
+		},
+		{
+			name: "Sets with equal elements should be equal",
+			seta: NewConcurrencySafe[string](mockElemA),
+			setb: NewConcurrencySafe[string](mockElemA),
+			eq:   true,
+		},
+		{
+			name: "Sets with different elements should not be equal",
+			seta: NewConcurrencySafe[string](mockElemA),
+			setb: NewConcurrencySafe[string](mockElemB),
+			eq:   false,
+		},
+		{
+			name: "Comparing against self should be equal (and not deadlock)",
+			seta: testCCSet,
+			setb: testCCSet,
+			eq:   true,
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.seta.Equals(test.setb), test.eq)
+		})
+	}
+}
