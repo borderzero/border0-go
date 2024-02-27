@@ -88,3 +88,19 @@ func (s *ConcurrencySafeSet[T]) Size() int {
 
 	return s.inner.Size()
 }
+
+// Equals returns true if a given set is equal (has the same elements).
+func (s *ConcurrencySafeSet[T]) Equals(comp Set[T]) bool {
+	// must check if both sets reference the same
+	// object, otherwise deadlock is possible.
+	if concurrencySafeSetB, sameType := comp.(*ConcurrencySafeSet[T]); sameType {
+		if s == concurrencySafeSetB {
+			return true
+		}
+	}
+
+	s.Lock()
+	defer s.Unlock()
+
+	return s.inner.Equals(comp)
+}

@@ -63,3 +63,18 @@ func (s SimpleSet[T]) Slice() []T {
 func (s SimpleSet[T]) Size() int {
 	return len(s)
 }
+
+// Equals returns true if a given set is equal (has the same elements).
+func (s SimpleSet[T]) Equals(comp Set[T]) bool {
+	if s.Size() != comp.Size() {
+		return false
+	}
+
+	for k := range s {
+		if !comp.Has(k) {
+			return false
+		}
+	}
+
+	return true
+}

@@ -379,3 +379,44 @@ func Test_SimpleSetSize(t *testing.T) {
 		})
 	}
 }
+
+func Test_SimpleSetEquals(t *testing.T) {
+	t.Parallel()
+
+	mockElemA := "a"
+	mockElemB := "b"
+
+	tests := []struct {
+		name string
+		seta SimpleSet[string]
+		setb SimpleSet[string]
+		eq   bool
+	}{
+		{
+			name: "Empty sets should be equal",
+			seta: New[string](),
+			setb: New[string](),
+			eq:   true,
+		},
+		{
+			name: "Sets with equal elements should be equal",
+			seta: New[string](mockElemA),
+			setb: New[string](mockElemA),
+			eq:   true,
+		},
+		{
+			name: "Sets with different elements should not be equal",
+			seta: New[string](mockElemA),
+			setb: New[string](mockElemB),
+			eq:   false,
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.seta.Equals(test.setb), test.eq)
+		})
+	}
+}
