@@ -215,7 +215,7 @@ type Border0CertificateAuthConfiguration struct {
 }
 
 // Validate validates the SshServiceConfiguration.
-func (c *SshServiceConfiguration) Validate(allowExperimentalFeatures bool) error {
+func (c *SshServiceConfiguration) Validate() error {
 	switch c.SshServiceType {
 
 	case SshServiceTypeAwsEc2InstanceConnect:

@@ -268,7 +268,7 @@ func Test_ValidateSshServiceConfiguration(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, test.expectedError, test.configuration.Validate(false))
+			assert.Equal(t, test.expectedError, test.configuration.Validate())
 		})
 	}
 }
