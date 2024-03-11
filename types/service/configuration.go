@@ -16,9 +16,6 @@ const (
 	// ServiceTypeSsh is the service type for ssh services (fka sockets).
 	ServiceTypeSsh = "ssh"
 
-	// ServiceTypeTcp is the service type for tcp services (fka sockets).
-	ServiceTypeTcp = "tcp"
-
 	// ServiceTypeTls is the service type for tls services (fka sockets).
 	ServiceTypeTls = "tls"
 
@@ -39,7 +36,6 @@ type Configuration struct {
 	DatabaseServiceConfiguration *DatabaseServiceConfiguration `json:"database_service_configuration,omitempty"`
 	HttpServiceConfiguration     *HttpServiceConfiguration     `json:"http_service_configuration,omitempty"`
 	SshServiceConfiguration      *SshServiceConfiguration      `json:"ssh_service_configuration,omitempty"`
-	TcpServiceConfiguration      *TcpServiceConfiguration      `json:"tcp_service_configuration,omitempty"`
 	TlsServiceConfiguration      *TlsServiceConfiguration      `json:"tls_service_configuration,omitempty"`
 	VncServiceConfiguration      *VncServiceConfiguration      `json:"vnc_service_configuration,omitempty"`
 	VpnServiceConfiguration      *VpnServiceConfiguration      `json:"vpn_service_configuration,omitempty"`
@@ -83,18 +79,6 @@ func (c *Configuration) Validate(allowExperimentalFeatures bool) error {
 		}
 		if err := c.SshServiceConfiguration.Validate(allowExperimentalFeatures); err != nil {
 			return fmt.Errorf("invalid ssh service configuration: %v", err)
-		}
-		return nil
-
-	case ServiceTypeTcp:
-		if nilcheck.AnyNotNil(allConfigsExcept(c, ServiceTypeTcp)...) {
-			return fmt.Errorf("service configuration for service type \"tcp\" can only have tcp service configuration defined")
-		}
-		if c.TcpServiceConfiguration == nil {
-			return fmt.Errorf("service configuration for service type \"tcp\" must have tcp service configuration defined")
-		}
-		if err := c.TcpServiceConfiguration.Validate(); err != nil {
-			return fmt.Errorf("invalid tcp service configuration: %v", err)
 		}
 		return nil
 
@@ -179,9 +163,6 @@ func allConfigsExcept(c *Configuration, svcType string) []any {
 	}
 	if svcType != ServiceTypeSsh {
 		all = append(all, c.SshServiceConfiguration)
-	}
-	if svcType != ServiceTypeTcp {
-		all = append(all, c.TcpServiceConfiguration)
 	}
 	if svcType != ServiceTypeTls {
 		all = append(all, c.TlsServiceConfiguration)
