@@ -1,6 +1,8 @@
 module github.com/borderzero/border0-go/examples
 
-go 1.20
+go 1.22
+
+toolchain go1.22.0
 
 require (
 	github.com/borderzero/border0-go v1.4.6
@@ -46,7 +48,7 @@ require (
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
