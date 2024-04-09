@@ -27,6 +27,10 @@ const (
 	// type for kubectl exec ssh services.
 	SshServiceTypeKubectlExec = "kubectl_exec"
 
+	// SshServiceTypeDockerExec is the ssh service
+	// type for docker exec ssh services.
+	SshServiceTypeDockerExec = "docker_exec"
+
 	// SshServiceTypeConnectorBuiltIn is the ssh service
 	// type for the connector's built-in ssh service.
 	SshServiceTypeConnectorBuiltIn = "connector_built_in_ssh_service"
@@ -90,6 +94,7 @@ type SshServiceConfiguration struct {
 	StandardSshServiceConfiguration    *StandardSshServiceConfiguration    `json:"standard_ssh_service_configuration,omitempty"`
 	AwsSsmSshServiceConfiguration      *AwsSsmSshServiceConfiguration      `json:"aws_ssm_ssh_service_configuration,omitempty"`
 	AwsEc2ICSshServiceConfiguration    *AwsEc2ICSshServiceConfiguration    `json:"aws_ec2ic_ssh_service_configuration,omitempty"`
+	DockerExecSshServiceConfiguration  *DockerExecSshServiceConfiguration  `json:"docker_exec_ssh_service_configuration,omitempty"`
 	KubectlExecSshServiceConfiguration *KubectlExecSshServiceConfiguration `json:"kubectl_exec_ssh_service_configuration,omitempty"`
 	BuiltInSshServiceConfiguration     *BuiltInSshServiceConfiguration     `json:"built_in_ssh_service_configuration,omitempty"`
 }
@@ -144,6 +149,12 @@ type AwsEc2ICSshServiceConfiguration struct {
 	Ec2InstanceId     string                 `json:"ec2_instance_id"`
 	Ec2InstanceRegion string                 `json:"ec2_instance_region"`
 	AwsCredentials    *common.AwsCredentials `json:"aws_credentials,omitempty"`
+}
+
+// DockerExecSshServiceConfiguration represents service
+// configuration for docker exec ssh services (fka sockets).
+type DockerExecSshServiceConfiguration struct {
+	// nothing yet
 }
 
 // KubectlExecSshServiceConfiguration represents service
@@ -219,7 +230,7 @@ func (c *SshServiceConfiguration) Validate() error {
 	switch c.SshServiceType {
 
 	case SshServiceTypeAwsEc2InstanceConnect:
-		if nilcheck.AnyNotNil(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.DockerExecSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have aws ec2 instance connect ssh service configuration defined",
 				SshServiceTypeAwsEc2InstanceConnect)
@@ -236,7 +247,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeAwsSsm:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.StandardSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.DockerExecSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have aws ssm ssh service configuration defined",
 				SshServiceTypeAwsSsm)
@@ -253,7 +264,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeConnectorBuiltIn:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.StandardSshServiceConfiguration, c.DockerExecSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have built in ssh service configuration defined",
 				SshServiceTypeConnectorBuiltIn)
@@ -270,7 +281,7 @@ func (c *SshServiceConfiguration) Validate() error {
 		return nil
 
 	case SshServiceTypeStandard:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.DockerExecSshServiceConfiguration, c.KubectlExecSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have standard ssh service configuration defined",
 				SshServiceTypeStandard)
@@ -285,8 +296,23 @@ func (c *SshServiceConfiguration) Validate() error {
 			return fmt.Errorf("invalid standard ssh service configuration: %v", err)
 		}
 		return nil
+
+	case SshServiceTypeDockerExec:
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.KubectlExecSshServiceConfiguration, c.StandardSshServiceConfiguration) {
+			return fmt.Errorf(
+				"ssh service type \"%s\" can only have docker exec ssh service configuration defined",
+				SshServiceTypeDockerExec)
+		}
+		// docker exec can be nil for now
+		if c.DockerExecSshServiceConfiguration != nil {
+			if err := c.DockerExecSshServiceConfiguration.Validate(); err != nil {
+				return fmt.Errorf("invalid docker exec ssh service configuration: %v", err)
+			}
+		}
+		return nil
+
 	case SshServiceTypeKubectlExec:
-		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.StandardSshServiceConfiguration) {
+		if nilcheck.AnyNotNil(c.AwsEc2ICSshServiceConfiguration, c.AwsSsmSshServiceConfiguration, c.BuiltInSshServiceConfiguration, c.DockerExecSshServiceConfiguration, c.StandardSshServiceConfiguration) {
 			return fmt.Errorf(
 				"ssh service type \"%s\" can only have kubectl exec ssh service configuration defined",
 				SshServiceTypeKubectlExec)
@@ -444,6 +470,12 @@ func (c *StandardSshServiceConfiguration) Validate() error {
 	default:
 		return fmt.Errorf("invalid value for ssh_authentication_type: %s", c.SshAuthenticationType)
 	}
+}
+
+// Validate validates a DockerExecSshServiceConfiguration.
+func (c *DockerExecSshServiceConfiguration) Validate() error {
+	// nothing yet
+	return nil
 }
 
 // Validate validates a KubectlExecSshServiceConfiguration.
