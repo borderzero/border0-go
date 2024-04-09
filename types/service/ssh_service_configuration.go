@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 
 	"github.com/borderzero/border0-go/lib/types/nilcheck"
 	"github.com/borderzero/border0-go/lib/types/set"
@@ -154,7 +155,7 @@ type AwsEc2ICSshServiceConfiguration struct {
 // DockerExecSshServiceConfiguration represents service
 // configuration for docker exec ssh services (fka sockets).
 type DockerExecSshServiceConfiguration struct {
-	// nothing yet
+	ContainerNameAllowlist []string `json:"container_name_allowlist,omitempty"`
 }
 
 // KubectlExecSshServiceConfiguration represents service
@@ -474,7 +475,25 @@ func (c *StandardSshServiceConfiguration) Validate() error {
 
 // Validate validates a DockerExecSshServiceConfiguration.
 func (c *DockerExecSshServiceConfiguration) Validate() error {
-	// nothing yet
+	regex := regexp.MustCompile(`^[a-zA-Z0-9*][a-zA-Z0-9*._\-]*$`)
+	entries := set.New[string]()
+	if len(c.ContainerNameAllowlist) > 0 {
+		for i, name := range c.ContainerNameAllowlist {
+			// reject empty string
+			if name == "" {
+				return fmt.Errorf("the container name allowlist entry in index %d is an empty string", i)
+			}
+			// make sure its valid
+			if !regex.MatchString(name) {
+				return fmt.Errorf("the container name allowlist entry in index %d (\"%s\") has invalid characters", i, name)
+			}
+			// make sure its not repeated
+			if entries.Has(name) {
+				return fmt.Errorf("the container name allowlist entry in index %d (\"%s\") is repeated", i, name)
+			}
+			entries.Add(name)
+		}
+	}
 	return nil
 }
 
