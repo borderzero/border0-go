@@ -1069,3 +1069,61 @@ func Test_ValidateBorder0CertificateAuthConfiguration(t *testing.T) {
 		})
 	}
 }
+
+func Test_ValidateDockerExecSshServiceConfiguration(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		configuration *DockerExecSshServiceConfiguration
+		expectedError error
+	}{
+		{
+			name:          "Should succeed when config is valid (nil allowlist)",
+			configuration: &DockerExecSshServiceConfiguration{},
+			expectedError: nil,
+		},
+		{
+			name:          "Should succeed when config is valid (empty allowlist)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{}},
+			expectedError: nil,
+		},
+		{
+			name:          "Should succeed when config is valid (valid allowlist just wildcard)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{"*"}},
+			expectedError: nil,
+		},
+		{
+			name:          "Should succeed when config is valid (valid allowlist no wildcards)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{"a", "b", "c"}},
+			expectedError: nil,
+		},
+		{
+			name:          "Should succeed when config is valid (valid allowlist with wildcards)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{"a-*", "b-*", "c"}},
+			expectedError: nil,
+		},
+		{
+			name:          "Should fail when config is not valid (empty string entries in allowlist)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{"a", ""}},
+			expectedError: errors.New("the container name allowlist entry in index 1 is an empty string"),
+		},
+		{
+			name:          "Should fail when config is not valid (repeated entries in allowlist)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{"a", "a"}},
+			expectedError: errors.New("the container name allowlist entry in index 1 (\"a\") is repeated"),
+		},
+		{
+			name:          "Should fail when config is not valid (bad pattern in allowlist)",
+			configuration: &DockerExecSshServiceConfiguration{ContainerNameAllowlist: []string{"a b"}}, // space is not valid
+			expectedError: errors.New("the container name allowlist entry in index 0 (\"a b\") has invalid characters"),
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, test.expectedError, test.configuration.Validate())
+		})
+	}
+}
