@@ -128,6 +128,9 @@ type Socket struct {
 
 	// associated policies
 	Policies []Policy `json:"policies,omitempty"`
+
+	// output fields
+	DNS string `json:"dnsname,omitempty"`
 }
 
 // SocketConnectors represents a list of connectors that are linked to a socket.
