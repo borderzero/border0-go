@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/client/mocks"
+	"github.com/borderzero/border0-go/client/reqedit"
 	"github.com/borderzero/border0-go/types/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -198,7 +199,7 @@ func Test_APIClient_CreateSocket(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPost, defaultBaseURL+"/socket", testSocket, new(Socket)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						socket := output.(*Socket)
 						*socket = *testSocket
 					})
@@ -270,7 +271,7 @@ func Test_APIClient_UpdateSocket(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPut, defaultBaseURL+"/socket/test-name", testSocket, new(Socket)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						socket := output.(*Socket)
 						*socket = *testSocket
 					})
@@ -578,7 +579,7 @@ func Test_APIClient_SignSocketKey(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPost, defaultBaseURL+"/socket/test-name/signkey", testKeyToSign, new(SignedSocketKey)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						signedKey := output.(*SignedSocketKey)
 						*signedKey = *testSignedKey
 					})

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/borderzero/border0-go/client/mocks"
+	"github.com/borderzero/border0-go/client/reqedit"
 	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 )
@@ -198,7 +199,7 @@ func Test_APIClient_request(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, testMethod, testURL, testInput, testOutput).
 					Return(http.StatusInternalServerError, errUnitTest).
-					Run(func(_ context.Context, _, _ string, _, _ any) {
+					Run(func(_ context.Context, _, _ string, _, _ any, _ ...reqedit.EditRequestFunc) {
 						cancel()
 					}).
 					Once()

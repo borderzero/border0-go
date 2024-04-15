@@ -5,6 +5,7 @@ package mocks
 import (
 	context "context"
 
+	reqedit "github.com/borderzero/border0-go/client/reqedit"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -53,9 +54,16 @@ func (_c *ClientHTTPRequester_Close_Call) RunAndReturn(run func()) *ClientHTTPRe
 	return _c
 }
 
-// Request provides a mock function with given fields: ctx, method, path, input, output
-func (_m *ClientHTTPRequester) Request(ctx context.Context, method string, path string, input interface{}, output interface{}) (int, error) {
-	ret := _m.Called(ctx, method, path, input, output)
+// Request provides a mock function with given fields: ctx, method, path, input, output, edits
+func (_m *ClientHTTPRequester) Request(ctx context.Context, method string, path string, input interface{}, output interface{}, edits ...reqedit.EditRequestFunc) (int, error) {
+	_va := make([]interface{}, len(edits))
+	for _i := range edits {
+		_va[_i] = edits[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, method, path, input, output)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Request")
@@ -63,17 +71,17 @@ func (_m *ClientHTTPRequester) Request(ctx context.Context, method string, path 
 
 	var r0 int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, interface{}, interface{}) (int, error)); ok {
-		return rf(ctx, method, path, input, output)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, interface{}, interface{}, ...reqedit.EditRequestFunc) (int, error)); ok {
+		return rf(ctx, method, path, input, output, edits...)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, interface{}, interface{}) int); ok {
-		r0 = rf(ctx, method, path, input, output)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, interface{}, interface{}, ...reqedit.EditRequestFunc) int); ok {
+		r0 = rf(ctx, method, path, input, output, edits...)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, interface{}, interface{}) error); ok {
-		r1 = rf(ctx, method, path, input, output)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, interface{}, interface{}, ...reqedit.EditRequestFunc) error); ok {
+		r1 = rf(ctx, method, path, input, output, edits...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -92,13 +100,21 @@ type ClientHTTPRequester_Request_Call struct {
 //   - path string
 //   - input interface{}
 //   - output interface{}
-func (_e *ClientHTTPRequester_Expecter) Request(ctx interface{}, method interface{}, path interface{}, input interface{}, output interface{}) *ClientHTTPRequester_Request_Call {
-	return &ClientHTTPRequester_Request_Call{Call: _e.mock.On("Request", ctx, method, path, input, output)}
+//   - edits ...reqedit.EditRequestFunc
+func (_e *ClientHTTPRequester_Expecter) Request(ctx interface{}, method interface{}, path interface{}, input interface{}, output interface{}, edits ...interface{}) *ClientHTTPRequester_Request_Call {
+	return &ClientHTTPRequester_Request_Call{Call: _e.mock.On("Request",
+		append([]interface{}{ctx, method, path, input, output}, edits...)...)}
 }
 
-func (_c *ClientHTTPRequester_Request_Call) Run(run func(ctx context.Context, method string, path string, input interface{}, output interface{})) *ClientHTTPRequester_Request_Call {
+func (_c *ClientHTTPRequester_Request_Call) Run(run func(ctx context.Context, method string, path string, input interface{}, output interface{}, edits ...reqedit.EditRequestFunc)) *ClientHTTPRequester_Request_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(interface{}), args[4].(interface{}))
+		variadicArgs := make([]reqedit.EditRequestFunc, len(args)-5)
+		for i, a := range args[5:] {
+			if a != nil {
+				variadicArgs[i] = a.(reqedit.EditRequestFunc)
+			}
+		}
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(interface{}), args[4].(interface{}), variadicArgs...)
 	})
 	return _c
 }
@@ -108,7 +124,7 @@ func (_c *ClientHTTPRequester_Request_Call) Return(_a0 int, _a1 error) *ClientHT
 	return _c
 }
 
-func (_c *ClientHTTPRequester_Request_Call) RunAndReturn(run func(context.Context, string, string, interface{}, interface{}) (int, error)) *ClientHTTPRequester_Request_Call {
+func (_c *ClientHTTPRequester_Request_Call) RunAndReturn(run func(context.Context, string, string, interface{}, interface{}, ...reqedit.EditRequestFunc) (int, error)) *ClientHTTPRequester_Request_Call {
 	_c.Call.Return(run)
 	return _c
 }
