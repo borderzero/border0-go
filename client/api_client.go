@@ -12,19 +12,21 @@ import (
 
 // APIClient is the client for the Border0 API.
 type APIClient struct {
-	http         HTTPRequester
-	timeout      time.Duration
-	authToken    string
-	baseURL      string
-	retryWaitMin time.Duration // minimum time to wait
-	retryWaitMax time.Duration // maximum time to wait
-	retryMax     int           // maximum number of retries
-	backoff      Backoff
+	http          HTTPRequester
+	timeout       time.Duration
+	authToken     string
+	baseURL       string
+	portalBaseURL string
+	retryWaitMin  time.Duration // minimum time to wait
+	retryWaitMax  time.Duration // maximum time to wait
+	retryMax      int           // maximum number of retries
+	backoff       Backoff
 }
 
 // Requester is the interface for the Border0 API client.
 type Requester interface {
 	TokenClaims() (jwt.MapClaims, error)
+	AuthenticationService
 	SocketService
 	ConnectorService
 	PolicyService
@@ -38,26 +40,31 @@ const (
 
 // default config setting values
 const (
-	defaultTimeout      = 10 * time.Second                 // default timeout for requests
-	defaultBaseURL      = "https://api.border0.com/api/v1" // default base URL for Border0 API
-	defaultRetryWaitMin = 1 * time.Second                  // default minimum time to wait between retries
-	defaultRetryWaitMax = 30 * time.Second                 // default maximum time to wait between retries
-	defaultRetryMax     = 4                                // default maximum number of retries
+	defaultTimeout       = 10 * time.Second                 // default timeout for requests
+	defaultBaseURL       = "https://api.border0.com/api/v1" // default base URL for Border0 API
+	defaultPortalBaseURL = "https://portal.border0.com"     // default base URL for Border0 (Admin) Portal
+	defaultRetryWaitMin  = 1 * time.Second                  // default minimum time to wait between retries
+	defaultRetryWaitMax  = 30 * time.Second                 // default maximum time to wait between retries
+	defaultRetryMax      = 4                                // default maximum number of retries
 )
 
 // New creates a new Border0 API client.
 func New(options ...Option) *APIClient {
 	api := &APIClient{
-		timeout:      defaultTimeout,
-		authToken:    os.Getenv("BORDER0_AUTH_TOKEN"),
-		baseURL:      os.Getenv("BORDER0_BASE_URL"),
-		retryWaitMin: defaultRetryWaitMin,
-		retryWaitMax: defaultRetryWaitMax,
-		retryMax:     defaultRetryMax,
-		backoff:      ExponentialBackoff,
+		timeout:       defaultTimeout,
+		authToken:     os.Getenv("BORDER0_AUTH_TOKEN"),
+		baseURL:       os.Getenv("BORDER0_BASE_URL"),
+		portalBaseURL: os.Getenv("BORDER0_PORTAL_BASE_URL"),
+		retryWaitMin:  defaultRetryWaitMin,
+		retryWaitMax:  defaultRetryWaitMax,
+		retryMax:      defaultRetryMax,
+		backoff:       ExponentialBackoff,
 	}
 	if api.baseURL == "" {
 		api.baseURL = defaultBaseURL
+	}
+	if api.portalBaseURL == "" {
+		api.portalBaseURL = defaultPortalBaseURL
 	}
 	for _, option := range options {
 		option(api)

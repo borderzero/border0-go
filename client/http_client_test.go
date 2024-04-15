@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -98,7 +99,7 @@ func Test_HTTPClient_Request(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, test.givenMethod, r.Method)
 				assert.Equal(t, test.givenPath, r.URL.Path)
-				assert.Equal(t, testToken, r.Header.Get(headerAccessToken))
+				assert.Equal(t, fmt.Sprintf("Bearer %s", testToken), r.Header.Get(headerAuthorization))
 				if test.givenInput == nil {
 					assert.Equal(t, applicationJSON, r.Header.Get(headerAccept))
 				} else {

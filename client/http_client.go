@@ -26,9 +26,9 @@ type HTTPRequester interface {
 
 const (
 	// HTTP header names
-	headerAccessToken = "x-access-token"
-	headerAccept      = "Accept"
-	headerContentType = "Content-Type"
+	headerAccept        = "Accept"
+	headerAuthorization = "Authorization"
+	headerContentType   = "Content-Type"
 
 	// HTTP header values
 	applicationJSON = "application/json"
@@ -49,7 +49,7 @@ func (h *HTTPClient) Request(ctx context.Context, method, path string, input, ou
 		return 0, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Add(headerAccessToken, h.token)
+	req.Header.Add(headerAuthorization, fmt.Sprintf("Bearer %s", h.token))
 	if input == nil {
 		req.Header.Set(headerAccept, applicationJSON)
 	} else {
