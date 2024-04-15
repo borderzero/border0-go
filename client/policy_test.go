@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/client/mocks"
+	"github.com/borderzero/border0-go/client/reqedit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -366,7 +367,7 @@ func Test_APIClient_CreatePolicy(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPost, defaultBaseURL+"/policies", testPolicyInput, new(Policy)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						policy := output.(*Policy)
 						*policy = *testPolicyOutput
 					})
@@ -446,7 +447,7 @@ func Test_APIClient_UpdatePolicy(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPut, defaultBaseURL+"/policy/test-id", testPolicyInput, new(Policy)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						policy := output.(*Policy)
 						*policy = *testPolicyOutput
 					})
