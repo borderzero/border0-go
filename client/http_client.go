@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/borderzero/border0-go/client/reqedit"
 )
 
 // HTTPClient is a wrapper around http.Client that handles authentication,
@@ -20,22 +22,23 @@ type HTTPClient struct {
 
 // HTTPRequester is an interface for HTTPClient.
 type HTTPRequester interface {
-	Request(ctx context.Context, method, path string, input, output any) (int, error)
+	Request(ctx context.Context, method, path string, input, output any, edits ...reqedit.EditRequestFunc) (int, error)
 	Close()
 }
 
 const (
 	// HTTP header names
-	headerAccessToken = "x-access-token"
-	headerAccept      = "Accept"
-	headerContentType = "Content-Type"
+	headerAccept          = "Accept"
+	headerAuthorization   = "Authorization"
+	headerDeviceAuthToken = "x-access-token"
+	headerContentType     = "Content-Type"
 
 	// HTTP header values
 	applicationJSON = "application/json"
 )
 
 // Request sends an HTTP request to the API server.
-func (h *HTTPClient) Request(ctx context.Context, method, path string, input, output any) (int, error) {
+func (h *HTTPClient) Request(ctx context.Context, method, path string, input, output any, edits ...reqedit.EditRequestFunc) (int, error) {
 	// create request
 	var buf bytes.Buffer
 	if input != nil {
@@ -49,7 +52,12 @@ func (h *HTTPClient) Request(ctx context.Context, method, path string, input, ou
 		return 0, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Add(headerAccessToken, h.token)
+	// apply any edits
+	for _, edit := range edits {
+		edit(req)
+	}
+
+	req.Header.Add(headerAuthorization, fmt.Sprintf("Bearer %s", h.token))
 	if input == nil {
 		req.Header.Set(headerAccept, applicationJSON)
 	} else {

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/client/mocks"
+	"github.com/borderzero/border0-go/client/reqedit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -201,7 +202,7 @@ func Test_APIClient_CreateConnector(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPost, defaultBaseURL+"/connector", testConnectorInput, new(Connector)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						connector := output.(*Connector)
 						*connector = *testConnectorOutput
 					})
@@ -272,7 +273,7 @@ func Test_APIClient_UpdateConnector(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPut, defaultBaseURL+"/connector", testConnector, new(Connector)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						connector := output.(*Connector)
 						*connector = *testConnector
 					})
@@ -589,7 +590,7 @@ func Test_APIClient_CreateConnectorToken(t *testing.T) {
 				requester.EXPECT().
 					Request(ctx, http.MethodPost, defaultBaseURL+"/connector/token", testConnectorTokenInput, new(ConnectorToken)).
 					Return(http.StatusOK, nil).
-					Run(func(_ context.Context, _, _ string, _, output any) {
+					Run(func(_ context.Context, _, _ string, _, output any, _ ...reqedit.EditRequestFunc) {
 						connectorToken := output.(*ConnectorToken)
 						*connectorToken = *testConnectorTokenOutput
 					})
