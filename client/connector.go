@@ -9,7 +9,7 @@ import (
 // ConnectorService is an interface for API client methods that interact with Border0 API to manage connectors and connector tokens.
 type ConnectorService interface {
 	Connector(ctx context.Context, id string) (out *Connector, err error)
-	Connectors(ctx context.Context) (out []Connector, err error)
+	Connectors(ctx context.Context) (out *Connectors, err error)
 	CreateConnector(ctx context.Context, in *Connector) (out *Connector, err error)
 	UpdateConnector(ctx context.Context, in *Connector) (out *Connector, err error)
 	DeleteConnector(ctx context.Context, id string) (err error)
@@ -33,8 +33,9 @@ func (api *APIClient) Connector(ctx context.Context, id string) (out *Connector,
 }
 
 // Connectors fetches all connectors in your Border0 organization.
-func (api *APIClient) Connectors(ctx context.Context) (out []Connector, err error) {
-	_, err = api.request(ctx, http.MethodGet, "/connectors", nil, &out)
+func (api *APIClient) Connectors(ctx context.Context) (out *Connectors, err error) {
+	out = new(Connectors)
+	_, err = api.request(ctx, http.MethodGet, "/connectors", nil, out)
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +144,11 @@ type ConnectorToken struct {
 	Token     string       `json:"token"`
 	CreatedBy string       `json:"created_by"`
 	CreatedAt FlexibleTime `json:"created_at"`
+}
+
+// Connectors represents a list of connectors.
+type Connectors struct {
+	List []Connector `json:"list"`
 }
 
 // ConnectorTokens represents a list of tokens for a connector.

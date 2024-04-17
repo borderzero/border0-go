@@ -362,23 +362,23 @@ func (_c *APIClientRequester_ConnectorTokens_Call) RunAndReturn(run func(context
 }
 
 // Connectors provides a mock function with given fields: ctx
-func (_m *APIClientRequester) Connectors(ctx context.Context) ([]client.Connector, error) {
+func (_m *APIClientRequester) Connectors(ctx context.Context) (*client.Connectors, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Connectors")
 	}
 
-	var r0 []client.Connector
+	var r0 *client.Connectors
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]client.Connector, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) (*client.Connectors, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []client.Connector); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) *client.Connectors); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]client.Connector)
+			r0 = ret.Get(0).(*client.Connectors)
 		}
 	}
 
@@ -409,12 +409,12 @@ func (_c *APIClientRequester_Connectors_Call) Run(run func(ctx context.Context))
 	return _c
 }
 
-func (_c *APIClientRequester_Connectors_Call) Return(out []client.Connector, err error) *APIClientRequester_Connectors_Call {
+func (_c *APIClientRequester_Connectors_Call) Return(out *client.Connectors, err error) *APIClientRequester_Connectors_Call {
 	_c.Call.Return(out, err)
 	return _c
 }
 
-func (_c *APIClientRequester_Connectors_Call) RunAndReturn(run func(context.Context) ([]client.Connector, error)) *APIClientRequester_Connectors_Call {
+func (_c *APIClientRequester_Connectors_Call) RunAndReturn(run func(context.Context) (*client.Connectors, error)) *APIClientRequester_Connectors_Call {
 	_c.Call.Return(run)
 	return _c
 }
