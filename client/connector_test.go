@@ -97,24 +97,26 @@ func Test_APIClient_Connector(t *testing.T) {
 func Test_APIClient_Connectors(t *testing.T) {
 	t.Parallel()
 
-	testConnectors := []Connector{
-		{Name: "test-name-1", ConnectorID: "test-id-1", Description: "Test description 1"},
-		{Name: "test-name-2", ConnectorID: "test-id-2", Description: "Test description 2"},
-		{Name: "test-name-3", ConnectorID: "test-id-3", Description: "Test description 3"},
-		{Name: "test-name-4", ConnectorID: "test-id-4", Description: "Test description 4"},
+	testConnectors := &Connectors{
+		List: []Connector{
+			{Name: "test-name-1", ConnectorID: "test-id-1", Description: "Test description 1"},
+			{Name: "test-name-2", ConnectorID: "test-id-2", Description: "Test description 2"},
+			{Name: "test-name-3", ConnectorID: "test-id-3", Description: "Test description 3"},
+			{Name: "test-name-4", ConnectorID: "test-id-4", Description: "Test description 4"},
+		},
 	}
 
 	tests := []struct {
 		name           string
 		mockRequester  func(context.Context, *mocks.ClientHTTPRequester)
-		wantConnectors []Connector
+		wantConnectors *Connectors
 		wantErr        error
 	}{
 		{
 			name: "failed to get connectors",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
-					Request(ctx, http.MethodGet, defaultBaseURL+"/connectors", nil, new([]Connector)).
+					Request(ctx, http.MethodGet, defaultBaseURL+"/connectors", nil, new(Connectors)).
 					Return(http.StatusInternalServerError, errors.New("failed to get connectors"))
 			},
 			wantConnectors: nil,
@@ -126,11 +128,11 @@ func Test_APIClient_Connectors(t *testing.T) {
 				// have to use On() instead of EXPECT() because we need to set the output
 				// and the Run() function would raise nil pointer panic if we use it with
 				// EXPECT()
-				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/connectors", nil, new([]Connector)).
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/connectors", nil, new(Connectors)).
 					Return(http.StatusOK, nil).
 					Run(func(args mock.Arguments) {
-						output := args.Get(4).(*[]Connector)
-						*output = testConnectors
+						output := args.Get(4).(*Connectors)
+						*output = *testConnectors
 					})
 			},
 			wantConnectors: testConnectors,
