@@ -9,4 +9,5 @@ const (
 	SocketTypeVNC      = "vnc"      // VNC socket type
 	SocketTypeVPN      = "vpn"      // VPN socket type
 	SocketTypeRDP      = "rdp"      // RDP socket type
+	SocketTypeDocker   = "docker"   // Docker socket type
 )

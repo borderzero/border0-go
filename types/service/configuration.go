@@ -27,6 +27,9 @@ const (
 
 	// ServiceTypeRdp is the service type for rdp services (fka sockets).
 	ServiceTypeRdp = "rdp"
+
+	// ServiceTypeDocker is the service type for docker services (fka sockets).
+	ServiceTypeDocker = "docker"
 )
 
 // Configuration represents upstream service configuration.
@@ -40,6 +43,7 @@ type Configuration struct {
 	VncServiceConfiguration      *VncServiceConfiguration      `json:"vnc_service_configuration,omitempty"`
 	VpnServiceConfiguration      *VpnServiceConfiguration      `json:"vpn_service_configuration,omitempty"`
 	RdpServiceConfiguration      *RdpServiceConfiguration      `json:"rdp_service_configuration,omitempty"`
+	DockerServiceConfiguration   *DockerServiceConfiguration   `json:"docker_service_configuration,omitempty"`
 }
 
 type validatable interface {
@@ -56,6 +60,7 @@ func (c *Configuration) Validate() error {
 		ServiceTypeVnc:      c.VncServiceConfiguration,
 		ServiceTypeVpn:      c.VpnServiceConfiguration,
 		ServiceTypeRdp:      c.RdpServiceConfiguration,
+		ServiceTypeDocker:   c.DockerServiceConfiguration,
 	}
 
 	if currentConfig, ok := all[c.ServiceType]; ok {
