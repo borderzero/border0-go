@@ -30,6 +30,9 @@ type Requester interface {
 	SocketService
 	ConnectorService
 	PolicyService
+	UserService
+	GroupService
+	ServiceAccountService
 }
 
 const (
