@@ -537,6 +537,65 @@ func (_c *APIClientRequester_CreateConnectorToken_Call) RunAndReturn(run func(co
 	return _c
 }
 
+// CreateGroup provides a mock function with given fields: ctx, in
+func (_m *APIClientRequester) CreateGroup(ctx context.Context, in *client.Group) (*client.Group, error) {
+	ret := _m.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateGroup")
+	}
+
+	var r0 *client.Group
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *client.Group) (*client.Group, error)); ok {
+		return rf(ctx, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *client.Group) *client.Group); ok {
+		r0 = rf(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Group)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *client.Group) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_CreateGroup_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateGroup'
+type APIClientRequester_CreateGroup_Call struct {
+	*mock.Call
+}
+
+// CreateGroup is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.Group
+func (_e *APIClientRequester_Expecter) CreateGroup(ctx interface{}, in interface{}) *APIClientRequester_CreateGroup_Call {
+	return &APIClientRequester_CreateGroup_Call{Call: _e.mock.On("CreateGroup", ctx, in)}
+}
+
+func (_c *APIClientRequester_CreateGroup_Call) Run(run func(ctx context.Context, in *client.Group)) *APIClientRequester_CreateGroup_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*client.Group))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_CreateGroup_Call) Return(out *client.Group, err error) *APIClientRequester_CreateGroup_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_CreateGroup_Call) RunAndReturn(run func(context.Context, *client.Group) (*client.Group, error)) *APIClientRequester_CreateGroup_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreatePolicy provides a mock function with given fields: ctx, in
 func (_m *APIClientRequester) CreatePolicy(ctx context.Context, in *client.Policy) (*client.Policy, error) {
 	ret := _m.Called(ctx, in)
@@ -596,6 +655,125 @@ func (_c *APIClientRequester_CreatePolicy_Call) RunAndReturn(run func(context.Co
 	return _c
 }
 
+// CreateServiceAccount provides a mock function with given fields: ctx, in
+func (_m *APIClientRequester) CreateServiceAccount(ctx context.Context, in *client.ServiceAccount) (*client.ServiceAccount, error) {
+	ret := _m.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateServiceAccount")
+	}
+
+	var r0 *client.ServiceAccount
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *client.ServiceAccount) (*client.ServiceAccount, error)); ok {
+		return rf(ctx, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *client.ServiceAccount) *client.ServiceAccount); ok {
+		r0 = rf(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ServiceAccount)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *client.ServiceAccount) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_CreateServiceAccount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateServiceAccount'
+type APIClientRequester_CreateServiceAccount_Call struct {
+	*mock.Call
+}
+
+// CreateServiceAccount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.ServiceAccount
+func (_e *APIClientRequester_Expecter) CreateServiceAccount(ctx interface{}, in interface{}) *APIClientRequester_CreateServiceAccount_Call {
+	return &APIClientRequester_CreateServiceAccount_Call{Call: _e.mock.On("CreateServiceAccount", ctx, in)}
+}
+
+func (_c *APIClientRequester_CreateServiceAccount_Call) Run(run func(ctx context.Context, in *client.ServiceAccount)) *APIClientRequester_CreateServiceAccount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*client.ServiceAccount))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_CreateServiceAccount_Call) Return(out *client.ServiceAccount, err error) *APIClientRequester_CreateServiceAccount_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_CreateServiceAccount_Call) RunAndReturn(run func(context.Context, *client.ServiceAccount) (*client.ServiceAccount, error)) *APIClientRequester_CreateServiceAccount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateServiceAccountToken provides a mock function with given fields: ctx, serviceAccountName, in
+func (_m *APIClientRequester) CreateServiceAccountToken(ctx context.Context, serviceAccountName string, in *client.ServiceAccountToken) (*client.ServiceAccountToken, error) {
+	ret := _m.Called(ctx, serviceAccountName, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateServiceAccountToken")
+	}
+
+	var r0 *client.ServiceAccountToken
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *client.ServiceAccountToken) (*client.ServiceAccountToken, error)); ok {
+		return rf(ctx, serviceAccountName, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, *client.ServiceAccountToken) *client.ServiceAccountToken); ok {
+		r0 = rf(ctx, serviceAccountName, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ServiceAccountToken)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, *client.ServiceAccountToken) error); ok {
+		r1 = rf(ctx, serviceAccountName, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_CreateServiceAccountToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateServiceAccountToken'
+type APIClientRequester_CreateServiceAccountToken_Call struct {
+	*mock.Call
+}
+
+// CreateServiceAccountToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceAccountName string
+//   - in *client.ServiceAccountToken
+func (_e *APIClientRequester_Expecter) CreateServiceAccountToken(ctx interface{}, serviceAccountName interface{}, in interface{}) *APIClientRequester_CreateServiceAccountToken_Call {
+	return &APIClientRequester_CreateServiceAccountToken_Call{Call: _e.mock.On("CreateServiceAccountToken", ctx, serviceAccountName, in)}
+}
+
+func (_c *APIClientRequester_CreateServiceAccountToken_Call) Run(run func(ctx context.Context, serviceAccountName string, in *client.ServiceAccountToken)) *APIClientRequester_CreateServiceAccountToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(*client.ServiceAccountToken))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_CreateServiceAccountToken_Call) Return(out *client.ServiceAccountToken, err error) *APIClientRequester_CreateServiceAccountToken_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_CreateServiceAccountToken_Call) RunAndReturn(run func(context.Context, string, *client.ServiceAccountToken) (*client.ServiceAccountToken, error)) *APIClientRequester_CreateServiceAccountToken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateSocket provides a mock function with given fields: ctx, in
 func (_m *APIClientRequester) CreateSocket(ctx context.Context, in *client.Socket) (*client.Socket, error) {
 	ret := _m.Called(ctx, in)
@@ -651,6 +829,80 @@ func (_c *APIClientRequester_CreateSocket_Call) Return(out *client.Socket, err e
 }
 
 func (_c *APIClientRequester_CreateSocket_Call) RunAndReturn(run func(context.Context, *client.Socket) (*client.Socket, error)) *APIClientRequester_CreateSocket_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateUser provides a mock function with given fields: ctx, in, opts
+func (_m *APIClientRequester) CreateUser(ctx context.Context, in *client.User, opts ...client.UserOption) (*client.User, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, in)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateUser")
+	}
+
+	var r0 *client.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *client.User, ...client.UserOption) (*client.User, error)); ok {
+		return rf(ctx, in, opts...)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *client.User, ...client.UserOption) *client.User); ok {
+		r0 = rf(ctx, in, opts...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *client.User, ...client.UserOption) error); ok {
+		r1 = rf(ctx, in, opts...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_CreateUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUser'
+type APIClientRequester_CreateUser_Call struct {
+	*mock.Call
+}
+
+// CreateUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.User
+//   - opts ...client.UserOption
+func (_e *APIClientRequester_Expecter) CreateUser(ctx interface{}, in interface{}, opts ...interface{}) *APIClientRequester_CreateUser_Call {
+	return &APIClientRequester_CreateUser_Call{Call: _e.mock.On("CreateUser",
+		append([]interface{}{ctx, in}, opts...)...)}
+}
+
+func (_c *APIClientRequester_CreateUser_Call) Run(run func(ctx context.Context, in *client.User, opts ...client.UserOption)) *APIClientRequester_CreateUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]client.UserOption, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(client.UserOption)
+			}
+		}
+		run(args[0].(context.Context), args[1].(*client.User), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_CreateUser_Call) Return(out *client.User, err error) *APIClientRequester_CreateUser_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_CreateUser_Call) RunAndReturn(run func(context.Context, *client.User, ...client.UserOption) (*client.User, error)) *APIClientRequester_CreateUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -750,6 +1002,53 @@ func (_c *APIClientRequester_DeleteConnectorToken_Call) RunAndReturn(run func(co
 	return _c
 }
 
+// DeleteGroup provides a mock function with given fields: ctx, id
+func (_m *APIClientRequester) DeleteGroup(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteGroup")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// APIClientRequester_DeleteGroup_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteGroup'
+type APIClientRequester_DeleteGroup_Call struct {
+	*mock.Call
+}
+
+// DeleteGroup is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) DeleteGroup(ctx interface{}, id interface{}) *APIClientRequester_DeleteGroup_Call {
+	return &APIClientRequester_DeleteGroup_Call{Call: _e.mock.On("DeleteGroup", ctx, id)}
+}
+
+func (_c *APIClientRequester_DeleteGroup_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_DeleteGroup_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteGroup_Call) Return(err error) *APIClientRequester_DeleteGroup_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteGroup_Call) RunAndReturn(run func(context.Context, string) error) *APIClientRequester_DeleteGroup_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeletePolicy provides a mock function with given fields: ctx, id
 func (_m *APIClientRequester) DeletePolicy(ctx context.Context, id string) error {
 	ret := _m.Called(ctx, id)
@@ -797,6 +1096,101 @@ func (_c *APIClientRequester_DeletePolicy_Call) RunAndReturn(run func(context.Co
 	return _c
 }
 
+// DeleteServiceAccount provides a mock function with given fields: ctx, id
+func (_m *APIClientRequester) DeleteServiceAccount(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteServiceAccount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// APIClientRequester_DeleteServiceAccount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteServiceAccount'
+type APIClientRequester_DeleteServiceAccount_Call struct {
+	*mock.Call
+}
+
+// DeleteServiceAccount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) DeleteServiceAccount(ctx interface{}, id interface{}) *APIClientRequester_DeleteServiceAccount_Call {
+	return &APIClientRequester_DeleteServiceAccount_Call{Call: _e.mock.On("DeleteServiceAccount", ctx, id)}
+}
+
+func (_c *APIClientRequester_DeleteServiceAccount_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_DeleteServiceAccount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteServiceAccount_Call) Return(err error) *APIClientRequester_DeleteServiceAccount_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteServiceAccount_Call) RunAndReturn(run func(context.Context, string) error) *APIClientRequester_DeleteServiceAccount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteServiceAccountToken provides a mock function with given fields: ctx, serviceAccountName, tokenID
+func (_m *APIClientRequester) DeleteServiceAccountToken(ctx context.Context, serviceAccountName string, tokenID string) error {
+	ret := _m.Called(ctx, serviceAccountName, tokenID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteServiceAccountToken")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, serviceAccountName, tokenID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// APIClientRequester_DeleteServiceAccountToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteServiceAccountToken'
+type APIClientRequester_DeleteServiceAccountToken_Call struct {
+	*mock.Call
+}
+
+// DeleteServiceAccountToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceAccountName string
+//   - tokenID string
+func (_e *APIClientRequester_Expecter) DeleteServiceAccountToken(ctx interface{}, serviceAccountName interface{}, tokenID interface{}) *APIClientRequester_DeleteServiceAccountToken_Call {
+	return &APIClientRequester_DeleteServiceAccountToken_Call{Call: _e.mock.On("DeleteServiceAccountToken", ctx, serviceAccountName, tokenID)}
+}
+
+func (_c *APIClientRequester_DeleteServiceAccountToken_Call) Run(run func(ctx context.Context, serviceAccountName string, tokenID string)) *APIClientRequester_DeleteServiceAccountToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteServiceAccountToken_Call) Return(err error) *APIClientRequester_DeleteServiceAccountToken_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteServiceAccountToken_Call) RunAndReturn(run func(context.Context, string, string) error) *APIClientRequester_DeleteServiceAccountToken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteSocket provides a mock function with given fields: ctx, idOrName
 func (_m *APIClientRequester) DeleteSocket(ctx context.Context, idOrName string) error {
 	ret := _m.Called(ctx, idOrName)
@@ -840,6 +1234,112 @@ func (_c *APIClientRequester_DeleteSocket_Call) Return(err error) *APIClientRequ
 }
 
 func (_c *APIClientRequester_DeleteSocket_Call) RunAndReturn(run func(context.Context, string) error) *APIClientRequester_DeleteSocket_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteUser provides a mock function with given fields: ctx, id
+func (_m *APIClientRequester) DeleteUser(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// APIClientRequester_DeleteUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteUser'
+type APIClientRequester_DeleteUser_Call struct {
+	*mock.Call
+}
+
+// DeleteUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) DeleteUser(ctx interface{}, id interface{}) *APIClientRequester_DeleteUser_Call {
+	return &APIClientRequester_DeleteUser_Call{Call: _e.mock.On("DeleteUser", ctx, id)}
+}
+
+func (_c *APIClientRequester_DeleteUser_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_DeleteUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteUser_Call) Return(err error) *APIClientRequester_DeleteUser_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteUser_Call) RunAndReturn(run func(context.Context, string) error) *APIClientRequester_DeleteUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Group provides a mock function with given fields: ctx, id
+func (_m *APIClientRequester) Group(ctx context.Context, id string) (*client.Group, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Group")
+	}
+
+	var r0 *client.Group
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*client.Group, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *client.Group); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Group)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_Group_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Group'
+type APIClientRequester_Group_Call struct {
+	*mock.Call
+}
+
+// Group is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) Group(ctx interface{}, id interface{}) *APIClientRequester_Group_Call {
+	return &APIClientRequester_Group_Call{Call: _e.mock.On("Group", ctx, id)}
+}
+
+func (_c *APIClientRequester_Group_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_Group_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_Group_Call) Return(out *client.Group, err error) *APIClientRequester_Group_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_Group_Call) RunAndReturn(run func(context.Context, string) (*client.Group, error)) *APIClientRequester_Group_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1126,6 +1626,125 @@ func (_c *APIClientRequester_RemovePolicyFromSocket_Call) Return(err error) *API
 }
 
 func (_c *APIClientRequester_RemovePolicyFromSocket_Call) RunAndReturn(run func(context.Context, string, string) error) *APIClientRequester_RemovePolicyFromSocket_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ServiceAccount provides a mock function with given fields: ctx, name
+func (_m *APIClientRequester) ServiceAccount(ctx context.Context, name string) (*client.ServiceAccount, error) {
+	ret := _m.Called(ctx, name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ServiceAccount")
+	}
+
+	var r0 *client.ServiceAccount
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*client.ServiceAccount, error)); ok {
+		return rf(ctx, name)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *client.ServiceAccount); ok {
+		r0 = rf(ctx, name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ServiceAccount)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_ServiceAccount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ServiceAccount'
+type APIClientRequester_ServiceAccount_Call struct {
+	*mock.Call
+}
+
+// ServiceAccount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *APIClientRequester_Expecter) ServiceAccount(ctx interface{}, name interface{}) *APIClientRequester_ServiceAccount_Call {
+	return &APIClientRequester_ServiceAccount_Call{Call: _e.mock.On("ServiceAccount", ctx, name)}
+}
+
+func (_c *APIClientRequester_ServiceAccount_Call) Run(run func(ctx context.Context, name string)) *APIClientRequester_ServiceAccount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_ServiceAccount_Call) Return(out *client.ServiceAccount, err error) *APIClientRequester_ServiceAccount_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_ServiceAccount_Call) RunAndReturn(run func(context.Context, string) (*client.ServiceAccount, error)) *APIClientRequester_ServiceAccount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ServiceAccountToken provides a mock function with given fields: ctx, serviceAccountName, tokenID
+func (_m *APIClientRequester) ServiceAccountToken(ctx context.Context, serviceAccountName string, tokenID string) (*client.ServiceAccountToken, error) {
+	ret := _m.Called(ctx, serviceAccountName, tokenID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ServiceAccountToken")
+	}
+
+	var r0 *client.ServiceAccountToken
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*client.ServiceAccountToken, error)); ok {
+		return rf(ctx, serviceAccountName, tokenID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *client.ServiceAccountToken); ok {
+		r0 = rf(ctx, serviceAccountName, tokenID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ServiceAccountToken)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, serviceAccountName, tokenID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_ServiceAccountToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ServiceAccountToken'
+type APIClientRequester_ServiceAccountToken_Call struct {
+	*mock.Call
+}
+
+// ServiceAccountToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceAccountName string
+//   - tokenID string
+func (_e *APIClientRequester_Expecter) ServiceAccountToken(ctx interface{}, serviceAccountName interface{}, tokenID interface{}) *APIClientRequester_ServiceAccountToken_Call {
+	return &APIClientRequester_ServiceAccountToken_Call{Call: _e.mock.On("ServiceAccountToken", ctx, serviceAccountName, tokenID)}
+}
+
+func (_c *APIClientRequester_ServiceAccountToken_Call) Run(run func(ctx context.Context, serviceAccountName string, tokenID string)) *APIClientRequester_ServiceAccountToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_ServiceAccountToken_Call) Return(out *client.ServiceAccountToken, err error) *APIClientRequester_ServiceAccountToken_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_ServiceAccountToken_Call) RunAndReturn(run func(context.Context, string, string) (*client.ServiceAccountToken, error)) *APIClientRequester_ServiceAccountToken_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1541,6 +2160,65 @@ func (_c *APIClientRequester_UpdateConnector_Call) RunAndReturn(run func(context
 	return _c
 }
 
+// UpdateGroup provides a mock function with given fields: ctx, in
+func (_m *APIClientRequester) UpdateGroup(ctx context.Context, in *client.Group) (*client.Group, error) {
+	ret := _m.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateGroup")
+	}
+
+	var r0 *client.Group
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *client.Group) (*client.Group, error)); ok {
+		return rf(ctx, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *client.Group) *client.Group); ok {
+		r0 = rf(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Group)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *client.Group) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_UpdateGroup_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateGroup'
+type APIClientRequester_UpdateGroup_Call struct {
+	*mock.Call
+}
+
+// UpdateGroup is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.Group
+func (_e *APIClientRequester_Expecter) UpdateGroup(ctx interface{}, in interface{}) *APIClientRequester_UpdateGroup_Call {
+	return &APIClientRequester_UpdateGroup_Call{Call: _e.mock.On("UpdateGroup", ctx, in)}
+}
+
+func (_c *APIClientRequester_UpdateGroup_Call) Run(run func(ctx context.Context, in *client.Group)) *APIClientRequester_UpdateGroup_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*client.Group))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateGroup_Call) Return(out *client.Group, err error) *APIClientRequester_UpdateGroup_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateGroup_Call) RunAndReturn(run func(context.Context, *client.Group) (*client.Group, error)) *APIClientRequester_UpdateGroup_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdatePolicy provides a mock function with given fields: ctx, id, in
 func (_m *APIClientRequester) UpdatePolicy(ctx context.Context, id string, in *client.Policy) (*client.Policy, error) {
 	ret := _m.Called(ctx, id, in)
@@ -1601,6 +2279,65 @@ func (_c *APIClientRequester_UpdatePolicy_Call) RunAndReturn(run func(context.Co
 	return _c
 }
 
+// UpdateServiceAccount provides a mock function with given fields: ctx, in
+func (_m *APIClientRequester) UpdateServiceAccount(ctx context.Context, in *client.ServiceAccount) (*client.ServiceAccount, error) {
+	ret := _m.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateServiceAccount")
+	}
+
+	var r0 *client.ServiceAccount
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *client.ServiceAccount) (*client.ServiceAccount, error)); ok {
+		return rf(ctx, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *client.ServiceAccount) *client.ServiceAccount); ok {
+		r0 = rf(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ServiceAccount)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *client.ServiceAccount) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_UpdateServiceAccount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateServiceAccount'
+type APIClientRequester_UpdateServiceAccount_Call struct {
+	*mock.Call
+}
+
+// UpdateServiceAccount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.ServiceAccount
+func (_e *APIClientRequester_Expecter) UpdateServiceAccount(ctx interface{}, in interface{}) *APIClientRequester_UpdateServiceAccount_Call {
+	return &APIClientRequester_UpdateServiceAccount_Call{Call: _e.mock.On("UpdateServiceAccount", ctx, in)}
+}
+
+func (_c *APIClientRequester_UpdateServiceAccount_Call) Run(run func(ctx context.Context, in *client.ServiceAccount)) *APIClientRequester_UpdateServiceAccount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*client.ServiceAccount))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateServiceAccount_Call) Return(out *client.ServiceAccount, err error) *APIClientRequester_UpdateServiceAccount_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateServiceAccount_Call) RunAndReturn(run func(context.Context, *client.ServiceAccount) (*client.ServiceAccount, error)) *APIClientRequester_UpdateServiceAccount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateSocket provides a mock function with given fields: ctx, idOrName, in
 func (_m *APIClientRequester) UpdateSocket(ctx context.Context, idOrName string, in *client.Socket) (*client.Socket, error) {
 	ret := _m.Called(ctx, idOrName, in)
@@ -1657,6 +2394,124 @@ func (_c *APIClientRequester_UpdateSocket_Call) Return(out *client.Socket, err e
 }
 
 func (_c *APIClientRequester_UpdateSocket_Call) RunAndReturn(run func(context.Context, string, *client.Socket) (*client.Socket, error)) *APIClientRequester_UpdateSocket_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUser provides a mock function with given fields: ctx, in
+func (_m *APIClientRequester) UpdateUser(ctx context.Context, in *client.User) (*client.User, error) {
+	ret := _m.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUser")
+	}
+
+	var r0 *client.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *client.User) (*client.User, error)); ok {
+		return rf(ctx, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *client.User) *client.User); ok {
+		r0 = rf(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *client.User) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_UpdateUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUser'
+type APIClientRequester_UpdateUser_Call struct {
+	*mock.Call
+}
+
+// UpdateUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.User
+func (_e *APIClientRequester_Expecter) UpdateUser(ctx interface{}, in interface{}) *APIClientRequester_UpdateUser_Call {
+	return &APIClientRequester_UpdateUser_Call{Call: _e.mock.On("UpdateUser", ctx, in)}
+}
+
+func (_c *APIClientRequester_UpdateUser_Call) Run(run func(ctx context.Context, in *client.User)) *APIClientRequester_UpdateUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*client.User))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateUser_Call) Return(out *client.User, err error) *APIClientRequester_UpdateUser_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateUser_Call) RunAndReturn(run func(context.Context, *client.User) (*client.User, error)) *APIClientRequester_UpdateUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// User provides a mock function with given fields: ctx, id
+func (_m *APIClientRequester) User(ctx context.Context, id string) (*client.User, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for User")
+	}
+
+	var r0 *client.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*client.User, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *client.User); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_User_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'User'
+type APIClientRequester_User_Call struct {
+	*mock.Call
+}
+
+// User is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) User(ctx interface{}, id interface{}) *APIClientRequester_User_Call {
+	return &APIClientRequester_User_Call{Call: _e.mock.On("User", ctx, id)}
+}
+
+func (_c *APIClientRequester_User_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_User_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_User_Call) Return(out *client.User, err error) *APIClientRequester_User_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_User_Call) RunAndReturn(run func(context.Context, string) (*client.User, error)) *APIClientRequester_User_Call {
 	_c.Call.Return(run)
 	return _c
 }
