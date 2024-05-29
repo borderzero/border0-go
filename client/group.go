@@ -11,6 +11,7 @@ type GroupService interface {
 	Group(ctx context.Context, id string) (out *Group, err error)
 	CreateGroup(ctx context.Context, in *Group) (out *Group, err error)
 	UpdateGroup(ctx context.Context, in *Group) (out *Group, err error)
+	UpdateGroupMemberships(ctx context.Context, in *Group, userIDs []string) (out *Group, err error)
 	DeleteGroup(ctx context.Context, id string) (err error)
 }
 
@@ -50,6 +51,19 @@ func (api *APIClient) UpdateGroup(ctx context.Context, in *Group) (out *Group, e
 	return out, nil
 }
 
+// UpdateGroupMemberships updates an existing group's memberships in your Border0 organization.
+func (api *APIClient) UpdateGroupMemberships(ctx context.Context, in *Group, userIDs []string) (out *Group, err error) {
+	input := &groupMemberships{ID: in.ID, Users: userIDs}
+	_, err = api.request(ctx, http.MethodPut, "/organizations/iam/groups/memberships", input, nil)
+	if err != nil {
+		if NotFound(err) {
+			return nil, fmt.Errorf("group with ID [%s] not found: %w", in.ID, err)
+		}
+		return nil, err
+	}
+	return api.Group(ctx, in.ID)
+}
+
 // DeleteGroup deletes an existing group from your Border0 organization.
 func (api *APIClient) DeleteGroup(ctx context.Context, id string) (err error) {
 	_, err = api.request(ctx, http.MethodDelete, fmt.Sprintf("/organizations/iam/groups/%s", id), nil, nil)
@@ -72,4 +86,9 @@ type Group struct {
 	GroupType        string            `json:"group_type"`
 	DirectoryService *DirectoryService `json:"directory_service,omitempty"`
 	Members          []User            `json:"members,omitempty"`
+}
+
+type groupMemberships struct {
+	ID    string   `json:"id"`
+	Users []string `json:"users"`
 }
