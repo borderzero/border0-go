@@ -9,6 +9,7 @@ import (
 // UserService is an interface for API client methods that interact with Border0 API to manage users.
 type UserService interface {
 	User(ctx context.Context, id string) (out *User, err error)
+	Users(ctx context.Context) (out *Users, err error)
 	CreateUser(ctx context.Context, in *User, opts ...UserOption) (out *User, err error)
 	UpdateUser(ctx context.Context, in *User) (out *User, err error)
 	DeleteUser(ctx context.Context, id string) (err error)
@@ -34,6 +35,16 @@ func (api *APIClient) User(ctx context.Context, id string) (out *User, err error
 		if NotFound(err) {
 			return nil, fmt.Errorf("user with ID [%s] not found: %w", id, err)
 		}
+		return nil, err
+	}
+	return out, nil
+}
+
+// Users fetches all users from your Border0 organization.
+func (api *APIClient) Users(ctx context.Context) (out *Users, err error) {
+	out = new(Users)
+	_, err = api.request(ctx, http.MethodGet, "/organizations/iam/users", nil, out)
+	if err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -94,6 +105,11 @@ type User struct {
 	ID               string            `json:"id"`
 	UserType         string            `json:"user_type"`
 	DirectoryService *DirectoryService `json:"directory_service,omitempty"`
+}
+
+// Users represents a list of users in your Border0 organization.
+type Users struct {
+	List []User `json:"list"`
 }
 
 // DirectoryService represents a directory service in your Border0 organization.
