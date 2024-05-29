@@ -2516,6 +2516,64 @@ func (_c *APIClientRequester_User_Call) RunAndReturn(run func(context.Context, s
 	return _c
 }
 
+// Users provides a mock function with given fields: ctx
+func (_m *APIClientRequester) Users(ctx context.Context) (*client.Users, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Users")
+	}
+
+	var r0 *client.Users
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*client.Users, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *client.Users); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Users)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_Users_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Users'
+type APIClientRequester_Users_Call struct {
+	*mock.Call
+}
+
+// Users is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *APIClientRequester_Expecter) Users(ctx interface{}) *APIClientRequester_Users_Call {
+	return &APIClientRequester_Users_Call{Call: _e.mock.On("Users", ctx)}
+}
+
+func (_c *APIClientRequester_Users_Call) Run(run func(ctx context.Context)) *APIClientRequester_Users_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_Users_Call) Return(out *client.Users, err error) *APIClientRequester_Users_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_Users_Call) RunAndReturn(run func(context.Context) (*client.Users, error)) *APIClientRequester_Users_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewAPIClientRequester creates a new instance of APIClientRequester. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewAPIClientRequester(t interface {
