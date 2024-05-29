@@ -11,7 +11,7 @@ type ServiceAccountService interface {
 	ServiceAccount(ctx context.Context, name string) (out *ServiceAccount, err error)
 	CreateServiceAccount(ctx context.Context, in *ServiceAccount) (out *ServiceAccount, err error)
 	UpdateServiceAccount(ctx context.Context, in *ServiceAccount) (out *ServiceAccount, err error)
-	DeleteServiceAccount(ctx context.Context, id string) (err error)
+	DeleteServiceAccount(ctx context.Context, name string) (err error)
 	CreateServiceAccountToken(ctx context.Context, serviceAccountName string, in *ServiceAccountToken) (out *ServiceAccountToken, err error)
 	DeleteServiceAccountToken(ctx context.Context, serviceAccountName, tokenID string) (err error)
 }

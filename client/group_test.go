@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/client/mocks"
+	"github.com/borderzero/border0-go/lib/types/slice"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -231,6 +232,115 @@ func Test_APIClient_UpdateGroup(t *testing.T) {
 				assert.EqualError(t, gotErr, test.wantErr.Error())
 			}
 			assert.Equal(t, test.wantGroup, gotGroup)
+		})
+	}
+}
+
+func Test_APIClient_UpdateGroupMemberships(t *testing.T) {
+	t.Parallel()
+
+	testUser1 := User{ID: "test-user-1", Email: "testuser1@gmail.com"}
+	testUser2 := User{ID: "test-user-2", Email: "testuser2@gmail.com"}
+	testUser3 := User{ID: "test-user-3", Email: "testuser3@gmail.com"}
+
+	usersBefore := []User{testUser1, testUser2}
+	usersAfter := []User{testUser1, testUser2, testUser3}
+
+	testInputGroup := &Group{
+		DisplayName: "Test description",
+		ID:          "test-id-2",
+		Members:     usersBefore,
+	}
+
+	testOutputGroup := &Group{
+		DisplayName: "Test description",
+		ID:          "test-id-2",
+		Members:     usersAfter,
+	}
+
+	tests := []struct {
+		name          string
+		mockRequester func(context.Context, *mocks.ClientHTTPRequester)
+		givenGroup    *Group
+		givenUserIDs  []string
+		wantGroup     *Group
+		wantErr       error
+	}{
+		{
+			name: "failed to update group memberships",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				testPayload := &groupMemberships{ID: testInputGroup.ID, Users: slice.Transform(usersAfter, func(u User) string { return u.ID })}
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, fmt.Sprintf("%s/organizations/iam/groups/memberships", defaultBaseURL), testPayload, nil).
+					Return(http.StatusBadRequest, errors.New("failed to update group memberships"))
+			},
+			givenGroup:   testInputGroup,
+			givenUserIDs: slice.Transform(usersAfter, func(u User) string { return u.ID }),
+			wantGroup:    nil,
+			wantErr:      errors.New("failed after 1 attempt: failed to update group memberships"),
+		},
+		{
+			name: "404 not found error returned, let's make sure we wrap the error with more info",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				testPayload := &groupMemberships{ID: testInputGroup.ID, Users: slice.Transform(usersAfter, func(u User) string { return u.ID })}
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, fmt.Sprintf("%s/organizations/iam/groups/memberships", defaultBaseURL), testPayload, nil).
+					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "group not found"})
+			},
+			givenGroup:   testInputGroup,
+			givenUserIDs: slice.Transform(usersAfter, func(u User) string { return u.ID }),
+			wantGroup:    nil,
+			wantErr:      errors.New("group with ID [test-id-2] not found: failed after 4 attempts: 404: group not found"),
+		},
+		{
+			name: "happy path",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				testPayload := &groupMemberships{ID: testInputGroup.ID, Users: slice.Transform(usersAfter, func(u User) string { return u.ID })}
+				requester.EXPECT().
+					Request(ctx, http.MethodPut, fmt.Sprintf("%s/organizations/iam/groups/memberships", defaultBaseURL), testPayload, nil).
+					Return(http.StatusNoContent, nil)
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, fmt.Sprintf("%s/organizations/iam/groups/%s", defaultBaseURL, testInputGroup.ID), nil, new(Group)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*Group)
+						*output = *testOutputGroup
+					})
+			},
+			givenGroup:   testInputGroup,
+			givenUserIDs: slice.Transform(usersAfter, func(u User) string { return u.ID }),
+			wantGroup:    testOutputGroup,
+			wantErr:      nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotGroup, gotErr := api.UpdateGroupMemberships(ctx, test.givenGroup, test.givenUserIDs)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+			assert.Equal(t, test.wantGroup, gotGroup)
+			if test.wantGroup != nil {
+				assert.Equal(t, slice.Transform(test.wantGroup.Members, func(u User) string { return u.ID }), test.givenUserIDs)
+			}
 		})
 	}
 }
