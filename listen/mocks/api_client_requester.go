@@ -1689,6 +1689,65 @@ func (_c *APIClientRequester_ServiceAccount_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// ServiceAccountTokens provides a mock function with given fields: ctx, serviceAccountName
+func (_m *APIClientRequester) ServiceAccountTokens(ctx context.Context, serviceAccountName string) (*client.ServiceAccountTokens, error) {
+	ret := _m.Called(ctx, serviceAccountName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ServiceAccountTokens")
+	}
+
+	var r0 *client.ServiceAccountTokens
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*client.ServiceAccountTokens, error)); ok {
+		return rf(ctx, serviceAccountName)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *client.ServiceAccountTokens); ok {
+		r0 = rf(ctx, serviceAccountName)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ServiceAccountTokens)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, serviceAccountName)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_ServiceAccountTokens_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ServiceAccountTokens'
+type APIClientRequester_ServiceAccountTokens_Call struct {
+	*mock.Call
+}
+
+// ServiceAccountTokens is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceAccountName string
+func (_e *APIClientRequester_Expecter) ServiceAccountTokens(ctx interface{}, serviceAccountName interface{}) *APIClientRequester_ServiceAccountTokens_Call {
+	return &APIClientRequester_ServiceAccountTokens_Call{Call: _e.mock.On("ServiceAccountTokens", ctx, serviceAccountName)}
+}
+
+func (_c *APIClientRequester_ServiceAccountTokens_Call) Run(run func(ctx context.Context, serviceAccountName string)) *APIClientRequester_ServiceAccountTokens_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_ServiceAccountTokens_Call) Return(out *client.ServiceAccountTokens, err error) *APIClientRequester_ServiceAccountTokens_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_ServiceAccountTokens_Call) RunAndReturn(run func(context.Context, string) (*client.ServiceAccountTokens, error)) *APIClientRequester_ServiceAccountTokens_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SignSocketKey provides a mock function with given fields: ctx, idOrName, in
 func (_m *APIClientRequester) SignSocketKey(ctx context.Context, idOrName string, in *client.SocketKeyToSign) (*client.SignedSocketKey, error) {
 	ret := _m.Called(ctx, idOrName, in)
