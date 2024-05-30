@@ -12,6 +12,7 @@ type ServiceAccountService interface {
 	CreateServiceAccount(ctx context.Context, in *ServiceAccount) (out *ServiceAccount, err error)
 	UpdateServiceAccount(ctx context.Context, in *ServiceAccount) (out *ServiceAccount, err error)
 	DeleteServiceAccount(ctx context.Context, name string) (err error)
+	ServiceAccountTokens(ctx context.Context, serviceAccountName string) (out *ServiceAccountTokens, err error)
 	CreateServiceAccountToken(ctx context.Context, serviceAccountName string, in *ServiceAccountToken) (out *ServiceAccountToken, err error)
 	DeleteServiceAccountToken(ctx context.Context, serviceAccountName, tokenID string) (err error)
 }
@@ -66,6 +67,19 @@ func (api *APIClient) DeleteServiceAccount(ctx context.Context, name string) (er
 	return nil
 }
 
+// ServiceAccountTokens fetches service account tokens for a given service account in your Border0 organization (by service account name).
+func (api *APIClient) ServiceAccountTokens(ctx context.Context, serviceAccountName string) (out *ServiceAccountTokens, err error) {
+	out = new(ServiceAccountTokens)
+	_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/organizations/iam/service_accounts/%s/tokens", serviceAccountName), nil, out)
+	if err != nil {
+		if NotFound(err) {
+			return nil, fmt.Errorf("service account with name [%s] not found: %w", serviceAccountName, err)
+		}
+		return nil, err
+	}
+	return out, nil
+}
+
 // CreateServiceAccountToken creates a new token for a service account. The token is used to authenticate connector with the
 // Border0 API. The token can be created with or without a expiration date. If ExpiresAt field is not set, token will not expire.
 func (api *APIClient) CreateServiceAccountToken(ctx context.Context, serviceAccountName string, in *ServiceAccountToken) (out *ServiceAccountToken, err error) {
@@ -114,4 +128,9 @@ type ServiceAccountToken struct {
 	ID        string       `json:"id"`
 	Token     string       `json:"token"`
 	CreatedAt FlexibleTime `json:"created_at"`
+}
+
+// ServiceAccountTokens represents a list of service account tokens in your Border0 organization.
+type ServiceAccountTokens struct {
+	List []ServiceAccountToken `json:"list"`
 }

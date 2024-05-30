@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/borderzero/border0-go/client/mocks"
 	"github.com/stretchr/testify/assert"
@@ -313,6 +314,111 @@ func Test_APIClient_DeleteServiceAccount(t *testing.T) {
 			} else {
 				assert.EqualError(t, gotErr, test.wantErr.Error())
 			}
+		})
+	}
+}
+
+func Test_APIClient_ServiceAccountTokens(t *testing.T) {
+	t.Parallel()
+
+	testServiceAccount := &ServiceAccount{
+		Name:        "test-name",
+		Description: "Test description",
+		Role:        "admin",
+		ID:          "test-id",
+	}
+
+	testServiceAccountTokensList := []ServiceAccountToken{
+		{
+			ID:        "token-id-1",
+			Name:      "token id 1",
+			ExpiresAt: FlexibleTime{time.Now()},
+		},
+		{
+			ID:        "token-id-2",
+			Name:      "token id 2",
+			ExpiresAt: FlexibleTime{time.Now()},
+		},
+		{
+			ID:        "token-id-3",
+			Name:      "token id 3",
+			ExpiresAt: FlexibleTime{time.Now()},
+		},
+	}
+
+	testServiceAccountTokens := &ServiceAccountTokens{
+		List: testServiceAccountTokensList,
+	}
+
+	tests := []struct {
+		name                     string
+		mockRequester            func(context.Context, *mocks.ClientHTTPRequester)
+		givenServiceAccountName  string
+		wantServiceAccountTokens *ServiceAccountTokens
+		wantErr                  error
+	}{
+		{
+			name: "failed to get service account",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, fmt.Sprintf("%s/organizations/iam/service_accounts/%s/tokens", defaultBaseURL, testServiceAccount.Name), nil, new(ServiceAccountTokens)).
+					Return(http.StatusBadRequest, errors.New("failed to get service account"))
+			},
+			givenServiceAccountName:  testServiceAccount.Name,
+			wantServiceAccountTokens: nil,
+			wantErr:                  errors.New("failed after 1 attempt: failed to get service account"),
+		},
+		{
+			name: "404 not found error returned, let's make sure we wrap the error with more info",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, fmt.Sprintf("%s/organizations/iam/service_accounts/%s/tokens", defaultBaseURL, testServiceAccount.Name), nil, new(ServiceAccountTokens)).
+					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "service account not found"})
+			},
+			givenServiceAccountName: testServiceAccount.Name,
+			wantErr:                 errors.New("service account with name [test-name] not found: failed after 4 attempts: 404: service account not found"),
+		},
+		{
+			name: "happy path",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// have to use On() instead of EXPECT() because we need to set the output
+				// and the Run() function would raise nil pointer panic if we use it with
+				// EXPECT()
+				requester.On("Request", ctx, http.MethodGet, fmt.Sprintf("%s/organizations/iam/service_accounts/%s/tokens", defaultBaseURL, testServiceAccount.Name), nil, new(ServiceAccountTokens)).
+					Return(http.StatusOK, nil).
+					Run(func(args mock.Arguments) {
+						output := args.Get(4).(*ServiceAccountTokens)
+						*output = *testServiceAccountTokens
+					})
+			},
+			givenServiceAccountName:  testServiceAccount.Name,
+			wantServiceAccountTokens: testServiceAccountTokens,
+			wantErr:                  nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
+
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
+
+			gotServiceAccountTokens, gotErr := api.ServiceAccountTokens(ctx, test.givenServiceAccountName)
+
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+			assert.Equal(t, test.wantServiceAccountTokens, gotServiceAccountTokens)
 		})
 	}
 }
