@@ -27,19 +27,23 @@ const (
 
 	// ServiceTypeRdp is the service type for rdp services (fka sockets).
 	ServiceTypeRdp = "rdp"
+
+	// ServiceTypeKubernetes is the service type for kubernetes services (fka sockets).
+	ServiceTypeKubernetes = "kubernetes"
 )
 
 // Configuration represents upstream service configuration.
 type Configuration struct {
 	ServiceType string `json:"service_type"`
 
-	DatabaseServiceConfiguration *DatabaseServiceConfiguration `json:"database_service_configuration,omitempty"`
-	HttpServiceConfiguration     *HttpServiceConfiguration     `json:"http_service_configuration,omitempty"`
-	SshServiceConfiguration      *SshServiceConfiguration      `json:"ssh_service_configuration,omitempty"`
-	TlsServiceConfiguration      *TlsServiceConfiguration      `json:"tls_service_configuration,omitempty"`
-	VncServiceConfiguration      *VncServiceConfiguration      `json:"vnc_service_configuration,omitempty"`
-	VpnServiceConfiguration      *VpnServiceConfiguration      `json:"vpn_service_configuration,omitempty"`
-	RdpServiceConfiguration      *RdpServiceConfiguration      `json:"rdp_service_configuration,omitempty"`
+	DatabaseServiceConfiguration   *DatabaseServiceConfiguration   `json:"database_service_configuration,omitempty"`
+	HttpServiceConfiguration       *HttpServiceConfiguration       `json:"http_service_configuration,omitempty"`
+	SshServiceConfiguration        *SshServiceConfiguration        `json:"ssh_service_configuration,omitempty"`
+	TlsServiceConfiguration        *TlsServiceConfiguration        `json:"tls_service_configuration,omitempty"`
+	VncServiceConfiguration        *VncServiceConfiguration        `json:"vnc_service_configuration,omitempty"`
+	VpnServiceConfiguration        *VpnServiceConfiguration        `json:"vpn_service_configuration,omitempty"`
+	RdpServiceConfiguration        *RdpServiceConfiguration        `json:"rdp_service_configuration,omitempty"`
+	KubernetesServiceConfiguration *KubernetesServiceConfiguration `json:"kubernetes_service_configuration,omitempty"`
 }
 
 type validatable interface {
@@ -49,13 +53,14 @@ type validatable interface {
 // Validate validates the Configuration.
 func (c *Configuration) Validate() error {
 	all := map[string]validatable{
-		ServiceTypeDatabase: c.DatabaseServiceConfiguration,
-		ServiceTypeHttp:     c.HttpServiceConfiguration,
-		ServiceTypeSsh:      c.SshServiceConfiguration,
-		ServiceTypeTls:      c.TlsServiceConfiguration,
-		ServiceTypeVnc:      c.VncServiceConfiguration,
-		ServiceTypeVpn:      c.VpnServiceConfiguration,
-		ServiceTypeRdp:      c.RdpServiceConfiguration,
+		ServiceTypeDatabase:   c.DatabaseServiceConfiguration,
+		ServiceTypeHttp:       c.HttpServiceConfiguration,
+		ServiceTypeSsh:        c.SshServiceConfiguration,
+		ServiceTypeTls:        c.TlsServiceConfiguration,
+		ServiceTypeVnc:        c.VncServiceConfiguration,
+		ServiceTypeVpn:        c.VpnServiceConfiguration,
+		ServiceTypeRdp:        c.RdpServiceConfiguration,
+		ServiceTypeKubernetes: c.KubernetesServiceConfiguration,
 	}
 
 	if currentConfig, ok := all[c.ServiceType]; ok {

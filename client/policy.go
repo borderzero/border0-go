@@ -255,26 +255,31 @@ type PolicySocketAttachment struct {
 	ID     string `json:"id" binding:"required"`
 }
 
+// PolicyPermissions represents permissions for policy (v2).
 type PolicyPermissions struct {
-	Database *DatabasePermissions `json:"database,omitempty"`
-	SSH      *SSHPermissions      `json:"ssh,omitempty"`
-	HTTP     *HTTPPermissions     `json:"http,omitempty"`
-	TLS      *TLSPermissions      `json:"tls,omitempty"`
-	VNC      *VNCPermissions      `json:"vnc,omitempty"`
-	RDP      *RDPPermissions      `json:"rdp,omitempty"`
-	VPN      *VPNPermissions      `json:"vpn,omitempty"`
+	Database   *DatabasePermissions   `json:"database,omitempty"`
+	SSH        *SSHPermissions        `json:"ssh,omitempty"`
+	HTTP       *HTTPPermissions       `json:"http,omitempty"`
+	TLS        *TLSPermissions        `json:"tls,omitempty"`
+	VNC        *VNCPermissions        `json:"vnc,omitempty"`
+	RDP        *RDPPermissions        `json:"rdp,omitempty"`
+	VPN        *VPNPermissions        `json:"vpn,omitempty"`
+	Kubernetes *KubernetesPermissions `json:"kubernetes,omitempty"`
 }
 
+// DatabasePermissions represents database permissions for policy (v2).
 type DatabasePermissions struct {
 	AllowedDatabases          *[]DatabasePermission `json:"allowed_databases,omitempty"`
 	MaxSessionDurationSeconds *int                  `json:"max_session_duration_seconds,omitempty"`
 }
 
+// DatabasePermission represents a single database permission for policy (v2).
 type DatabasePermission struct {
 	Database          string    `json:"database"`
 	AllowedQueryTypes *[]string `json:"allowed_query_types,omitempty"`
 }
 
+// SSHPermissions represents ssh service permissions for policy (v2).
 type SSHPermissions struct {
 	Shell                     *SSHShellPermission         `json:"shell,omitempty"`
 	Exec                      *SSHExecPermission          `json:"exec,omitempty"`
@@ -286,38 +291,70 @@ type SSHPermissions struct {
 	AllowedUsernames          *[]string                   `json:"allowed_usernames,omitempty"`
 }
 
+// SSHShellPermission represents the shell ssh permission for policy (v2).
 type SSHShellPermission struct{}
 
+// SSHExecPermission represents the exec ssh permission for policy (v2).
 type SSHExecPermission struct {
 	Commands *[]string `json:"commands,omitempty"`
 }
 
+// SSHSFTPPermission represents the sftp ssh permission for policy (v2).
 type SSHSFTPPermission struct{}
 
+// SSHTCPForwardingPermission represents the tcp forwarding ssh permission for policy (v2).
 type SSHTCPForwardingPermission struct {
 	AllowedConnections *[]SSHTcpForwardingConnection `json:"allowed_connections,omitempty"`
 }
 
+// SSHTcpForwardingConnection represents data regarding a tcp forwarding ssh permission for policy (v2).
 type SSHTcpForwardingConnection struct {
 	DestinationAddress string `json:"destination_address,omitempty"`
 	DestinationPort    string `json:"destination_port,omitempty"`
 }
 
+// SSHKubectlExecPermission represents the kubectl exec ssh permission for policy (v2).
 type SSHKubectlExecPermission struct {
 	AllowedNamespaces *[]KubectlExecNamespace `json:"allowed_namespaces,omitempty"`
 }
 
+// KubectlExecNamespace represents a single namespace and pod selector for a kubectl exec ssh permission for policy (v2).
 type KubectlExecNamespace struct {
 	Namespace   string             `json:"namespace"`
 	PodSelector *map[string]string `json:"pod_selector,omitempty"`
 }
 
+// SSHDockerExecPermission represents the docker exec ssh permission for policy (v2).
 type SSHDockerExecPermission struct {
 	AllowedContainers *[]string `json:"allowed_containers,omitempty"`
 }
 
+// HTTPPermissions represents http service permissions for policy (v2).
 type HTTPPermissions struct{}
+
+// TLSPermissions represents tls service permissions for policy (v2).
 type TLSPermissions struct{}
+
+// VNCPermissions represents vnc service permissions for policy (v2).
 type VNCPermissions struct{}
+
+// RDPPermissions represents rdp service permissions for policy (v2).
 type RDPPermissions struct{}
+
+// VPNPermissions represents vpn service permissions for policy (v2).
 type VPNPermissions struct{}
+
+// KubernetesPermissions represents kubernetes service permissions for policy (v2).
+type KubernetesPermissions struct {
+	Rules []KubernetesRule `json:"rules"`
+}
+
+// KubernetesRule represents a single kubernetes rule for kubernetes service permissions for policy (v2).
+type KubernetesRule struct {
+	APIGroups     []string `json:"api_groups,omitempty"`
+	Namespaces    []string `json:"namespaces,omitempty"`
+	Verbs         []string `json:"verbs,omitempty"`
+	Resources     []string `json:"resources,omitempty"`
+	ResourceNames []string `json:"resource_names,omitempty"`
+	// Note: support for selectors will come later...
+}
