@@ -969,11 +969,20 @@ func Test_ValidatePrivateKeyAuthConfiguration(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name: "Should succeed when username and password are valid",
+			name: "Should succeed when username and private key are valid",
 			configuration: &PrivateKeyAuthConfiguration{
 				UsernameProvider: UsernameProviderDefined,
 				Username:         "username",
 				PrivateKey:       mockPrivateKey,
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Should succeed when username and private key are valid - secret store",
+			configuration: &PrivateKeyAuthConfiguration{
+				UsernameProvider: UsernameProviderDefined,
+				Username:         "username",
+				PrivateKey:       "from:file:/my/private/key.pem",
 			},
 			expectedError: nil,
 		},

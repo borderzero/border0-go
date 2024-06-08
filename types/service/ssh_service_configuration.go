@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/borderzero/border0-go/lib/types/nilcheck"
 	"github.com/borderzero/border0-go/lib/types/set"
@@ -623,10 +624,11 @@ func (c *PrivateKeyAuthConfiguration) Validate() error {
 	if c.PrivateKey == "" {
 		return fmt.Errorf("private_key is a required field")
 	}
-
-	_, err := ssh.ParseRawPrivateKey([]byte(c.PrivateKey))
-	if err != nil {
-		return fmt.Errorf("private_key is not a valid PEM or DER encoded private key")
+	if !strings.HasPrefix(c.PrivateKey, "from:") {
+		_, err := ssh.ParseRawPrivateKey([]byte(c.PrivateKey))
+		if err != nil {
+			return fmt.Errorf("private_key is not a valid PEM or DER encoded private key")
+		}
 	}
 
 	return nil
