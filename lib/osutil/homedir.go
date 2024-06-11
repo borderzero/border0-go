@@ -9,7 +9,7 @@ import (
 
 // GetUserHomeDir returns the home directory of the current user
 // If the process is run as sudo, it will return the home directory of the sudo user
-// ie. the orginal user (not root), based on the SUDO_USER env var
+// ie. the original user (not root), based on the SUDO_USER env var
 func GetUserHomeDir() (string, error) {
 	var homedir string
 
