@@ -165,26 +165,34 @@ func (api *APIClient) RemovePoliciesFromSocket(ctx context.Context, policyIDs []
 // a policy is not organization-wide, it can be attached to individual sockets. See [AttachPolicyToSocket] and [RemovePolicyFromSocket]
 // for more details.
 type Policy struct {
-	ID          string     `json:"id"`
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	OrgID       string     `json:"org_id"`
-	OrgWide     bool       `json:"org_wide"`
-	PolicyData  PolicyData `json:"policy_data"`
-	CreatedAt   time.Time  `json:"created_at"`
-	SocketIDs   []string   `json:"socket_ids"`
-	Deleted     bool       `json:"deleted"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Version     string    `json:"version"`
+	Description string    `json:"description"`
+	OrgID       string    `json:"org_id"`
+	OrgWide     bool      `json:"org_wide"`
+	PolicyData  any       `json:"policy_data"`
+	CreatedAt   time.Time `json:"created_at"`
+	SocketIDs   []string  `json:"socket_ids"`
+	Deleted     bool      `json:"deleted"`
 }
 
-// PolicyData represents the policy data schema. A policy can have multiple actions, and its condition determines when the
+// PolicyData represents the policy data schema for v1 policies. A policy can have multiple actions, and its condition determines when the
 // actions are applied. See [PolicyCondition] for more details about the policy condition schema.
 type PolicyData struct {
-	Version   string          `json:"version"`
+	Version   string          `json:"version,omitempty"`
 	Action    []string        `json:"action"`
 	Condition PolicyCondition `json:"condition"`
 }
 
-// PolicyCondition represents the policy condition schema. A policy condition can define "who", "where" and "when" conditions.
+// PolicyDataV2 represents the policy data schema for v2 policies. A policy can have multiple actions, and its condition determines when the
+// actions are applied. See [PolicyCondition] for more details about the policy condition schema.
+type PolicyDataV2 struct {
+	Permissions PolicyPermissions `json:"permissions"`
+	Condition   PolicyConditionV2 `json:"condition"`
+}
+
+// PolicyCondition represents the policy condition schema for v1 policies. A policy condition can define "who", "where" and "when" conditions.
 // See [PolicyWho], [PolicyWhere] and [PolicyWhen] for more details about the policy condition schema.
 type PolicyCondition struct {
 	Who   PolicyWho   `json:"who,omitempty"`
@@ -192,12 +200,29 @@ type PolicyCondition struct {
 	When  PolicyWhen  `json:"when,omitempty"`
 }
 
+// PolicyConditionV2 represents the policy condition schema for v2 policies. A policy condition can define "who", "where" and "when" conditions.
+// See [PolicyWho], [PolicyWhere] and [PolicyWhen] for more details about the policy condition schema.
+type PolicyConditionV2 struct {
+	Who   PolicyWhoV2 `json:"who,omitempty"`
+	Where PolicyWhere `json:"where,omitempty"`
+	When  PolicyWhen  `json:"when,omitempty"`
+}
+
 // PolicyWho represents the policy condition "who" schema. It specifies who the policy applies to, based on allowed email
-// addresses and allowed email domains.
+// addresses, domains, groups and service accounts.
 type PolicyWho struct {
-	Email  []string `json:"email,omitempty"`
-	Domain []string `json:"domain,omitempty"`
-	Group  []string `json:"group,omitempty"`
+	Email          []string `json:"email,omitempty"`
+	Domain         []string `json:"domain,omitempty"`
+	Group          []string `json:"group,omitempty"`
+	ServiceAccount []string `json:"service_account,omitempty"`
+}
+
+// PolicyWhoV2 represents the policy condition "who" schema, for v2 policies. It specifies who the policy applies to, based on allowed email
+// addresses, groups and service accounts.
+type PolicyWhoV2 struct {
+	Email          []string `json:"email,omitempty"`
+	Group          []string `json:"group,omitempty"`
+	ServiceAccount []string `json:"service_account,omitempty"`
 }
 
 // PolicyWhere represents the policy condition "where" schema. It specifies where the policy applies to, based on allowed
@@ -229,3 +254,70 @@ type PolicySocketAttachment struct {
 	Action string `json:"action" binding:"required"`
 	ID     string `json:"id" binding:"required"`
 }
+
+type PolicyPermissions struct {
+	Database *DatabasePermissions `json:"database,omitempty"`
+	SSH      *SSHPermissions      `json:"ssh,omitempty"`
+	HTTP     *HTTPPermissions     `json:"http,omitempty"`
+	TLS      *TLSPermissions      `json:"tls,omitempty"`
+	VNC      *VNCPermissions      `json:"vnc,omitempty"`
+	RDP      *RDPPermissions      `json:"rdp,omitempty"`
+	VPN      *VPNPermissions      `json:"vpn,omitempty"`
+}
+
+type DatabasePermissions struct {
+	AllowedDatabases          *[]DatabasePermission `json:"allowed_databases,omitempty"`
+	MaxSessionDurationSeconds *int                  `json:"max_session_duration_seconds,omitempty"`
+}
+
+type DatabasePermission struct {
+	Database          string    `json:"database"`
+	AllowedQueryTypes *[]string `json:"allowed_query_types,omitempty"`
+}
+
+type SSHPermissions struct {
+	Shell                     *SSHShellPermission         `json:"shell,omitempty"`
+	Exec                      *SSHExecPermission          `json:"exec,omitempty"`
+	SFTP                      *SSHSFTPPermission          `json:"sftp,omitempty"`
+	TCPForwarding             *SSHTCPForwardingPermission `json:"tcp_forwarding,omitempty"`
+	KubectlExec               *SSHKubectlExecPermission   `json:"kubectl_exec,omitempty"`
+	DockerExec                *SSHDockerExecPermission    `json:"docker_exec,omitempty"`
+	MaxSessionDurationSeconds *int                        `json:"max_session_duration_seconds,omitempty"`
+	AllowedUsernames          *[]string                   `json:"allowed_usernames,omitempty"`
+}
+
+type SSHShellPermission struct{}
+
+type SSHExecPermission struct {
+	Commands *[]string `json:"commands,omitempty"`
+}
+
+type SSHSFTPPermission struct{}
+
+type SSHTCPForwardingPermission struct {
+	AllowedConnections *[]SSHTcpForwardingConnection `json:"allowed_connections,omitempty"`
+}
+
+type SSHTcpForwardingConnection struct {
+	DestinationAddress string `json:"destination_address,omitempty"`
+	DestinationPort    string `json:"destination_port,omitempty"`
+}
+
+type SSHKubectlExecPermission struct {
+	AllowedNamespaces *[]KubectlExecNamespace `json:"allowed_namespaces,omitempty"`
+}
+
+type KubectlExecNamespace struct {
+	Namespace   string             `json:"namespace"`
+	PodSelector *map[string]string `json:"pod_selector,omitempty"`
+}
+
+type SSHDockerExecPermission struct {
+	AllowedContainers *[]string `json:"allowed_containers,omitempty"`
+}
+
+type HTTPPermissions struct{}
+type TLSPermissions struct{}
+type VNCPermissions struct{}
+type RDPPermissions struct{}
+type VPNPermissions struct{}

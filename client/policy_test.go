@@ -35,11 +35,80 @@ var testPolicyData = PolicyData{
 	},
 }
 
+var maxDuration = 3600
+var testPolicyDataV2 = PolicyDataV2{
+	Permissions: PolicyPermissions{
+		Database: &DatabasePermissions{
+			AllowedDatabases: &[]DatabasePermission{
+				{
+					Database:          "testdb",
+					AllowedQueryTypes: &[]string{"ReadOnly"},
+				},
+			},
+			MaxSessionDurationSeconds: &maxDuration,
+		},
+		SSH: &SSHPermissions{
+			Shell: &SSHShellPermission{},
+			Exec: &SSHExecPermission{
+				Commands: &[]string{"ls", "pwd"},
+			},
+			SFTP: &SSHSFTPPermission{},
+			TCPForwarding: &SSHTCPForwardingPermission{
+				AllowedConnections: &[]SSHTcpForwardingConnection{
+					{
+						DestinationAddress: "*",
+						DestinationPort:    "443",
+					},
+				},
+			},
+			KubectlExec: &SSHKubectlExecPermission{
+				AllowedNamespaces: &[]KubectlExecNamespace{
+					{
+						Namespace: "test-namespace",
+						PodSelector: &map[string]string{
+							"app": "test-app",
+						},
+					},
+				},
+			},
+			DockerExec: &SSHDockerExecPermission{
+				AllowedContainers: &[]string{"test-container"},
+			},
+			MaxSessionDurationSeconds: &maxDuration,
+			AllowedUsernames:          &[]string{"root"},
+		},
+		HTTP: &HTTPPermissions{},
+		TLS:  &TLSPermissions{},
+		VNC:  &VNCPermissions{},
+		RDP:  &RDPPermissions{},
+		VPN:  &VPNPermissions{},
+	},
+	Condition: PolicyConditionV2{
+		Who: PolicyWhoV2{
+			Email:          []string{"johndoe@example.com"},
+			Group:          []string{"707a6c88-5675-4c5f-9db2-13b91c1a43e8"},
+			ServiceAccount: []string{"test-service-account"},
+		},
+		Where: PolicyWhere{
+			AllowedIP:  []string{"0.0.0.0/0", "::/0"},
+			Country:    []string{"NL", "CA", "US", "BR", "FR"},
+			CountryNot: []string{"BE"},
+		},
+		When: PolicyWhen{
+			After:           "2022-10-13T05:12:27Z",
+			Before:          "",
+			TimeOfDayAfter:  "00:00 UTC",
+			TimeOfDayBefore: "23:59 UTC",
+		},
+	},
+}
+
 func Test_APIClient_Policy(t *testing.T) {
 	t.Parallel()
 
 	testPolicy := &Policy{
 		Name:        "test-name",
+		Version:     "v1",
 		Description: "Test description",
 		OrgWide:     true,
 		PolicyData:  testPolicyData,
@@ -122,9 +191,9 @@ func Test_APIClient_Policies(t *testing.T) {
 	t.Parallel()
 
 	testPolicies := []Policy{
-		{Name: "test-name-1", Description: "Test description 1", PolicyData: testPolicyData},
-		{Name: "test-name-2", Description: "Test description 2", PolicyData: testPolicyData},
-		{Name: "test-name-3", Description: "Test description 3", PolicyData: testPolicyData},
+		{Name: "test-name-1", Version: "v1", Description: "Test description 1", PolicyData: testPolicyData},
+		{Name: "test-name-2", Version: "v1", Description: "Test description 2", PolicyData: testPolicyData},
+		{Name: "test-name-3", Version: "v2", Description: "Test description 3", PolicyData: testPolicyDataV2},
 	}
 
 	tests := []struct {
@@ -193,9 +262,9 @@ func Test_APIClient_PoliciesByNames(t *testing.T) {
 	onlyOnePolicy := &Policy{Name: "test-name-1", Description: "Test description 1", PolicyData: testPolicyData}
 
 	multiplePolicies := []Policy{
-		{Name: "test-name-1", Description: "Test description 1", PolicyData: testPolicyData},
-		{Name: "test-name-2", Description: "Test description 2", PolicyData: testPolicyData},
-		{Name: "test-name-3", Description: "Test description 3", PolicyData: testPolicyData},
+		{Name: "test-name-1", Version: "v1", Description: "Test description 1", PolicyData: testPolicyData},
+		{Name: "test-name-2", Version: "v1", Description: "Test description 2", PolicyData: testPolicyData},
+		{Name: "test-name-3", Version: "v2", Description: "Test description 3", PolicyData: testPolicyDataV2},
 	}
 
 	tests := []struct {
@@ -332,11 +401,13 @@ func Test_APIClient_CreatePolicy(t *testing.T) {
 		Name:        "test-name",
 		Description: "Test description",
 		OrgWide:     true,
+		Version:     "v1",
 		PolicyData:  testPolicyData,
 	}
 	testPolicyOutput := &Policy{
 		ID:          "test-id",
 		Name:        "test-name",
+		Version:     "v1",
 		Description: "Test description",
 		OrgWide:     true,
 		PolicyData:  testPolicyData,
