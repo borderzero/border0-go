@@ -6,7 +6,7 @@ package maps
 // identifiers to internal identifiers and viceversa.
 //
 // Note that if values are not unique in the input map, the retured
-// map will only have a key-value pair for the last ocurrence of the
+// map will only have a key-value pair for the last occurrence of the
 // value (which is the key in the generated map) in the input map.
 func Reverse[K, V comparable](m map[K]V) map[V]K {
 	if m == nil {
