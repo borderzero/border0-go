@@ -346,7 +346,7 @@ type VPNPermissions struct{}
 
 // KubernetesPermissions represents kubernetes service permissions for policy (v2).
 type KubernetesPermissions struct {
-	Rules []KubernetesRule `json:"rules"`
+	Rules *[]KubernetesRule `json:"rules,omitempty"`
 }
 
 // KubernetesRule represents a single kubernetes rule for kubernetes service permissions for policy (v2).
