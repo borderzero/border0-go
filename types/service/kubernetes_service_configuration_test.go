@@ -2,12 +2,87 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/borderzero/border0-go/lib/types/pointer"
+	"github.com/borderzero/border0-go/types/common"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
+	t.Parallel()
+
+	validServer := "https://127.0.0.1:55606"
+
+	validEksClusterName := "valid-cluster-name"
+	validEksClusterRegion := "us-east-2"
+
+	tests := []struct {
+		name          string
+		configuration *KubernetesServiceConfiguration
+		expectedError error
+	}{
+		{
+			name: "Happy case for standard kubernetes service with non-empty config",
+			configuration: &KubernetesServiceConfiguration{
+				KubernetesServiceType: KubernetesServiceTypeStandard,
+				StandardKubernetesServiceConfiguration: &StandardKubernetesServiceConfiguration{
+					Server: validServer,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Happy case for standard kubernetes service with empty config",
+			configuration: &KubernetesServiceConfiguration{
+				KubernetesServiceType: KubernetesServiceTypeStandard,
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Happy case for aws eks kubernetes service",
+			configuration: &KubernetesServiceConfiguration{
+				KubernetesServiceType: KubectlExecTargetTypeAwsEks,
+				AwsEksKubernetesServiceConfiguration: &AwsEksKubernetesServiceConfiguration{
+					EksClusterName:   validEksClusterName,
+					EksClusterRegion: validEksClusterRegion,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Failure case for standard kubernetes service with aws eks config",
+			configuration: &KubernetesServiceConfiguration{
+				KubernetesServiceType:                  KubernetesServiceTypeStandard,
+				StandardKubernetesServiceConfiguration: &StandardKubernetesServiceConfiguration{Server: validServer},
+				AwsEksKubernetesServiceConfiguration:   &AwsEksKubernetesServiceConfiguration{},
+			},
+			expectedError: errors.New("kubernetes service type \"standard\" can only have standard kubernetes service configuration defined"),
+		},
+		{
+			name: "Failure case for aws eks kubernetes service with standard config",
+			configuration: &KubernetesServiceConfiguration{
+				KubernetesServiceType:                  KubernetesServiceTypeAwsEks,
+				StandardKubernetesServiceConfiguration: &StandardKubernetesServiceConfiguration{},
+				AwsEksKubernetesServiceConfiguration: &AwsEksKubernetesServiceConfiguration{
+					EksClusterName:   validEksClusterName,
+					EksClusterRegion: validEksClusterRegion,
+				},
+			},
+			expectedError: errors.New("kubernetes service type \"aws_eks\" can only have aws eks kubernetes service configuration defined"),
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, test.expectedError, test.configuration.Validate())
+		})
+	}
+}
+
+func Test_ValidateStandardKubernetesServiceConfiguration(t *testing.T) {
 	t.Parallel()
 
 	validServer := "https://127.0.0.1:55606"
@@ -19,19 +94,19 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		configuration *KubernetesServiceConfiguration
+		configuration *StandardKubernetesServiceConfiguration
 		expectedError error
 	}{
 		{
-			name: "Happy case for kubernetes service with no cert data",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Happy case for standard kubernetes service with no cert data",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server: validServer,
 			},
 			expectedError: nil,
 		},
 		{
-			name: "Happy case for kubernetes service with cert data",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Happy case for standard kubernetes service with cert data",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
 				ClientCertificateData:    validClientCertificateData,
@@ -40,35 +115,42 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "Failure case for kubernetes service with partial cert data - missing ca cert",
-			configuration: &KubernetesServiceConfiguration{
-				Server:                validServer,
-				ClientCertificateData: validClientCertificateData,
-				ClientKeyData:         validClientKeyData,
-			},
-			expectedError: errors.New("either all or none of certificate_authority_data, client_certificate_data, and client_key_data must be provided, got 2/3"),
-		},
-		{
-			name: "Failure case for kubernetes service with partial cert data - missing client cert",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with partial cert data - key data present but missing client cert",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
 				ClientKeyData:            validClientKeyData,
 			},
-			expectedError: errors.New("either all or none of certificate_authority_data, client_certificate_data, and client_key_data must be provided, got 2/3"),
+			expectedError: errors.New("client_key_data was provided but both client_certificate and client_certificate_data were empty"),
 		},
 		{
-			name: "Failure case for kubernetes service with partial cert data - missing client cert key",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with partial cert data - key present but missing client cert",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
-				ClientCertificateData:    validClientCertificateData,
+				ClientKey:                "/some/path/to/key.pem",
 			},
-			expectedError: errors.New("either all or none of certificate_authority_data, client_certificate_data, and client_key_data must be provided, got 2/3"),
+			expectedError: errors.New("client_key was provided but both client_certificate and client_certificate_data were empty"),
 		},
 		{
-			name: "Failure case for kubernetes service with bad cert data - bad ca cert base64",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with partial cert data - cert data present but missing client cert key",
+			configuration: &StandardKubernetesServiceConfiguration{
+				Server:                validServer,
+				ClientCertificateData: validClientCertificateData,
+			},
+			expectedError: errors.New("client_certificate_data was provided but both client_key and client_key_data were empty"),
+		},
+		{
+			name: "Failure case for standard kubernetes service with partial cert data - cert present but missing client cert key",
+			configuration: &StandardKubernetesServiceConfiguration{
+				Server:            validServer,
+				ClientCertificate: "/some/path/to/cert.pem",
+			},
+			expectedError: errors.New("client_certificate was provided but both client_key and client_key_data were empty"),
+		},
+		{
+			name: "Failure case for standard kubernetes service with bad cert data - bad ca cert base64",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: invalidDataNotB64,
 				ClientCertificateData:    validClientCertificateData,
@@ -77,8 +159,8 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 			expectedError: errors.New("failed to base64-decode certificate_authority_data: illegal base64 data at input byte 0"),
 		},
 		{
-			name: "Failure case for kubernetes service with bad cert data - bad client cert base64",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with bad cert data - bad client cert base64",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
 				ClientCertificateData:    invalidDataNotB64,
@@ -87,8 +169,8 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 			expectedError: errors.New("failed to base64-decode client_certificate_data: illegal base64 data at input byte 0"),
 		},
 		{
-			name: "Failure case for kubernetes service with bad cert data - bad client cert key base64",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with bad cert data - bad client cert key base64",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
 				ClientCertificateData:    validClientCertificateData,
@@ -97,8 +179,8 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 			expectedError: errors.New("failed to base64-decode client_key_data: illegal base64 data at input byte 0"),
 		},
 		{
-			name: "Failure case for kubernetes service with bad cert data - bad ca cert PEM",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with bad cert data - bad ca cert PEM",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: invalidDataNotPEM,
 				ClientCertificateData:    validClientCertificateData,
@@ -107,8 +189,8 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 			expectedError: errors.New("failed to PEM-decode certificate_authority_data: not valid PEM"),
 		},
 		{
-			name: "Failure case for kubernetes service with bad cert data - bad client cert PEM",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with bad cert data - bad client cert PEM",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
 				ClientCertificateData:    invalidDataNotPEM,
@@ -117,14 +199,80 @@ func Test_ValidateKubernetesServiceConfiguration(t *testing.T) {
 			expectedError: errors.New("failed to PEM-decode client_certificate_data: not valid PEM"),
 		},
 		{
-			name: "Failure case for kubernetes service with bad cert data - bad ca cert key PEM",
-			configuration: &KubernetesServiceConfiguration{
+			name: "Failure case for standard kubernetes service with bad cert data - bad ca cert key PEM",
+			configuration: &StandardKubernetesServiceConfiguration{
 				Server:                   validServer,
 				CertificateAuthorityData: validCertificateAuthorityData,
 				ClientCertificateData:    validClientCertificateData,
 				ClientKeyData:            invalidDataNotPEM,
 			},
 			expectedError: errors.New("failed to PEM-decode client_key_data: not valid PEM"),
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, test.expectedError, test.configuration.Validate())
+		})
+	}
+}
+
+func Test_ValidateAwsEksKubernetesServiceConfiguration(t *testing.T) {
+	t.Parallel()
+
+	validEksClusterName := "valid-cluster-name"
+
+	validEksClusterRegion := "us-east-2"
+	invalidEksClusterRegion := "not an aws region"
+
+	tests := []struct {
+		name          string
+		configuration *AwsEksKubernetesServiceConfiguration
+		expectedError error
+	}{
+		{
+			name: "Happy case for aws eks kubernetes service",
+			configuration: &AwsEksKubernetesServiceConfiguration{
+				EksClusterName:   validEksClusterName,
+				EksClusterRegion: validEksClusterRegion,
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Failure case for empty eks cluster name",
+			configuration: &AwsEksKubernetesServiceConfiguration{
+				EksClusterName:   "",
+				EksClusterRegion: validEksClusterRegion,
+			},
+			expectedError: errors.New("eks_cluster_name is a required field"),
+		},
+		{
+			name: "Failure case for empty eks cluster region",
+			configuration: &AwsEksKubernetesServiceConfiguration{
+				EksClusterName:   validEksClusterName,
+				EksClusterRegion: "",
+			},
+			expectedError: errors.New("eks_cluster_region is a required field"),
+		},
+		{
+			name: "Failure case for invalid eks cluster region",
+			configuration: &AwsEksKubernetesServiceConfiguration{
+				EksClusterName:   validEksClusterName,
+				EksClusterRegion: invalidEksClusterRegion,
+			},
+			expectedError: fmt.Errorf("invalid eks_cluster_region: region \"%s\" is not a valid aws region", invalidEksClusterRegion),
+		},
+		{
+			name: "Failure case for invalid aws credentials",
+			configuration: &AwsEksKubernetesServiceConfiguration{
+				EksClusterName:   validEksClusterName,
+				EksClusterRegion: validEksClusterRegion,
+				AwsCredentials: &common.AwsCredentials{
+					AwsAccessKeyId: pointer.To("not an access key"),
+				},
+			},
+			expectedError: errors.New("invalid aws_credentials: aws_secret_access_key is required when aws_access_key_id is provided"),
 		},
 	}
 	for _, test := range tests {
