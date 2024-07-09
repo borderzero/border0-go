@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/borderzero/border0-go/client/mocks"
+	"github.com/borderzero/border0-go/lib/types/pointer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -56,8 +57,8 @@ var testPolicyDataV2 = PolicyDataV2{
 			TCPForwarding: &SSHTCPForwardingPermission{
 				AllowedConnections: &[]SSHTcpForwardingConnection{
 					{
-						DestinationAddress: "*",
-						DestinationPort:    "443",
+						DestinationAddress: pointer.To("*"),
+						DestinationPort:    pointer.To("443"),
 					},
 				},
 			},
