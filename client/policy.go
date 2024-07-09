@@ -309,8 +309,8 @@ type SSHTCPForwardingPermission struct {
 
 // SSHTcpForwardingConnection represents data regarding a tcp forwarding ssh permission for policy (v2).
 type SSHTcpForwardingConnection struct {
-	DestinationAddress string `json:"destination_address,omitempty"`
-	DestinationPort    string `json:"destination_port,omitempty"`
+	DestinationAddress *string `json:"destination_address,omitempty"`
+	DestinationPort    *string `json:"destination_port,omitempty"`
 }
 
 // SSHKubectlExecPermission represents the kubectl exec ssh permission for policy (v2).
