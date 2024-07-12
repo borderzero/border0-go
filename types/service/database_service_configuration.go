@@ -15,6 +15,7 @@ const (
 	DatabaseServiceTypeAwsRds      = "aws_rds"      // AWS RDS database, supports IAM and password auth
 	DatabaseServiceTypeGcpCloudSql = "gcp_cloudsql" // Google Cloud SQL database, supports IAM, TLS and password auth
 	DatabaseServiceTypeAzureSql    = "azure_sql"    // Azure SQL database, supports SQL authentication, azure password auth
+	DatabaseServiceTypeSnowflake   = "snowflake"    // Snowflake databases
 )
 
 const (
@@ -150,6 +151,7 @@ type DatabaseServiceConfiguration struct {
 	AwsRds      *AwsRdsDatabaseServiceConfiguration      `json:"aws_rds_database_service_configuration,omitempty"`
 	GcpCloudSql *GcpCloudSqlDatabaseServiceConfiguration `json:"gcp_cloudsql_database_service_configuration,omitempty"`
 	AzureSql    *AzureSqlDatabaseServiceConfiguration    `json:"azure_sql_database_service_configuration,omitempty"`
+	Snowflake   *SnowflakeDatabaseServiceConfiguration   `json:"snowflake_database_service_configuration,omitempty"`
 }
 
 // Validate ensures that the `DatabaseServiceConfiguration` is valid.
@@ -159,37 +161,45 @@ func (config DatabaseServiceConfiguration) Validate() error {
 	}
 	switch config.DatabaseServiceType {
 	case DatabaseServiceTypeStandard:
-		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql) {
-			return errors.New("database service type is standard, but AWS RDS, Google Cloud SQL or Azure SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql, config.Snowflake) {
+			return errors.New("database service type standard can only have standard configuration defined")
 		}
 		if config.Standard == nil {
 			return errors.New("standard database service configuration is required")
 		}
 		return config.Standard.Validate()
 	case DatabaseServiceTypeAwsRds:
-		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql) {
-			return errors.New("database service type is aws_rds, but standard, Google Cloud SQL or Azure SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.Snowflake) {
+			return errors.New("database service type aws_rds can only have aws rds configuration defined")
 		}
 		if config.AwsRds == nil {
 			return errors.New("AWS RDS database service configuration is required")
 		}
 		return config.AwsRds.Validate()
 	case DatabaseServiceTypeGcpCloudSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql) {
-			return errors.New("database service type is gcp_cloudsql, but standard, AWS RDS or Azure SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql, config.Snowflake) {
+			return errors.New("database service type gcp_cloudsql can only have gcp cloudsql configuration defined")
 		}
 		if config.GcpCloudSql == nil {
 			return errors.New("Google Cloud SQL database service configuration is required")
 		}
 		return config.GcpCloudSql.Validate()
 	case DatabaseServiceTypeAzureSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql) {
-			return errors.New("database service type is azure_sql, but standard, AWS RDS or Google Cloud SQL configuration is provided")
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.Snowflake) {
+			return errors.New("database service type azure_sql can only have azure sql configuration defined")
 		}
 		if config.AzureSql == nil {
 			return errors.New("Azure SQL database service configuration is required")
 		}
 		return config.AzureSql.Validate()
+	case DatabaseServiceTypeSnowflake:
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AzureSql) {
+			return errors.New("database service type snowflake can only have snowflake configuration defined")
+		}
+		if config.Snowflake == nil {
+			return errors.New("Snowflake database service configuration is required")
+		}
+		return config.Snowflake.Validate()
 	}
 	return fmt.Errorf("invalid database service type: %s", config.DatabaseServiceType)
 }
@@ -605,6 +615,32 @@ func (config AwsRdsIamAuthConfiguration) Validate() error {
 		if err := config.AwsCredentials.Validate(); err != nil {
 			return fmt.Errorf("invalid AWS credentials: %w", err)
 		}
+	}
+	return nil
+}
+
+// SnowflakeDatabaseServiceConfiguration represents service
+// configuration for snowflake database services (fka sockets).
+type SnowflakeDatabaseServiceConfiguration struct {
+	Account   string `json:"account"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Database  string `json:"database"`
+	Schema    string `json:"schema"`
+	Warehouse string `json:"warehouse"`
+	Role      string `json:"role"`
+}
+
+// Validate ensures that the `SnowflakeDatabaseServiceConfiguration` has the required fields.
+func (config SnowflakeDatabaseServiceConfiguration) Validate() error {
+	if config.Account == "" {
+		return errors.New("account is required")
+	}
+	if config.Username == "" {
+		return errors.New("username is required")
+	}
+	if config.Password == "" {
+		return errors.New("password is required")
 	}
 	return nil
 }

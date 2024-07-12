@@ -30,6 +30,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 			},
 		},
 	}
+
 	testAwsRdsConfig := &AwsRdsDatabaseServiceConfiguration{
 		DatabaseProtocol: DatabaseProtocolMySql,
 		HostnameAndPort: HostnameAndPort{
@@ -46,6 +47,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 			},
 		},
 	}
+
 	testGcpCloudSqlConfig := &GcpCloudSqlDatabaseServiceConfiguration{
 		HostnameAndPort: HostnameAndPort{
 			Hostname: "hostname",
@@ -61,6 +63,26 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				Key:         "private-key",
 			},
 		},
+	}
+
+	testAzureSqlConfig := &AzureSqlDatabaseServiceConfiguration{
+		HostnameAndPort: HostnameAndPort{
+			Hostname: "hostname",
+			Port:     3306,
+		},
+		DatabaseProtocol: DatabaseProtocolMySql,
+		SqlAuthentication: &DatabaseSqlAuthConfiguration{
+			UsernameAndPassword: UsernameAndPassword{
+				Username: "username",
+				Password: "password",
+			},
+		},
+	}
+
+	testSnowflakeConfig := &SnowflakeDatabaseServiceConfiguration{
+		Account:  "account",
+		Username: "username",
+		Password: "password",
 	}
 
 	tests := []struct {
@@ -90,7 +112,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				AwsRds:              testAwsRdsConfig,
 				GcpCloudSql:         testGcpCloudSqlConfig,
 			},
-			want: errors.New("database service type is standard, but AWS RDS, Google Cloud SQL or Azure SQL configuration is provided"),
+			want: errors.New("database service type standard can only have standard configuration defined"),
 		},
 		{
 			name: "standard type is picked, but standard config is missing",
@@ -108,7 +130,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				AwsRds:              testAwsRdsConfig,
 				GcpCloudSql:         testGcpCloudSqlConfig,
 			},
-			want: errors.New("database service type is aws_rds, but standard, Google Cloud SQL or Azure SQL configuration is provided"),
+			want: errors.New("database service type aws_rds can only have aws rds configuration defined"),
 		},
 		{
 			name: "aws rds type is picked, but aws rds config is missing",
@@ -126,7 +148,7 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				AwsRds:              testAwsRdsConfig,
 				GcpCloudSql:         testGcpCloudSqlConfig,
 			},
-			want: errors.New("database service type is gcp_cloudsql, but standard, AWS RDS or Azure SQL configuration is provided"),
+			want: errors.New("database service type gcp_cloudsql can only have gcp cloudsql configuration defined"),
 		},
 		{
 			name: "google cloud sql type is picked, but google cloud sql config is missing",
@@ -135,6 +157,40 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 				// google cloud sql config is missing
 			},
 			want: errors.New("Google Cloud SQL database service configuration is required"),
+		},
+		{
+			name: "when azure type picked, other database service configs should be nil",
+			given: DatabaseServiceConfiguration{
+				DatabaseServiceType: DatabaseServiceTypeAzureSql,
+				AzureSql:            testAzureSqlConfig,
+				Standard:            testStandardConfig, // extra
+			},
+			want: errors.New("database service type azure_sql can only have azure sql configuration defined"),
+		},
+		{
+			name: "azure type is picked, but azure config is missing",
+			given: DatabaseServiceConfiguration{
+				DatabaseServiceType: DatabaseServiceTypeAzureSql,
+				// azure config is missing
+			},
+			want: errors.New("Azure SQL database service configuration is required"),
+		},
+		{
+			name: "when snowflake type picked, other database service configs should be nil",
+			given: DatabaseServiceConfiguration{
+				DatabaseServiceType: DatabaseServiceTypeSnowflake,
+				Snowflake:           testSnowflakeConfig,
+				Standard:            testStandardConfig, // extra
+			},
+			want: errors.New("database service type snowflake can only have snowflake configuration defined"),
+		},
+		{
+			name: "snowflake type is picked, but snowflake config is missing",
+			given: DatabaseServiceConfiguration{
+				DatabaseServiceType: DatabaseServiceTypeSnowflake,
+				// snowflake config is missing
+			},
+			want: errors.New("Snowflake database service configuration is required"),
 		},
 		{
 			name: "happy path - standard config",
@@ -157,6 +213,22 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 			given: DatabaseServiceConfiguration{
 				DatabaseServiceType: DatabaseServiceTypeGcpCloudSql,
 				GcpCloudSql:         testGcpCloudSqlConfig,
+			},
+			want: nil,
+		},
+		{
+			name: "happy path - azure sql config",
+			given: DatabaseServiceConfiguration{
+				DatabaseServiceType: DatabaseServiceTypeAzureSql,
+				AzureSql:            testAzureSqlConfig,
+			},
+			want: nil,
+		},
+		{
+			name: "happy path - snowflake config",
+			given: DatabaseServiceConfiguration{
+				DatabaseServiceType: DatabaseServiceTypeSnowflake,
+				Snowflake:           testSnowflakeConfig,
 			},
 			want: nil,
 		},
