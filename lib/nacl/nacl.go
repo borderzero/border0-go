@@ -2,6 +2,7 @@ package nacl
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 
 	"golang.org/x/crypto/curve25519"
@@ -91,7 +92,7 @@ func (s *service) NewChallengeForPeer(peerPub PublicKey) (Challenge, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate challenge message: %v", err)
 	}
-	nonce, err := generateNonce()
+	nonce, err := GenerateNonce()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate nonce: %v", err)
 	}
@@ -131,11 +132,24 @@ func generateRandomChallenge(n int) ([]byte, error) {
 	return challenge, nil
 }
 
-// generateNonce generates a fixed number of random bytes.
-func generateNonce() (Nonce, error) {
+// GenerateNonce generates a fixed number of random bytes.
+func GenerateNonce() (Nonce, error) {
 	var nonce [24]byte
 	if _, err := rand.Read(nonce[:]); err != nil {
 		return nil, fmt.Errorf("failed to generate nonce: %v", err)
 	}
 	return &nonce, nil
+}
+
+// SolveChallenge attempts to solve a challenge with a given private key.
+func SolveChallenge(challenge []byte, nonce Nonce, selfPriv PrivateKey, peerPub PublicKey) ([]byte, Nonce, error) {
+	plaintextChallenge, ok := box.Open(nil, challenge, nonce, peerPub, selfPriv)
+	if !ok {
+		return nil, nil, errors.New("failed to decrypt challenge data with private key")
+	}
+	solnNonce, err := GenerateNonce()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to generate nonce for challenge solution: %v", err)
+	}
+	return box.Seal(nil, plaintextChallenge, solnNonce, peerPub, selfPriv), solnNonce, nil
 }
