@@ -45,7 +45,7 @@ func (c *challenge) IsSolution(soln []byte, nonce Nonce) bool {
 }
 
 // SolveChallenge attempts to solve a challenge with a given private key.
-func SolveChallenge(challenge []byte, nonce Nonce, peersPublicKey *PrivateKey, privateKey *PublicKey) ([]byte, Nonce, error) {
+func SolveChallenge(challenge []byte, nonce Nonce, peersPublicKey *PublicKey, privateKey *PrivateKey) ([]byte, Nonce, error) {
 	plaintextChallenge, ok := box.Open(nil, challenge, nonce, peersPublicKey.Raw(), privateKey.Raw())
 	if !ok {
 		return nil, nil, errors.New("failed to decrypt challenge data with private key")
