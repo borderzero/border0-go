@@ -1,6 +1,6 @@
 module github.com/borderzero/border0-go
 
-go 1.21
+go 1.22.0
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
@@ -9,6 +9,7 @@ require (
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.26.0
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	golang.org/x/term v0.23.0
 )
 
