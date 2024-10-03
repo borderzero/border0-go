@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/borderzero/border0-go/lib/types/nilcheck"
 )
@@ -91,12 +92,26 @@ type ConnectorServiceConfiguration struct {
 	EndToEndEncryptionEnabled      bool          `json:"end_to_end_encryption_enabled"`
 	RecordingEnabled               bool          `json:"recording_enabled"`
 	Upstream                       Configuration `json:"upstream_configuration"`
+	PrivateNetworkIPv4             *string       `json:"private_network_ipv4"`
+	PrivateNetworkIPv6             *string       `json:"private_network_ipv6"`
 }
 
 // Validate validates the ConnectorServiceConfiguration.
 func (c *ConnectorServiceConfiguration) Validate() error {
 	if err := c.Upstream.Validate(); err != nil {
 		return fmt.Errorf("invalid upstream configuration: %w", err)
+	}
+
+	if c.PrivateNetworkIPv4 != nil {
+		if net.ParseIP(*c.PrivateNetworkIPv4) == nil {
+			return fmt.Errorf("invalid private network IPv4")
+		}
+	}
+
+	if c.PrivateNetworkIPv6 != nil {
+		if net.ParseIP(*c.PrivateNetworkIPv6) == nil {
+			return fmt.Errorf("invalid private network IPv6")
+		}
 	}
 	return nil
 }
