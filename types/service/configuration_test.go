@@ -66,6 +66,17 @@ func Test_Configuration_Validate(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "Should succeed for valid router socket",
+			configuration: &Configuration{
+				ServiceType: ServiceTypeSubnetRouter,
+				SubnetRouterServiceConfiguration: &SubnetRouterServiceConfiguration{
+					IPv4CIDRRanges: []string{"66.66.66.66/24", "55.55.55.55/16"},
+					IPv6CIDRRanges: []string{"2001:0db8:85a3::/64", "2001:0db8:85a4::/64"},
+				},
+			},
+			expectedError: nil,
+		},
+		{
 			name: "Should fail when multiple socket type configurations are present",
 			configuration: &Configuration{
 				ServiceType: ServiceTypeSsh,
