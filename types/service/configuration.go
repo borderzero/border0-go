@@ -30,6 +30,9 @@ const (
 
 	// ServiceTypeKubernetes is the service type for kubernetes services (fka sockets).
 	ServiceTypeKubernetes = "kubernetes"
+
+	// ServiceTypeRouteSet is the service type for route_set services (fka sockets).
+	ServiceTypeRouteSet = "route_set"
 )
 
 // Configuration represents upstream service configuration.
@@ -44,6 +47,7 @@ type Configuration struct {
 	VpnServiceConfiguration        *VpnServiceConfiguration        `json:"vpn_service_configuration,omitempty"`
 	RdpServiceConfiguration        *RdpServiceConfiguration        `json:"rdp_service_configuration,omitempty"`
 	KubernetesServiceConfiguration *KubernetesServiceConfiguration `json:"kubernetes_service_configuration,omitempty"`
+	RouteSetServiceConfiguration   *RouteSetServiceConfiguration   `json:"route_set_service_configuration,omitempty"`
 }
 
 type validatable interface {
@@ -61,6 +65,7 @@ func (c *Configuration) Validate() error {
 		ServiceTypeVpn:        c.VpnServiceConfiguration,
 		ServiceTypeRdp:        c.RdpServiceConfiguration,
 		ServiceTypeKubernetes: c.KubernetesServiceConfiguration,
+		ServiceTypeRouteSet:   c.RouteSetServiceConfiguration,
 	}
 
 	if currentConfig, ok := all[c.ServiceType]; ok {
