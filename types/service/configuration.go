@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"net/netip"
 
 	"github.com/borderzero/border0-go/lib/types/nilcheck"
 )
@@ -96,12 +97,50 @@ type ConnectorServiceConfiguration struct {
 	EndToEndEncryptionEnabled      bool          `json:"end_to_end_encryption_enabled"`
 	RecordingEnabled               bool          `json:"recording_enabled"`
 	Upstream                       Configuration `json:"upstream_configuration"`
+	PrivateNetworkIPv4             *string       `json:"private_network_ipv4"`
+	PrivateNetworkIPv6             *string       `json:"private_network_ipv6"`
 }
 
 // Validate validates the ConnectorServiceConfiguration.
 func (c *ConnectorServiceConfiguration) Validate() error {
 	if err := c.Upstream.Validate(); err != nil {
 		return fmt.Errorf("invalid upstream configuration: %w", err)
+	}
+
+	if c.PrivateNetworkIPv4 != nil {
+		if err := validateIP(c.PrivateNetworkIPv4, "ipv4"); err != nil {
+			return err
+		}
+	}
+
+	if c.PrivateNetworkIPv6 != nil {
+		if err := validateIP(c.PrivateNetworkIPv6, "ipv6"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateIP(ipStr *string, version string) error {
+	if ipStr == nil {
+		return nil
+	}
+	addr, err := netip.ParseAddr(*ipStr)
+	if err != nil {
+		return fmt.Errorf("invalid IP address: %s", *ipStr)
+	}
+	switch version {
+	case "ipv4":
+		if !addr.Is4() {
+			return fmt.Errorf("expected an IPv4 address: %s", *ipStr)
+		}
+	case "ipv6":
+		if !addr.Is6() {
+			return fmt.Errorf("expected an IPv6 address: %s", *ipStr)
+		}
+	default:
+		return fmt.Errorf("unknown IP version: %s", version)
 	}
 	return nil
 }
