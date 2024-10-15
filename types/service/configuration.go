@@ -30,20 +30,24 @@ const (
 
 	// ServiceTypeKubernetes is the service type for kubernetes services (fka sockets).
 	ServiceTypeKubernetes = "kubernetes"
+
+	// ServiceTypeSubnetRouter is the service type for subnet router services (fka sockets).
+	ServiceTypeSubnetRouter = "subnet_router"
 )
 
 // Configuration represents upstream service configuration.
 type Configuration struct {
 	ServiceType string `json:"service_type"`
 
-	DatabaseServiceConfiguration   *DatabaseServiceConfiguration   `json:"database_service_configuration,omitempty"`
-	HttpServiceConfiguration       *HttpServiceConfiguration       `json:"http_service_configuration,omitempty"`
-	SshServiceConfiguration        *SshServiceConfiguration        `json:"ssh_service_configuration,omitempty"`
-	TlsServiceConfiguration        *TlsServiceConfiguration        `json:"tls_service_configuration,omitempty"`
-	VncServiceConfiguration        *VncServiceConfiguration        `json:"vnc_service_configuration,omitempty"`
-	VpnServiceConfiguration        *VpnServiceConfiguration        `json:"vpn_service_configuration,omitempty"`
-	RdpServiceConfiguration        *RdpServiceConfiguration        `json:"rdp_service_configuration,omitempty"`
-	KubernetesServiceConfiguration *KubernetesServiceConfiguration `json:"kubernetes_service_configuration,omitempty"`
+	DatabaseServiceConfiguration     *DatabaseServiceConfiguration     `json:"database_service_configuration,omitempty"`
+	HttpServiceConfiguration         *HttpServiceConfiguration         `json:"http_service_configuration,omitempty"`
+	SshServiceConfiguration          *SshServiceConfiguration          `json:"ssh_service_configuration,omitempty"`
+	TlsServiceConfiguration          *TlsServiceConfiguration          `json:"tls_service_configuration,omitempty"`
+	VncServiceConfiguration          *VncServiceConfiguration          `json:"vnc_service_configuration,omitempty"`
+	VpnServiceConfiguration          *VpnServiceConfiguration          `json:"vpn_service_configuration,omitempty"`
+	RdpServiceConfiguration          *RdpServiceConfiguration          `json:"rdp_service_configuration,omitempty"`
+	KubernetesServiceConfiguration   *KubernetesServiceConfiguration   `json:"kubernetes_service_configuration,omitempty"`
+	SubnetRouterServiceConfiguration *SubnetRouterServiceConfiguration `json:"subnet_router_service_configuration,omitempty"`
 }
 
 type validatable interface {
@@ -53,14 +57,15 @@ type validatable interface {
 // Validate validates the Configuration.
 func (c *Configuration) Validate() error {
 	all := map[string]validatable{
-		ServiceTypeDatabase:   c.DatabaseServiceConfiguration,
-		ServiceTypeHttp:       c.HttpServiceConfiguration,
-		ServiceTypeSsh:        c.SshServiceConfiguration,
-		ServiceTypeTls:        c.TlsServiceConfiguration,
-		ServiceTypeVnc:        c.VncServiceConfiguration,
-		ServiceTypeVpn:        c.VpnServiceConfiguration,
-		ServiceTypeRdp:        c.RdpServiceConfiguration,
-		ServiceTypeKubernetes: c.KubernetesServiceConfiguration,
+		ServiceTypeDatabase:     c.DatabaseServiceConfiguration,
+		ServiceTypeHttp:         c.HttpServiceConfiguration,
+		ServiceTypeSsh:          c.SshServiceConfiguration,
+		ServiceTypeTls:          c.TlsServiceConfiguration,
+		ServiceTypeVnc:          c.VncServiceConfiguration,
+		ServiceTypeVpn:          c.VpnServiceConfiguration,
+		ServiceTypeRdp:          c.RdpServiceConfiguration,
+		ServiceTypeKubernetes:   c.KubernetesServiceConfiguration,
+		ServiceTypeSubnetRouter: c.SubnetRouterServiceConfiguration,
 	}
 
 	if currentConfig, ok := all[c.ServiceType]; ok {
