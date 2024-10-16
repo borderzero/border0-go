@@ -66,10 +66,10 @@ func Test_Configuration_Validate(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "Should succeed for valid router socket",
+			name: "Should succeed for valid subnet routes socket",
 			configuration: &Configuration{
-				ServiceType: ServiceTypeSubnetRouter,
-				SubnetRouterServiceConfiguration: &SubnetRouterServiceConfiguration{
+				ServiceType: ServiceTypeSubnetRoutes,
+				SubnetRoutesServiceConfiguration: &SubnetRoutesServiceConfiguration{
 					IPv4CIDRRanges: []string{"66.66.66.66/24", "55.55.55.55/16"},
 					IPv6CIDRRanges: []string{"2001:0db8:85a3::/64", "2001:0db8:85a4::/64"},
 				},
