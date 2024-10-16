@@ -7,51 +7,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
+func Test_ValidateSubnetRoutesServiceConfiguration(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name          string
-		configuration *SubnetRouterServiceConfiguration
+		configuration *SubnetRoutesServiceConfiguration
 		expectError   bool
 		expectedError string
 	}{
 		{
-			name:          "Happy case for router service with no cidrs",
-			configuration: &SubnetRouterServiceConfiguration{},
+			name:          "Happy case for subnet routes with no cidrs",
+			configuration: &SubnetRoutesServiceConfiguration{},
 			expectError:   false,
 		},
 		{
-			name: "Happy case for router service with only one v4 cidrs, no v6 routes",
-			configuration: &SubnetRouterServiceConfiguration{
+			name: "Happy case for subnet routes with only one v4 cidrs, no v6 routes",
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"66.66.66.66/24"},
 			},
 			expectError: false,
 		},
 		{
-			name: "Happy case for router service with only multiple v4 cidrs, no v6 routes",
-			configuration: &SubnetRouterServiceConfiguration{
+			name: "Happy case for subnet routes with only multiple v4 cidrs, no v6 routes",
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"66.66.66.66/24", "55.55.55.55/16"},
 			},
 			expectError: false,
 		},
 		{
-			name: "Happy case for router service with only one v6 cidrs, no v4 routes",
-			configuration: &SubnetRouterServiceConfiguration{
+			name: "Happy case for subnet routes with only one v6 cidrs, no v4 routes",
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv6CIDRRanges: []string{"2001:0db8:85a3::/64"},
 			},
 			expectError: false,
 		},
 		{
-			name: "Happy case for router service with only multiple v6 cidrs, no v4 routes",
-			configuration: &SubnetRouterServiceConfiguration{
+			name: "Happy case for subnet routes with only multiple v6 cidrs, no v4 routes",
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv6CIDRRanges: []string{"2001:0db8:85a3::/64", "2001:0db8:85a4::/64"},
 			},
 			expectError: false,
 		},
 		{
-			name: "Happy case for router service with multiple v4 and v6 cidrs",
-			configuration: &SubnetRouterServiceConfiguration{
+			name: "Happy case for subnet routes with multiple v4 and v6 cidrs",
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"66.66.66.66/24", "55.55.55.55/16"},
 				IPv6CIDRRanges: []string{"2001:0db8:85a3::/64", "2001:0db8:85a4::/64"},
 			},
@@ -59,7 +59,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should fail with invalid v4 cidr - not a cidr",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"not a cidr"},
 			},
 			expectError:   true,
@@ -67,7 +67,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should fail with invalid v4 cidr - is v6 cidr",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"2001:0db8:85a3::/64"},
 			},
 			expectError:   true,
@@ -75,7 +75,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should fail with invalid v4 cidr - is duplicate",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"66.66.66.66/24", "55.55.55.55/16", "66.66.66.66/24"},
 			},
 			expectError:   true,
@@ -83,7 +83,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should fail with invalid v6 cidr - not a cidr",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv6CIDRRanges: []string{"not a cidr"},
 			},
 			expectError:   true,
@@ -91,7 +91,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should fail with invalid v6 cidr - is v4 cidr",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv6CIDRRanges: []string{"66.66.66.66/24"},
 			},
 			expectError:   true,
@@ -99,7 +99,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should fail with invalid v6 cidr - is duplicate",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv6CIDRRanges: []string{"2001:0db8:85a3::/64", "2001:0db8:85a4::/64", "2001:0db8:85a3::/64"},
 			},
 			expectError:   true,
@@ -107,7 +107,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should NOT accept IPv4-mapped IPv6 CIDRs as IPv4 CIDRs",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv4CIDRRanges: []string{"::ffff:c0a8:0100/24"}, // ::ffff:c0a8:0100 == 192.168.1.0
 			},
 			expectError:   true,
@@ -115,7 +115,7 @@ func Test_ValidateSubnetRouterServiceConfiguration(t *testing.T) {
 		},
 		{
 			name: "Should accept IPv4-mapped IPv6 CIDRs as IPv6 CIDRs",
-			configuration: &SubnetRouterServiceConfiguration{
+			configuration: &SubnetRoutesServiceConfiguration{
 				IPv6CIDRRanges: []string{"::ffff:c0a8:0100/24"}, // ::ffff:c0a8:0100 == 192.168.1.0
 			},
 			expectError: false,
