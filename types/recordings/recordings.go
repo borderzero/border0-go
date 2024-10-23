@@ -14,6 +14,9 @@ const (
 
 	// RecordingTypeBrowserSessionStream is the recording type for http DOM snapshot recordings e.g. rrweb.
 	RecordingTypeBrowserSessionStream = "browser_session_stream"
+
+	// RecordingTypeHTTPAccessLog is the recording type for http access logs in table format.
+	RecordingTypeHTTPAccessLog = "http_access_log"
 )
 
 // ValidRecordingTypes represents allowed values for recording types.
@@ -22,4 +25,5 @@ var ValidRecordingTypes = set.New(
 	RecordingTypeKubernetesAPIRequestLog,
 	RecordingTypeDatabaseQueryLog,
 	RecordingTypeBrowserSessionStream,
+	RecordingTypeHTTPAccessLog,
 )
