@@ -68,6 +68,15 @@ func ParsePublicKey(raw []byte) (*PublicKey, error) {
 	return &PublicKey{raw: &publicKey}, nil
 }
 
+// MustParsePublicKey parses raw bytes onto a PublicKey or panics on error.
+func MustParsePublicKey(raw []byte) *PublicKey {
+	parsed, err := ParsePublicKey(raw)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse public key: %v", err))
+	}
+	return parsed
+}
+
 // ParsePublicKeyB64 parses base64-encoded bytes onto a PublicKey.
 func ParsePublicKeyB64(b64 string) (*PublicKey, error) {
 	raw, err := base64.StdEncoding.DecodeString(b64)
