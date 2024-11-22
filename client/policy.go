@@ -265,6 +265,7 @@ type PolicyPermissions struct {
 	RDP        *RDPPermissions        `json:"rdp,omitempty"`
 	VPN        *VPNPermissions        `json:"vpn,omitempty"`
 	Kubernetes *KubernetesPermissions `json:"kubernetes,omitempty"`
+	Network    *NetworkPermissions    `json:"network,omitempty"`
 }
 
 // DatabasePermissions represents database permissions for policy (v2).
@@ -358,3 +359,6 @@ type KubernetesRule struct {
 	ResourceNames []string `json:"resource_names,omitempty"`
 	// Note: support for selectors will come later...
 }
+
+// NetworkPermissions represents network service permissions for policy (v2).
+type NetworkPermissions struct{}
