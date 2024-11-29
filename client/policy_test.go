@@ -78,11 +78,12 @@ var testPolicyDataV2 = PolicyDataV2{
 			MaxSessionDurationSeconds: &maxDuration,
 			AllowedUsernames:          &[]string{"root"},
 		},
-		HTTP: &HTTPPermissions{},
-		TLS:  &TLSPermissions{},
-		VNC:  &VNCPermissions{},
-		RDP:  &RDPPermissions{},
-		VPN:  &VPNPermissions{},
+		HTTP:    &HTTPPermissions{},
+		TLS:     &TLSPermissions{},
+		VNC:     &VNCPermissions{},
+		RDP:     &RDPPermissions{},
+		VPN:     &VPNPermissions{},
+		Network: &NetworkPermissions{},
 	},
 	Condition: PolicyConditionV2{
 		Who: PolicyWhoV2{
