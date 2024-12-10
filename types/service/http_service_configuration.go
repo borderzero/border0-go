@@ -29,8 +29,9 @@ type HttpServiceConfiguration struct {
 // StandardHttpServiceConfiguration represents service
 // configuration for standard http services (fka sockets).
 type StandardHttpServiceConfiguration struct {
-	HostnameAndPort        // inherited
-	HostHeader      string `json:"host_header"`
+	HostnameAndPort              // inherited
+	HostHeader            string `json:"host_header"`
+	ExternalAccessEnabled bool   `json:"external_access_enabled,omitempty"`
 }
 
 // FileServerHttpServiceConfiguration represents service
