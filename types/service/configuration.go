@@ -34,6 +34,9 @@ const (
 
 	// ServiceTypeSubnetRoutes is the service type for subnet routes services (fka sockets).
 	ServiceTypeSubnetRoutes = "subnet_routes"
+
+	// ServiceTypeExitNode is the service type for exit node services (fka sockets).
+	ServiceTypeExitNode = "exit_node"
 )
 
 // Configuration represents upstream service configuration.
@@ -49,6 +52,7 @@ type Configuration struct {
 	RdpServiceConfiguration          *RdpServiceConfiguration          `json:"rdp_service_configuration,omitempty"`
 	KubernetesServiceConfiguration   *KubernetesServiceConfiguration   `json:"kubernetes_service_configuration,omitempty"`
 	SubnetRoutesServiceConfiguration *SubnetRoutesServiceConfiguration `json:"subnet_routes_service_configuration,omitempty"`
+	ExitNodeServiceConfiguration     *ExitNodeServiceConfiguration     `json:"exit_node_service_configuration,omitempty"`
 }
 
 type validatable interface {
@@ -67,6 +71,7 @@ func (c *Configuration) Validate() error {
 		ServiceTypeRdp:          c.RdpServiceConfiguration,
 		ServiceTypeKubernetes:   c.KubernetesServiceConfiguration,
 		ServiceTypeSubnetRoutes: c.SubnetRoutesServiceConfiguration,
+		ServiceTypeExitNode:     c.ExitNodeServiceConfiguration,
 	}
 
 	if currentConfig, ok := all[c.ServiceType]; ok {
