@@ -14,11 +14,13 @@ const KeyLength = 32
 // PublicKey represents a public key.
 type PublicKey struct {
 	raw *[KeyLength]byte
+	b64 string
 }
 
 // PrivateKey represents a private key.
 type PrivateKey struct {
 	raw *[KeyLength]byte
+	b64 string
 	pub *PublicKey
 }
 
@@ -32,7 +34,11 @@ func GenerateKey() (*PrivateKey, error) {
 	curve25519.ScalarBaseMult(&publicKey, &privateKey)
 	return &PrivateKey{
 		raw: &privateKey,
-		pub: &PublicKey{raw: &publicKey},
+		b64: base64.StdEncoding.EncodeToString(privateKey[:]),
+		pub: &PublicKey{
+			raw: &publicKey,
+			b64: base64.StdEncoding.EncodeToString(publicKey[:]),
+		},
 	}, nil
 }
 
@@ -46,7 +52,11 @@ func ParsePrivateKey(raw []byte) (*PrivateKey, error) {
 	curve25519.ScalarBaseMult(&publicKey, &privateKey)
 	return &PrivateKey{
 		raw: &privateKey,
-		pub: &PublicKey{raw: &publicKey},
+		b64: base64.StdEncoding.EncodeToString(privateKey[:]),
+		pub: &PublicKey{
+			raw: &publicKey,
+			b64: base64.StdEncoding.EncodeToString(publicKey[:]),
+		},
 	}, nil
 }
 
@@ -65,7 +75,10 @@ func ParsePublicKey(raw []byte) (*PublicKey, error) {
 		return nil, fmt.Errorf("invalid key length: expected %d but got %d bytes", KeyLength, len(raw))
 	}
 	publicKey := [KeyLength]byte(raw)
-	return &PublicKey{raw: &publicKey}, nil
+	return &PublicKey{
+		raw: &publicKey,
+		b64: base64.StdEncoding.EncodeToString(publicKey[:]),
+	}, nil
 }
 
 // MustParsePublicKey parses raw bytes onto a PublicKey or panics on error.
@@ -89,8 +102,8 @@ func ParsePublicKeyB64(b64 string) (*PublicKey, error) {
 // Raw returns the address of the raw public key bytes.
 func (p *PublicKey) Raw() *[KeyLength]byte { return p.raw }
 
-// B64 returns the base64-encoded public key bytes.
-func (p *PublicKey) B64() string { return base64.StdEncoding.EncodeToString(p.raw[:]) }
+// String returns the base64-encoded public key bytes.
+func (p *PublicKey) String() string { return p.b64 }
 
 // Public returns the public key corresponding to the private key.
 func (p *PrivateKey) Public() *PublicKey { return p.pub }
@@ -98,5 +111,5 @@ func (p *PrivateKey) Public() *PublicKey { return p.pub }
 // Raw returns the address of the raw private key bytes.
 func (p *PrivateKey) Raw() *[KeyLength]byte { return p.raw }
 
-// B64 returns the base64-encoded private key bytes.
-func (p *PrivateKey) B64() string { return base64.StdEncoding.EncodeToString(p.raw[:]) }
+// String returns the base64-encoded private key bytes.
+func (p *PrivateKey) String() string { return p.b64 }
