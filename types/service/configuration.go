@@ -32,8 +32,14 @@ const (
 	// ServiceTypeKubernetes is the service type for kubernetes services (fka sockets).
 	ServiceTypeKubernetes = "kubernetes"
 
-	// ServiceTypeSubnetRoutes is the service type for subnet routes services (fka sockets).
-	ServiceTypeSubnetRoutes = "subnet_routes"
+	// DEPRECATED_ServiceTypeSubnetRoutes is the service type for subnet routes services (fka sockets).
+	// This has been deprecated in favour of "subnet_router".
+	//
+	// Remove after february 2025
+	DEPRECATED_ServiceTypeSubnetRoutes = "subnet_routes"
+
+	// ServiceTypeSubnetRouter is the service type for subnet router services (fka sockets).
+	ServiceTypeSubnetRouter = "subnet_router"
 
 	// ServiceTypeExitNode is the service type for exit node services (fka sockets).
 	ServiceTypeExitNode = "exit_node"
@@ -51,8 +57,11 @@ type Configuration struct {
 	VpnServiceConfiguration          *VpnServiceConfiguration          `json:"vpn_service_configuration,omitempty"`
 	RdpServiceConfiguration          *RdpServiceConfiguration          `json:"rdp_service_configuration,omitempty"`
 	KubernetesServiceConfiguration   *KubernetesServiceConfiguration   `json:"kubernetes_service_configuration,omitempty"`
-	SubnetRoutesServiceConfiguration *SubnetRoutesServiceConfiguration `json:"subnet_routes_service_configuration,omitempty"`
+	SubnetRouterServiceConfiguration *SubnetRouterServiceConfiguration `json:"subnet_router_service_configuration,omitempty"`
 	ExitNodeServiceConfiguration     *ExitNodeServiceConfiguration     `json:"exit_node_service_configuration,omitempty"`
+
+	// remove after february 2025
+	DEPRECATED_SubnetRoutesServiceConfiguration *SubnetRouterServiceConfiguration `json:"subnet_routes_service_configuration,omitempty"`
 }
 
 type validatable interface {
@@ -70,8 +79,11 @@ func (c *Configuration) Validate() error {
 		ServiceTypeVpn:          c.VpnServiceConfiguration,
 		ServiceTypeRdp:          c.RdpServiceConfiguration,
 		ServiceTypeKubernetes:   c.KubernetesServiceConfiguration,
-		ServiceTypeSubnetRoutes: c.SubnetRoutesServiceConfiguration,
+		ServiceTypeSubnetRouter: c.SubnetRouterServiceConfiguration,
 		ServiceTypeExitNode:     c.ExitNodeServiceConfiguration,
+
+		// remove after february 2025
+		DEPRECATED_ServiceTypeSubnetRoutes: c.DEPRECATED_SubnetRoutesServiceConfiguration,
 	}
 
 	if currentConfig, ok := all[c.ServiceType]; ok {

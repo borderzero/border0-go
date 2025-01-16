@@ -7,15 +7,15 @@ import (
 	"github.com/borderzero/border0-go/lib/types/set"
 )
 
-// SubnetRoutesServiceConfiguration represents service
-// configuration for subnet routes services (fka sockets).
-type SubnetRoutesServiceConfiguration struct {
+// SubnetRouterServiceConfiguration represents service
+// configuration for subnet router services (fka sockets).
+type SubnetRouterServiceConfiguration struct {
 	IPv4CIDRRanges []string `json:"ipv4_cidr_ranges"`
 	IPv6CIDRRanges []string `json:"ipv6_cidr_ranges"`
 }
 
-// Validate validates the SubnetRoutesServiceConfiguration.
-func (c *SubnetRoutesServiceConfiguration) Validate() error {
+// Validate validates the SubnetRouterServiceConfiguration.
+func (c *SubnetRouterServiceConfiguration) Validate() error {
 	v4set := set.New[string]()
 	for _, cidr := range c.IPv4CIDRRanges {
 		prefix, err := netip.ParsePrefix(cidr)
