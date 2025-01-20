@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,30 +14,30 @@ func Test_ValidateExitNodeServiceConfiguration(t *testing.T) {
 		name          string
 		configuration *ExitNodeServiceConfiguration
 		expectError   bool
+		expectedError error
 	}{
 		{
-			name:          "Happy case for exit node with no network protocol disabled",
+			name:          "Happy case for exit node with empty configuration",
 			configuration: &ExitNodeServiceConfiguration{},
 			expectError:   false,
 		},
+		{
+			name:          "Happy case for exit node with mode dual-stack",
+			configuration: &ExitNodeServiceConfiguration{Mode: ExitNodeModeDualStack},
+			expectError:   false,
+		},
 
-		// NOTE(@adrianosela): uncomment if needed later
-		//
-		// {
-		// 	name:          "Happy case for exit node with ipv4 disabled",
-		// 	configuration: &ExitNodeServiceConfiguration{DisableIPv4: true},
-		// 	expectError:   false,
-		// },
-		// {
-		// 	name:          "Happy case for exit node with ipv6 disabled",
-		// 	configuration: &ExitNodeServiceConfiguration{DisableIPv6: true},
-		// 	expectError:   false,
-		// },
-		// {
-		// 	name:          "Happy case for exit node with ipv4 and ipv6 disabled",
-		// 	configuration: &ExitNodeServiceConfiguration{DisableIPv4: true, DisableIPv6: true},
-		// 	expectError:   false,
-		// },
+		{
+			name:          "Happy case for exit node with mode ipv4 only",
+			configuration: &ExitNodeServiceConfiguration{Mode: ExitNodeModeIPv4Only},
+			expectError:   false,
+		},
+		{
+			name:          "Fail validation when exit node mode is invalid",
+			configuration: &ExitNodeServiceConfiguration{Mode: "invalid"},
+			expectError:   true,
+			expectedError: fmt.Errorf(exitNodeModeErrFmt, "invalid"),
+		},
 	}
 	for _, test := range tests {
 		test := test
@@ -45,7 +46,7 @@ func Test_ValidateExitNodeServiceConfiguration(t *testing.T) {
 
 			err := test.configuration.Validate()
 			if test.expectError {
-				assert.Error(t, err)
+				assert.EqualError(t, err, test.expectedError.Error())
 			} else {
 				assert.NoError(t, err)
 			}
