@@ -14,8 +14,9 @@ type Number interface {
 
 // Ring is an entity capable of keeping only the a number of most recent values.
 type Ring[N Number] interface {
-	Put(N)            // Put adds a sample to the Ring.
-	Average() float64 // Average computes the average value of all values in the Ring.
+	Put(N)                        // Put adds a sample to the Ring.
+	Average() float64             // Average computes the average value of all values in the Ring.
+	Percentile(p float32) float64 // Percentile computes a given percentile value of all values in the Ring.
 }
 
 // ring is the default implementation of the Ring interface.
