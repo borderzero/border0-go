@@ -53,10 +53,11 @@ type Message struct {
 	key *nacl.PrivateKey
 
 	cookie  uint32
-	remote  *nacl.PublicKey
 	msgtype byte
-	probeId uint32
-	sentAt  time.Time
+
+	Remote  *nacl.PublicKey
+	ProbeId uint32
+	SentAt  time.Time
 }
 
 // NewRequest builds a new QOS request for the given remote peer key.
@@ -66,24 +67,29 @@ func NewRequest(priv *nacl.PrivateKey, remote *nacl.PublicKey) *Message {
 
 		cookie:  magicCookie,
 		msgtype: MessageTypeRequest,
-		remote:  remote,
-		probeId: rand.Uint32(),
-		sentAt:  time.Now(),
+
+		Remote:  remote,
+		ProbeId: rand.Uint32(),
+		SentAt:  time.Now(),
 	}
 }
 
 // NewResponse builds a new QOS response for the given request.
-func NewResponse(priv *nacl.PrivateKey, req *Message) *Message {
+func NewResponse(req *Message) *Message {
 	return &Message{
-		key: priv,
+		key: req.key,
 
 		cookie:  magicCookie,
 		msgtype: MessageTypeResponse,
-		remote:  req.remote,
-		probeId: req.probeId,
-		sentAt:  req.sentAt,
+
+		Remote:  req.Remote,
+		ProbeId: req.ProbeId,
+		SentAt:  req.SentAt,
 	}
 }
+
+// MessageType returns the type of the message.
+func (m *Message) MessageType() byte { return m.msgtype }
 
 // Encode encodes a Message onto wire-ready bytes.
 func (m *Message) Encode() []byte {
@@ -100,20 +106,11 @@ func (m *Message) Encode() []byte {
 	buf = append(buf, nonce[:]...)
 
 	var body []byte
-	body = bin.AppendUint32(body, m.probeId)
-	body = bin.AppendUint32(body, uint32(m.sentAt.UnixMicro()))
+	body = bin.AppendUint32(body, m.ProbeId)
+	body = bin.AppendUint32(body, uint32(m.SentAt.UnixMicro()))
 
-	return box.Seal(buf, body, nonce, m.remote.Raw(), m.key.Raw())
+	return box.Seal(buf, body, nonce, m.Remote.Raw(), m.key.Raw())
 }
-
-// Remote returns the key of the remote peer of the message.
-func (m *Message) Remote() *nacl.PublicKey { return m.remote }
-
-// MessageType returns the type of the message.
-func (m *Message) MessageType() byte { return m.msgtype }
-
-// ProbeID returns the probe id of the message.
-func (m *Message) ProbeID() uint32 { return m.probeId }
 
 // ParseQOSMessage takes in bytes for a packet received over the network,
 // it returns the parsed message, true if the bytes indeed corresponded to
@@ -148,10 +145,11 @@ func ParseQOSMessage(key *nacl.PrivateKey, pck []byte) (*Message, bool, error) {
 	}
 
 	return &Message{
-		remote:  pub,
+		key:     key,
 		cookie:  cookie,
 		msgtype: msgType,
-		probeId: bin.Uint32(body[probeIdStartBodyOffset:probeIdEndBodyOffset]),
-		sentAt:  time.UnixMicro(int64(bin.Uint32(body[sentAtStartBodyOffset:sentAtEndBodyOffset]))),
+		Remote:  pub,
+		ProbeId: bin.Uint32(body[probeIdStartBodyOffset:probeIdEndBodyOffset]),
+		SentAt:  time.UnixMicro(int64(bin.Uint32(body[sentAtStartBodyOffset:sentAtEndBodyOffset]))),
 	}, true, nil
 }
