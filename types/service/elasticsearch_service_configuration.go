@@ -20,12 +20,12 @@ type ElasticsearchServiceConfiguration struct {
 	ElasticsearchServiceType string `json:"elasticsearch_service_type"`
 
 	// mutually exclusive fields below
-	StandardElasticSeachServiceConfiguration *StandardElasticSeachServiceConfiguration `json:"standard_elasticsearch_service_configuration,omitempty"`
+	StandardElasticsearchServiceConfiguration *StandardElasticsearchServiceConfiguration `json:"standard_elasticsearch_service_configuration,omitempty"`
 }
 
-// StandardElasticSeachServiceConfiguration represents service
+// StandardElasticsearchServiceConfiguration represents service
 // configuration for standard elasticsearch services (fka sockets).
-type StandardElasticSeachServiceConfiguration struct {
+type StandardElasticsearchServiceConfiguration struct {
 	HostnameAndPort        // inherited
 	Protocol        string `json:"protocol"`
 	HostHeader      string `json:"host_header,omitempty"`
@@ -39,28 +39,28 @@ type ElasticsearchServiceTypeBasicAuth struct {
 	UsernameAndPassword
 }
 
-// Validate validates the ElasticSearchServiceConfiguration.
+// Validate validates the ElasticsearchServiceConfiguration.
 func (c *ElasticsearchServiceConfiguration) Validate() error {
 	switch c.ElasticsearchServiceType {
 
 	case ElasticsearchServiceTypeStandard:
-		if c.StandardElasticSeachServiceConfiguration == nil {
+		if c.StandardElasticsearchServiceConfiguration == nil {
 			return fmt.Errorf(
 				"elasticsearch service configuration for service type \"%s\" must have standard elasticsearch service configuration defined",
 				ElasticsearchServiceTypeStandard,
 			)
 		}
-		if err := c.StandardElasticSeachServiceConfiguration.Validate(); err != nil {
+		if err := c.StandardElasticsearchServiceConfiguration.Validate(); err != nil {
 			return fmt.Errorf("invalid standard elasticsearch service configuration: %v", err)
 		}
 		return nil
 	default:
-		return fmt.Errorf("http service configuration has invalid http service type \"%s\"", c.ElasticsearchServiceType)
+		return fmt.Errorf("elasticsearch service configuration has invalid elasticsearch service type \"%s\"", c.ElasticsearchServiceType)
 	}
 }
 
 // Validate validates the ElasticsearchServiceTypeStandard.
-func (c *StandardElasticSeachServiceConfiguration) Validate() error {
+func (c *StandardElasticsearchServiceConfiguration) Validate() error {
 	switch c.Protocol {
 	case "http", "https":
 	default:
