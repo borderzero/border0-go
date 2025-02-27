@@ -44,7 +44,7 @@ const (
 	// ServiceTypeExitNode is the service type for exit node services (fka sockets).
 	ServiceTypeExitNode = "exit_node"
 
-	// ServiceTypeElasticSearch is the service type for Elasticsearch services (fka sockets).
+	// ServiceTypeElasticsearch is the service type for Elasticsearch services (fka sockets).
 	ServiceTypeElasticsearch = "elasticsearch"
 )
 
