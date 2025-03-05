@@ -32,6 +32,7 @@ type StandardElasticsearchServiceConfiguration struct {
 
 	AuthenticationType  string                             `json:"authentication_type"`
 	BasicAuthentication *ElasticsearchServiceTypeBasicAuth `json:"basic_auth_configuration,omitempty"`
+	EnableRunasUser     *bool                              `json:"enable_runas_user,omitempty"`
 }
 
 // ElasticsearchServiceTypeBasicAuth represents basic auth configuration that based on username and password.

@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/borderzero/border0-go/lib/types/nilcheck"
 )
@@ -16,6 +17,13 @@ const (
 	HttpServiceTypeConnectorFileServer = "connector_file_server"
 )
 
+const (
+	MaxHeaderKeyLength   = 255
+	MaxHeaderValueLength = 4096
+)
+
+var validHeaderKey = regexp.MustCompile(`^[A-Za-z0-9-]+$`)
+
 // HttpServiceConfiguration represents service
 // configuration for http services (fka sockets).
 type HttpServiceConfiguration struct {
@@ -26,11 +34,19 @@ type HttpServiceConfiguration struct {
 	FileServerHttpServiceConfiguration *FileServerHttpServiceConfiguration `json:"fileserver_http_service_configuration,omitempty"`
 }
 
+// Headers represents a list of key-value headers.
+type Header struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 // StandardHttpServiceConfiguration represents service
 // configuration for standard http services (fka sockets).
 type StandardHttpServiceConfiguration struct {
-	HostnameAndPort        // inherited
-	HostHeader      string `json:"host_header"`
+	HostnameAndPort          // inherited
+	Scheme          string   `json:"scheme"`
+	HostHeader      string   `json:"host_header"`
+	Headers         []Header `json:"headers,omitempty"`
 }
 
 // FileServerHttpServiceConfiguration represents service
@@ -92,6 +108,32 @@ func (c *StandardHttpServiceConfiguration) Validate() error {
 	if err := c.HostnameAndPort.Validate(); err != nil {
 		return err
 	}
+
+	// validate headers
+	for _, header := range c.Headers {
+		if len(header.Key) == 0 {
+			return fmt.Errorf("headers key cannot be empty")
+		}
+
+		if len(header.Key) > MaxHeaderKeyLength {
+			return fmt.Errorf("header key exceeds max length of %d", MaxHeaderKeyLength)
+		}
+
+		if !validHeaderKey.MatchString(header.Key) {
+			return fmt.Errorf("header key %s is an invalid header key", header.Key)
+		}
+
+		if len(header.Value) > MaxHeaderValueLength {
+			return fmt.Errorf("header value for key %s exceeds max length of %d", header.Key, MaxHeaderValueLength)
+		}
+
+		for _, ch := range header.Value {
+			if ch < 32 || ch == 127 { // ASCII control characters not allowed
+				return fmt.Errorf("header value for key %s with value %s contains invalid character: %v", header.Key, header.Value, ch)
+			}
+		}
+	}
+
 	return nil
 }
 
