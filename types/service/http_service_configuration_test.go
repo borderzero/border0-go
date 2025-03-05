@@ -142,6 +142,91 @@ func Test_ValidateStandardHttpServiceConfiguration(t *testing.T) {
 			},
 			expectedError: errors.New("host_header is a required field"),
 		},
+		{
+			name: "Should succeed when headers are valid",
+			configuration: &StandardHttpServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "hello.com",
+					Port:     443,
+				},
+				HostHeader: "whatever.com",
+				Headers: []Header{
+					{"key1", "value1"},
+					{"key2", "value2"},
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Should fail when header key is empty",
+			configuration: &StandardHttpServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "hello.com",
+					Port:     443,
+				},
+				HostHeader: "whatever.com",
+				Headers: []Header{
+					{"", "value1"},
+				},
+			},
+			expectedError: errors.New("headers key cannot be empty"),
+		},
+		{
+			name: "Should fail when header key is invalid",
+			configuration: &StandardHttpServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "hello.com",
+					Port:     443,
+				},
+				HostHeader: "whatever.com",
+				Headers: []Header{
+					{"!key1", "value1"},
+				},
+			},
+			expectedError: errors.New("header key !key1 is an invalid header key"),
+		},
+		{
+			name: "Should fail when header value is invalid",
+			configuration: &StandardHttpServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "hello.com",
+					Port:     443,
+				},
+				HostHeader: "whatever.com",
+				Headers: []Header{
+					{"key1", "header \r\n value"},
+				},
+			},
+			expectedError: errors.New("header value for key key1 with value header \r\n value contains invalid character: 13"),
+		},
+		{
+			name: "Should fail when header key is too long",
+			configuration: &StandardHttpServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "hello.com",
+					Port:     443,
+				},
+				HostHeader: "whatever.com",
+				Headers: []Header{
+					{string(make([]byte, 256)), "value1"},
+				},
+			},
+			expectedError: errors.New("header key exceeds max length of 255"),
+		},
+		{
+			name: "Should fail when header value is too long",
+			configuration: &StandardHttpServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "hello.com",
+					Port:     443,
+				},
+				HostHeader: "whatever.com",
+				Headers: []Header{
+					{"key1", string(make([]byte, 4097))},
+				},
+			},
+			expectedError: errors.New("header value for key key1 exceeds max length of 4096"),
+		},
 	}
 	for _, test := range tests {
 		test := test
