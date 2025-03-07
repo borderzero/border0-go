@@ -1,6 +1,7 @@
 package ring
 
 import (
+	"math"
 	"sync"
 	"testing"
 
@@ -76,6 +77,118 @@ func Test_Put(t *testing.T) {
 	}
 }
 
+func Test_Min(t *testing.T) {
+	tests := []struct {
+		name     string
+		ring     *ring[int]
+		expected float64
+	}{
+		{
+			name: "returns math.MaxFloat64 when there are no elements",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{},
+				window:  5,
+				puts:    0,
+			},
+			expected: math.MaxFloat64,
+		},
+		{
+			name: "returns correct min when window is not full",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 20, 30},
+				window:  5,
+				puts:    3,
+			},
+			expected: 10,
+		},
+		{
+			name: "returns correct min when window is filled exactly once",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 15, 20, 25, 30},
+				window:  5,
+				puts:    5,
+			},
+			expected: 10,
+		},
+		{
+			name: "returns correct min when window is filled and beyond",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 15, 20, 25, 30},
+				window:  5,
+				puts:    10,
+			},
+			expected: 10,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.expected, test.ring.Min())
+		})
+	}
+}
+
+func Test_Max(t *testing.T) {
+	tests := []struct {
+		name     string
+		ring     *ring[int]
+		expected float64
+	}{
+		{
+			name: "returns (-1)*math.MaxFloat64 when there are no elements",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{},
+				window:  5,
+				puts:    0,
+			},
+			expected: -math.MaxFloat64,
+		},
+		{
+			name: "returns correct max when window is not full",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 20, 30},
+				window:  5,
+				puts:    3,
+			},
+			expected: 30,
+		},
+		{
+			name: "returns correct max when window is filled exactly once",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 15, 20, 25, 30},
+				window:  5,
+				puts:    5,
+			},
+			expected: 30,
+		},
+		{
+			name: "returns correct max when window is filled and beyond",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 15, 20, 25, 30},
+				window:  5,
+				puts:    10,
+			},
+			expected: 30,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.expected, test.ring.Max())
+		})
+	}
+}
+
 func Test_Average(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -128,6 +241,75 @@ func Test_Average(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, test.expected, test.ring.Average())
+		})
+	}
+}
+
+func Test_MinMaxAvg(t *testing.T) {
+	tests := []struct {
+		name        string
+		ring        *ring[int]
+		expectedMin float64
+		expectedMax float64
+		expectedAvg float64
+	}{
+		{
+			name: "returns math.MaxFloat64, -math.MaxFloat64, and 0 when there are no elements",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{},
+				window:  5,
+				puts:    0,
+			},
+			expectedMin: math.MaxFloat64,
+			expectedMax: -math.MaxFloat64,
+			expectedAvg: 0,
+		},
+		{
+			name: "returns correct values when window is not full",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 20, 30},
+				window:  5,
+				puts:    3,
+			},
+			expectedMin: 10,
+			expectedMax: 30,
+			expectedAvg: 20,
+		},
+		{
+			name: "returns correct values when window is filled exactly once",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 15, 20, 25, 30},
+				window:  5,
+				puts:    5,
+			},
+			expectedMin: 10,
+			expectedMax: 30,
+			expectedAvg: 20,
+		},
+		{
+			name: "returns correct values when window is filled and beyond",
+			ring: &ring[int]{
+				mu:      sync.RWMutex{},
+				entries: []int{10, 15, 20, 25, 30},
+				window:  5,
+				puts:    10,
+			},
+			expectedMin: 10,
+			expectedMax: 30,
+			expectedAvg: 20,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			minimum, maximum, average := test.ring.MinMaxAvg()
+			assert.Equal(t, test.expectedMin, minimum)
+			assert.Equal(t, test.expectedMax, maximum)
+			assert.Equal(t, test.expectedAvg, average)
 		})
 	}
 }
