@@ -112,6 +112,23 @@ func Test_ValidateSshServiceConfiguration(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "Happy case for ssh service type aws ec2 instance connect with endpoint",
+			configuration: &SshServiceConfiguration{
+				SshServiceType: SshServiceTypeAwsEc2InstanceConnect,
+				AwsEc2ICSshServiceConfiguration: &AwsEc2ICSshServiceConfiguration{
+					Ec2InstanceId:                mockEc2InstanceId,
+					Ec2InstanceRegion:            mockEc2InstanceRegion,
+					Ec2InstanceConnectEndpointId: "eice-01d8b08684ed01510",
+					HostnameAndPort: HostnameAndPort{
+						Hostname: "border0.com",
+						Port:     22,
+					},
+					UsernameProvider: UsernameProviderPromptClient,
+				},
+			},
+			expectedError: nil,
+		},
+		{
 			name: "Happy case for ssh service type built in ssh server",
 			configuration: &SshServiceConfiguration{
 				SshServiceType: SshServiceTypeConnectorBuiltIn,
@@ -659,6 +676,20 @@ func Test_AwsEc2ICSshServiceConfiguration(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "Should succeed when all inputs are valid (incl. endpoint id)",
+			configuration: &AwsEc2ICSshServiceConfiguration{
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "133.33.33.33",
+					Port:     22,
+				},
+				Ec2InstanceId:                mockInstanceId,
+				Ec2InstanceRegion:            mockInstanceRegion,
+				Ec2InstanceConnectEndpointId: "eice-01d8b08684ed01510",
+				UsernameProvider:             UsernameProviderPromptClient,
+			},
+			expectedError: nil,
+		},
+		{
 			name: "Should fail when hostname is missing",
 			configuration: &AwsEc2ICSshServiceConfiguration{
 				HostnameAndPort: HostnameAndPort{
@@ -718,6 +749,24 @@ func Test_AwsEc2ICSshServiceConfiguration(t *testing.T) {
 				UsernameProvider:  UsernameProviderPromptClient,
 			},
 			expectedError: fmt.Errorf("invalid ec2_instance_region: region \"%s\" is not a valid aws region", "bad region"),
+		},
+		{
+			name: "Should fail when ec2 instance connect endpoint id is invalid",
+			configuration: &AwsEc2ICSshServiceConfiguration{
+				Ec2InstanceId:                mockInstanceId,
+				Ec2InstanceRegion:            mockInstanceRegion,
+				Ec2InstanceConnectEndpointId: "notvalid",
+				HostnameAndPort: HostnameAndPort{
+					Hostname: "border0.com",
+					Port:     22,
+				},
+				UsernameProvider: UsernameProviderPromptClient,
+			},
+			expectedError: fmt.Errorf(
+				"invalid ec2_instance_connect_endpoint_id: \"%s\" does not match regex \"%s\"",
+				"notvalid",
+				ec2InstanceConnectEndpointIdRegex,
+			),
 		},
 		{
 			name: "Should fail when username provider is defined and username is missing",
