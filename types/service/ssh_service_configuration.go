@@ -87,6 +87,10 @@ const (
 	UsernameProviderUseConnectorUser = "use_connector_user"
 )
 
+const (
+	ec2InstanceConnectEndpointIdRegex = `^eice-[0-9a-f]{17}$`
+)
+
 // SshServiceConfiguration represents service
 // configuration for shell services (fka sockets).
 type SshServiceConfiguration struct {
@@ -146,11 +150,12 @@ type AwsSsmEcsTargetConfiguration struct {
 // for aws ec2 instance connect ssh services (fka sockets).
 type AwsEc2ICSshServiceConfiguration struct {
 	HostnameAndPort
-	UsernameProvider  string                 `json:"username_provider,omitempty"`
-	Username          string                 `json:"username,omitempty"`
-	Ec2InstanceId     string                 `json:"ec2_instance_id"`
-	Ec2InstanceRegion string                 `json:"ec2_instance_region"`
-	AwsCredentials    *common.AwsCredentials `json:"aws_credentials,omitempty"`
+	UsernameProvider             string                 `json:"username_provider,omitempty"`
+	Username                     string                 `json:"username,omitempty"`
+	Ec2InstanceId                string                 `json:"ec2_instance_id"`
+	Ec2InstanceRegion            string                 `json:"ec2_instance_region"`
+	Ec2InstanceConnectEndpointId string                 `json:"ec2_instance_connect_endpoint_id,omitempty"`
+	AwsCredentials               *common.AwsCredentials `json:"aws_credentials,omitempty"`
 }
 
 // DockerExecSshServiceConfiguration represents service
@@ -346,6 +351,15 @@ func (c *AwsEc2ICSshServiceConfiguration) Validate() error {
 		set.New(UsernameProviderPromptClient),
 	); err != nil {
 		return err
+	}
+	if c.Ec2InstanceConnectEndpointId != "" {
+		if !regexp.MustCompile(ec2InstanceConnectEndpointIdRegex).MatchString(c.Ec2InstanceConnectEndpointId) {
+			return fmt.Errorf(
+				"invalid ec2_instance_connect_endpoint_id: \"%s\" does not match regex \"%s\"",
+				c.Ec2InstanceConnectEndpointId,
+				ec2InstanceConnectEndpointIdRegex,
+			)
+		}
 	}
 	if c.Ec2InstanceId == "" {
 		return fmt.Errorf("ec2_instance_id is a required field")
