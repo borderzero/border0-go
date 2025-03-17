@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -100,6 +101,11 @@ func (api *APIClient) request(ctx context.Context, method, path string, input, o
 	retryCount := 0
 
 	for ; ; retryCount++ {
+		if err := ctx.Err(); err != nil {
+			if errors.Is(err, context.Canceled) {
+				return 0, err
+			}
+		}
 
 		shouldRetry = false
 		code, err = api.http.Request(ctx, method, api.baseURL+path, input, output)
