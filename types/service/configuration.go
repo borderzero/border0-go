@@ -46,6 +46,9 @@ const (
 
 	// ServiceTypeElasticsearch is the service type for Elasticsearch services (fka sockets).
 	ServiceTypeElasticsearch = "elasticsearch"
+
+	// ServiceTypeSnowflake is the service type for Snowflake services (fka sockets).
+	ServiceTypeSnowflake = "snowflake"
 )
 
 // Configuration represents upstream service configuration.
@@ -63,6 +66,7 @@ type Configuration struct {
 	SubnetRouterServiceConfiguration  *SubnetRouterServiceConfiguration  `json:"subnet_router_service_configuration,omitempty"`
 	ExitNodeServiceConfiguration      *ExitNodeServiceConfiguration      `json:"exit_node_service_configuration,omitempty"`
 	ElasticsearchServiceConfiguration *ElasticsearchServiceConfiguration `json:"elasticsearch_service_configuration,omitempty"`
+	SnowflakeServiceConfiguration     *SnowflakeServiceConfiguration     `json:"snowflake_service_configuration,omitempty"`
 
 	// remove after february 2025
 	DEPRECATED_SubnetRoutesServiceConfiguration *SubnetRouterServiceConfiguration `json:"subnet_routes_service_configuration,omitempty"`
@@ -86,6 +90,7 @@ func (c *Configuration) Validate() error {
 		ServiceTypeSubnetRouter:  c.SubnetRouterServiceConfiguration,
 		ServiceTypeExitNode:      c.ExitNodeServiceConfiguration,
 		ServiceTypeElasticsearch: c.ElasticsearchServiceConfiguration,
+		ServiceTypeSnowflake:     c.SnowflakeServiceConfiguration,
 
 		// remove after february 2025
 		DEPRECATED_ServiceTypeSubnetRoutes: c.DEPRECATED_SubnetRoutesServiceConfiguration,
