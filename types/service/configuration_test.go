@@ -66,6 +66,18 @@ func Test_Configuration_Validate(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			name: "Should succeed for valid snowflake socket",
+			configuration: &Configuration{
+				ServiceType: ServiceTypeSnowflake,
+				SnowflakeServiceConfiguration: &SnowflakeServiceConfiguration{
+					Account:  "account",
+					Username: "username",
+					Password: "password",
+				},
+			},
+			expectedError: nil,
+		},
+		{
 			name: "Should succeed for valid DEPRECATED subnet routes socket",
 			configuration: &Configuration{
 				ServiceType: DEPRECATED_ServiceTypeSubnetRoutes,

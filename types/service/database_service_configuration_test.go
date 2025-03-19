@@ -79,12 +79,6 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 		},
 	}
 
-	testSnowflakeConfig := &SnowflakeDatabaseServiceConfiguration{
-		Account:  "account",
-		Username: "username",
-		Password: "password",
-	}
-
 	tests := []struct {
 		name  string
 		given DatabaseServiceConfiguration
@@ -176,23 +170,6 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 			want: errors.New("Azure SQL database service configuration is required"),
 		},
 		{
-			name: "when snowflake type picked, other database service configs should be nil",
-			given: DatabaseServiceConfiguration{
-				DatabaseServiceType: DatabaseServiceTypeSnowflake,
-				Snowflake:           testSnowflakeConfig,
-				Standard:            testStandardConfig, // extra
-			},
-			want: errors.New("database service type snowflake can only have snowflake configuration defined"),
-		},
-		{
-			name: "snowflake type is picked, but snowflake config is missing",
-			given: DatabaseServiceConfiguration{
-				DatabaseServiceType: DatabaseServiceTypeSnowflake,
-				// snowflake config is missing
-			},
-			want: errors.New("Snowflake database service configuration is required"),
-		},
-		{
 			name: "happy path - standard config",
 			given: DatabaseServiceConfiguration{
 				DatabaseServiceType: DatabaseServiceTypeStandard,
@@ -221,14 +198,6 @@ func Test_DatabaseServiceConfiguration_Validate(t *testing.T) {
 			given: DatabaseServiceConfiguration{
 				DatabaseServiceType: DatabaseServiceTypeAzureSql,
 				AzureSql:            testAzureSqlConfig,
-			},
-			want: nil,
-		},
-		{
-			name: "happy path - snowflake config",
-			given: DatabaseServiceConfiguration{
-				DatabaseServiceType: DatabaseServiceTypeSnowflake,
-				Snowflake:           testSnowflakeConfig,
 			},
 			want: nil,
 		},
