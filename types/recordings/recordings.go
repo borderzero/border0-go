@@ -17,6 +17,9 @@ const (
 
 	// RecordingTypeHTTPAccessLog is the recording type for http access logs in table format.
 	RecordingTypeHTTPAccessLog = "http_access_log"
+
+	// RecordingTypeSnowflakeQueryLog is the recording type for snowflake queries in table format.
+	RecordingTypeSnowflakeQueryLog = "snowflake_query_log"
 )
 
 // ValidRecordingTypes represents allowed values for recording types.
@@ -26,4 +29,5 @@ var ValidRecordingTypes = set.New(
 	RecordingTypeDatabaseQueryLog,
 	RecordingTypeBrowserSessionStream,
 	RecordingTypeHTTPAccessLog,
+	RecordingTypeSnowflakeQueryLog,
 )
