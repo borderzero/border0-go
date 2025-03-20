@@ -13,13 +13,9 @@ var (
 // SnowflakeServiceConfiguration represents service
 // configuration for snowflake services (fka sockets).
 type SnowflakeServiceConfiguration struct {
-	Account   string `json:"account"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	Database  string `json:"database"`
-	Schema    string `json:"schema"`
-	Warehouse string `json:"warehouse"`
-	Role      string `json:"role"`
+	Account  string `json:"account"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // Validate ensures that the `SnowflakeServiceConfiguration` has the required fields.
