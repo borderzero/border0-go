@@ -21,7 +21,7 @@ func (_m *ClientHTTPRequester) EXPECT() *ClientHTTPRequester_Expecter {
 	return &ClientHTTPRequester_Expecter{mock: &_m.Mock}
 }
 
-// Close provides a mock function with given fields:
+// Close provides a mock function with no fields
 func (_m *ClientHTTPRequester) Close() {
 	_m.Called()
 }
@@ -49,7 +49,7 @@ func (_c *ClientHTTPRequester_Close_Call) Return() *ClientHTTPRequester_Close_Ca
 }
 
 func (_c *ClientHTTPRequester_Close_Call) RunAndReturn(run func()) *ClientHTTPRequester_Close_Call {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 
