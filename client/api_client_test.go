@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/borderzero/border0-go/client/mocks"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 )
 

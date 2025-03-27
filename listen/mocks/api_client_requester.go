@@ -8,7 +8,7 @@ import (
 
 	context "context"
 
-	jwt "github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v5"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -2043,7 +2043,7 @@ func (_c *APIClientRequester_Sockets_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
-// TokenClaims provides a mock function with given fields:
+// TokenClaims provides a mock function with no fields
 func (_m *APIClientRequester) TokenClaims() (jwt.MapClaims, error) {
 	ret := _m.Called()
 
