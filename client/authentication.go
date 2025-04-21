@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/borderzero/border0-go/client/auth"
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/skratchdot/open-golang/open"
 	"golang.org/x/term"
