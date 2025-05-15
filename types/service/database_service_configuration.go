@@ -26,6 +26,9 @@ const (
 
 	// DatabaseProtocolTypeMSSql is the database service protocol for mssql databases.
 	DatabaseProtocolSqlserver = "mssql"
+
+	// DatabaseProtocolTypeCockroachDB is the database service protocol for cockroachdb databases.
+	DatabaseProtocolCockroachDB = "cockroachdb"
 )
 
 const (
@@ -231,7 +234,7 @@ func (config StandardDatabaseServiceConfiguration) Validate() error {
 	}
 
 	switch config.DatabaseProtocol {
-	case DatabaseProtocolMySql, DatabaseProtocolPostgres:
+	case DatabaseProtocolMySql, DatabaseProtocolPostgres, DatabaseProtocolCockroachDB:
 		switch config.AuthenticationType {
 		case DatabaseAuthenticationTypeUsernameAndPassword:
 			if nilcheck.AnyNotNil(config.TlsAuth, config.Kerberos, config.SqlAuthentication) {
