@@ -32,6 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("failed to start listener:", err)
 	}
+	defer listener.Close()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// border0 will set this header along with a few other identity related headers

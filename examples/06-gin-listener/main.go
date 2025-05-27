@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("failed to start listener:", err)
 	}
+	defer listener.Close()
 
 	r := gin.Default()
 
