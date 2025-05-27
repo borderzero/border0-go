@@ -47,6 +47,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("failed to start listener:", err)
 	}
+	defer listener.Close()
 
 	// create a http single host reverse proxy
 	proxy := httputil.NewSingleHostReverseProxy(&url.URL{

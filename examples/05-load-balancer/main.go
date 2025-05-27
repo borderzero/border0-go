@@ -82,6 +82,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("failed to start listener:", err)
 	}
+	defer listener.Close()
 	log.Println("Starting load balancer on Border0")
 	// Use the border0 listener to serve the http handler (reverse proxy)
 	log.Fatalln(http.Serve(listener, http.HandlerFunc(loadBalancerHandler)))
