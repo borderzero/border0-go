@@ -165,16 +165,17 @@ func (api *APIClient) RemovePoliciesFromSocket(ctx context.Context, policyIDs []
 // a policy is not organization-wide, it can be attached to individual sockets. See [AttachPolicyToSocket] and [RemovePolicyFromSocket]
 // for more details.
 type Policy struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Version     string    `json:"version"`
-	Description string    `json:"description"`
-	OrgID       string    `json:"org_id"`
-	OrgWide     bool      `json:"org_wide"`
-	PolicyData  any       `json:"policy_data"`
-	CreatedAt   time.Time `json:"created_at"`
-	SocketIDs   []string  `json:"socket_ids"`
-	Deleted     bool      `json:"deleted"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Version     string            `json:"version"`
+	Description string            `json:"description"`
+	OrgID       string            `json:"org_id"`
+	OrgWide     bool              `json:"org_wide"`
+	PolicyData  any               `json:"policy_data"`
+	CreatedAt   time.Time         `json:"created_at"`
+	SocketIDs   []string          `json:"socket_ids"`
+	Deleted     bool              `json:"deleted"`
+	SocketTags  map[string]string `json:"socket_tags"`
 }
 
 // PolicyData represents the policy data schema for v1 policies. A policy can have multiple actions, and its condition determines when the
