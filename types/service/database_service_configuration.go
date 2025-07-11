@@ -11,10 +11,11 @@ import (
 // Database service types supported by Border0. Choose `standard` for self-managed databases.
 // Use `aws_rds` for AWS RDS databases, and select `gcp_cloudsql` for Google Cloud SQL databases.
 const (
-	DatabaseServiceTypeStandard    = "standard"     // standard MySQL or PostgreSQL, supports TLS and password auth
-	DatabaseServiceTypeAwsRds      = "aws_rds"      // AWS RDS database, supports IAM and password auth
-	DatabaseServiceTypeGcpCloudSql = "gcp_cloudsql" // Google Cloud SQL database, supports IAM, TLS and password auth
-	DatabaseServiceTypeAzureSql    = "azure_sql"    // Azure SQL database, supports SQL authentication, azure password auth
+	DatabaseServiceTypeStandard      = "standard"       // standard MySQL or PostgreSQL, supports TLS and password auth
+	DatabaseServiceTypeAwsRds        = "aws_rds"        // AWS RDS database, supports IAM and password auth
+	DatabaseServiceTypeGcpCloudSql   = "gcp_cloudsql"   // Google Cloud SQL database, supports IAM, TLS and password auth
+	DatabaseServiceTypeAzureSql      = "azure_sql"      // Azure SQL database, supports SQL authentication, azure password auth
+	DatabaseServiceTypeAwsDocumentDB = "aws_documentdb" // AWS DocumentDB database, supports TLS, password auth and IAM auth
 )
 
 const (
@@ -29,6 +30,9 @@ const (
 
 	// DatabaseProtocolTypeCockroachDB is the database service protocol for cockroachdb databases.
 	DatabaseProtocolCockroachDB = "cockroachdb"
+
+	// DatabaseProtocolTypeMongoDB is the database service protocol for mongodb databases.
+	DatabaseProtocolMongoDB = "mongodb"
 )
 
 const (
@@ -60,6 +64,10 @@ const (
 	// DatabaseAuthenticationTypeKerberos is the authentication type
 	// for databases that use kerberos for authentication.
 	DatabaseAuthenticationTypeKerberos = "kerberos"
+
+	// DatabaseAuthenticationTypeNoAuth is the authentication type
+	// for databases that do not require authentication.
+	DatabaseAuthenticationTypeNoAuth = "no_auth"
 )
 
 // =======================================================================================
@@ -149,10 +157,11 @@ type DatabaseServiceConfiguration struct {
 	DatabaseServiceType string `json:"database_service_type"`
 
 	// mutually exclusive fields below
-	Standard    *StandardDatabaseServiceConfiguration    `json:"standard_database_service_configuration,omitempty"`
-	AwsRds      *AwsRdsDatabaseServiceConfiguration      `json:"aws_rds_database_service_configuration,omitempty"`
-	GcpCloudSql *GcpCloudSqlDatabaseServiceConfiguration `json:"gcp_cloudsql_database_service_configuration,omitempty"`
-	AzureSql    *AzureSqlDatabaseServiceConfiguration    `json:"azure_sql_database_service_configuration,omitempty"`
+	Standard      *StandardDatabaseServiceConfiguration      `json:"standard_database_service_configuration,omitempty"`
+	AwsRds        *AwsRdsDatabaseServiceConfiguration        `json:"aws_rds_database_service_configuration,omitempty"`
+	GcpCloudSql   *GcpCloudSqlDatabaseServiceConfiguration   `json:"gcp_cloudsql_database_service_configuration,omitempty"`
+	AzureSql      *AzureSqlDatabaseServiceConfiguration      `json:"azure_sql_database_service_configuration,omitempty"`
+	AwsDocumentDB *AwsDocumentDBDatabaseServiceConfiguration `json:"aws_documentdb_database_service_configuration,omitempty"`
 }
 
 // Validate ensures that the `DatabaseServiceConfiguration` is valid.
@@ -162,7 +171,7 @@ func (config DatabaseServiceConfiguration) Validate() error {
 	}
 	switch config.DatabaseServiceType {
 	case DatabaseServiceTypeStandard:
-		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql) {
+		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql, config.AwsDocumentDB) {
 			return errors.New("database service type standard can only have standard configuration defined")
 		}
 		if config.Standard == nil {
@@ -170,15 +179,23 @@ func (config DatabaseServiceConfiguration) Validate() error {
 		}
 		return config.Standard.Validate()
 	case DatabaseServiceTypeAwsRds:
-		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql) {
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.AwsDocumentDB) {
 			return errors.New("database service type aws_rds can only have aws rds configuration defined")
 		}
 		if config.AwsRds == nil {
 			return errors.New("AWS RDS database service configuration is required")
 		}
 		return config.AwsRds.Validate()
+	case DatabaseServiceTypeAwsDocumentDB:
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.AwsRds) {
+			return errors.New("database service type aws_documentdb can only have aws documentdb configuration defined")
+		}
+		if config.AwsDocumentDB == nil {
+			return errors.New("AWS DocumentDB database service configuration is required")
+		}
+		return config.AwsDocumentDB.Validate()
 	case DatabaseServiceTypeGcpCloudSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql) {
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql, config.AwsDocumentDB) {
 			return errors.New("database service type gcp_cloudsql can only have gcp cloudsql configuration defined")
 		}
 		if config.GcpCloudSql == nil {
@@ -186,7 +203,7 @@ func (config DatabaseServiceConfiguration) Validate() error {
 		}
 		return config.GcpCloudSql.Validate()
 	case DatabaseServiceTypeAzureSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql) {
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AwsDocumentDB) {
 			return errors.New("database service type azure_sql can only have azure sql configuration defined")
 		}
 		if config.AzureSql == nil {
@@ -255,6 +272,32 @@ func (config StandardDatabaseServiceConfiguration) Validate() error {
 		default:
 			return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
 		}
+	case DatabaseProtocolMongoDB:
+		switch config.AuthenticationType {
+		case DatabaseAuthenticationTypeUsernameAndPassword:
+			if nilcheck.AnyNotNil(config.TlsAuth, config.Kerberos, config.SqlAuthentication) {
+				return errors.New("authentication type is username_and_password, but tls_auth, kerberos or sql_authentication configuration is provided")
+			}
+			if config.UsernameAndPasswordAuth == nil {
+				return errors.New("username and password auth configuration is required")
+			}
+			return config.UsernameAndPasswordAuth.Validate()
+		case DatabaseAuthenticationTypeTls:
+			if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth, config.Kerberos, config.SqlAuthentication) {
+				return errors.New("authentication type is tls, but username_and_password, kerberos or sql_authentication configuration is provided")
+			}
+			if config.TlsAuth == nil {
+				return errors.New("TLS auth configuration is required")
+			}
+			return config.TlsAuth.Validate()
+		case DatabaseAuthenticationTypeNoAuth:
+			if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth, config.TlsAuth, config.Kerberos, config.SqlAuthentication) {
+				return errors.New("authentication type is no_auth, but username_and_password, tls_auth, kerberos or sql_authentication configuration is provided")
+			}
+			return nil // No auth configuration is required for no_auth authentication type
+		default:
+			return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+		}
 	case DatabaseProtocolSqlserver:
 		switch config.AuthenticationType {
 		case DatabaseAuthenticationTypeKerberos:
@@ -319,6 +362,58 @@ func (config AwsRdsDatabaseServiceConfiguration) Validate() error {
 		return config.UsernameAndPasswordAuth.Validate()
 	case DatabaseAuthenticationTypeIam:
 		if nilcheck.AnyNotNil(config.UsernameAndPasswordAuth) {
+			return errors.New("authentication type is iam, but username and password auth configuration is provided")
+		}
+		if config.IamAuth == nil {
+			return errors.New("IAM auth configuration is required")
+		}
+		return config.IamAuth.Validate()
+	}
+	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+}
+
+// AwsDocumentDBDatabaseServiceConfiguration represents service configuration for AWS DocumentDB databases. AWS DocumentDB databases
+// are cloud managed MongoDB clusters.
+//
+// Supported database protocols are: `mongodb`. For upstream authentication, supported auth types
+// are: `username_password` and `iam`. When using IAM authentication, the client must provide AWS credentials and
+// AWS region . You can provide an optional CA certificate to verify the database server's
+// certificate.
+type AwsDocumentDBDatabaseServiceConfiguration struct {
+	HostnameAndPort
+
+	DatabaseProtocol   string `json:"protocol"`
+	AuthenticationType string `json:"authentication_type"`
+
+	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	IamAuth                 *MongoDBAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
+}
+
+// Validate ensures that the `AwsDocumentDBDatabaseServiceConfiguration` is valid.
+func (config AwsDocumentDBDatabaseServiceConfiguration) Validate() error {
+	if config.DatabaseProtocol == "" {
+		return errors.New("database protocol is required")
+	}
+
+	if config.DatabaseProtocol != DatabaseProtocolMongoDB {
+		return fmt.Errorf("invalid database protocol for AWS DocumentDB: %s (only mongodb is supported)", config.DatabaseProtocol)
+	}
+
+	if err := config.HostnameAndPort.Validate(); err != nil {
+		return err
+	}
+
+	switch config.AuthenticationType {
+	case DatabaseAuthenticationTypeUsernameAndPassword:
+		if config.IamAuth != nil {
+			return errors.New("authentication type is username_and_password, but IAM auth configuration is provided")
+		}
+		if config.UsernameAndPasswordAuth == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return config.UsernameAndPasswordAuth.Validate()
+	case DatabaseAuthenticationTypeIam:
+		if config.UsernameAndPasswordAuth != nil {
 			return errors.New("authentication type is iam, but username and password auth configuration is provided")
 		}
 		if config.IamAuth == nil {
@@ -603,6 +698,27 @@ func (config AwsRdsIamAuthConfiguration) Validate() error {
 	}
 	if config.Username == "" {
 		return errors.New("username is required")
+	}
+	if config.AwsCredentials != nil {
+		if err := config.AwsCredentials.Validate(); err != nil {
+			return fmt.Errorf("invalid AWS credentials: %w", err)
+		}
+	}
+	return nil
+}
+
+// MongoDBAWSAuthConfiguration represents auth configuration for AWS DocumentDB databases that use IAM authentication. You must
+// provide AWS credentials. Optionally AWS CA bundle can be supplied to verify the server's certificate.
+type MongoDBAWSAuthConfiguration struct {
+	AwsCredentials *common.AwsCredentials `json:"aws_credentials,omitempty"`
+	ClusterRegion  string                 `json:"cluster_region"`
+	CaCertificate  string                 `json:"ca_certificate,omitempty"`
+}
+
+// Validate ensures that the `MongoDBAWSAuthConfiguration` has the required field and that the AWS credentials are valid.
+func (config MongoDBAWSAuthConfiguration) Validate() error {
+	if config.ClusterRegion == "" {
+		return errors.New("AWS DocumentDB cluster region is required")
 	}
 	if config.AwsCredentials != nil {
 		if err := config.AwsCredentials.Validate(); err != nil {
