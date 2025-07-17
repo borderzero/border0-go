@@ -111,7 +111,7 @@ func (api *APIClient) SignSocketKey(ctx context.Context, idOrName string, in *So
 }
 
 // Socket represents a socket in Border0 API. A socket can be linked to a connector with upstream configuration.
-// Use `ConnectorID` to link a socket to a connector, and use `UpstreamConfig` to configure upstream for a socket.
+// Use `ConnectorIDs` to link a socket to a connector, and use `UpstreamConfig` to configure upstream for a socket.
 type Socket struct {
 	Name                 string            `json:"name"`
 	SocketID             string            `json:"socket_id"`
@@ -123,7 +123,7 @@ type Socket struct {
 	Tags                 map[string]string `json:"tags,omitempty"`
 
 	// link to a connector with upstream config
-	ConnectorID    string                 `json:"connector_id,omitempty"`
+	ConnectorIDs   []string               `json:"connector_ids,omitempty"`
 	UpstreamConfig *service.Configuration `json:"upstream_configuration,omitempty"`
 
 	// associated policies
