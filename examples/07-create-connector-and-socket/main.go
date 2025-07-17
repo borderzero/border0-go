@@ -52,9 +52,9 @@ func main() {
 	// STEP 2: create a socket that's linked to the connector you just created
 	//
 	socket := client.Socket{
-		Name:        "sdk-socket-ssh",
-		SocketType:  "ssh",
-		ConnectorID: createdConnector.ConnectorID,
+		Name:         "sdk-socket-ssh",
+		SocketType:   "ssh",
+		ConnectorIDs: []string{createdConnector.ConnectorID},
 		UpstreamConfig: &service.Configuration{
 			ServiceType: service.ServiceTypeSsh,
 			SshServiceConfiguration: &service.SshServiceConfiguration{
