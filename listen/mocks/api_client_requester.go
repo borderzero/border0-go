@@ -1344,6 +1344,64 @@ func (_c *APIClientRequester_Group_Call) RunAndReturn(run func(context.Context, 
 	return _c
 }
 
+// Groups provides a mock function with given fields: ctx
+func (_m *APIClientRequester) Groups(ctx context.Context) (*client.Groups, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Groups")
+	}
+
+	var r0 *client.Groups
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*client.Groups, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *client.Groups); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Groups)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// APIClientRequester_Groups_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Groups'
+type APIClientRequester_Groups_Call struct {
+	*mock.Call
+}
+
+// Groups is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *APIClientRequester_Expecter) Groups(ctx interface{}) *APIClientRequester_Groups_Call {
+	return &APIClientRequester_Groups_Call{Call: _e.mock.On("Groups", ctx)}
+}
+
+func (_c *APIClientRequester_Groups_Call) Run(run func(ctx context.Context)) *APIClientRequester_Groups_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_Groups_Call) Return(out *client.Groups, err error) *APIClientRequester_Groups_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_Groups_Call) RunAndReturn(run func(context.Context) (*client.Groups, error)) *APIClientRequester_Groups_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Policies provides a mock function with given fields: ctx
 func (_m *APIClientRequester) Policies(ctx context.Context) ([]client.Policy, error) {
 	ret := _m.Called(ctx)

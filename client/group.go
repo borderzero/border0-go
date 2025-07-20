@@ -9,6 +9,7 @@ import (
 // GroupService is an interface for API client methods that interact with Border0 API to manage groups.
 type GroupService interface {
 	Group(ctx context.Context, id string) (out *Group, err error)
+	Groups(ctx context.Context) (out *Groups, err error)
 	CreateGroup(ctx context.Context, in *Group) (out *Group, err error)
 	UpdateGroup(ctx context.Context, in *Group) (out *Group, err error)
 	UpdateGroupMemberships(ctx context.Context, in *Group, userIDs []string) (out *Group, err error)
@@ -23,6 +24,16 @@ func (api *APIClient) Group(ctx context.Context, id string) (out *Group, err err
 		if NotFound(err) {
 			return nil, fmt.Errorf("group with ID [%s] not found: %w", id, err)
 		}
+		return nil, err
+	}
+	return out, nil
+}
+
+// Groups fetches all groups from your Border0 organization.
+func (api *APIClient) Groups(ctx context.Context) (out *Groups, err error) {
+	out = new(Groups)
+	_, err = api.request(ctx, http.MethodGet, "/organizations/iam/groups", nil, out)
+	if err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -91,4 +102,9 @@ type Group struct {
 type groupMemberships struct {
 	ID    string   `json:"id"`
 	Users []string `json:"users"`
+}
+
+// Groups represents a list of groups in your Border0 organization.
+type Groups struct {
+	List []Group `json:"list"`
 }
