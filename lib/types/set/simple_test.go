@@ -269,6 +269,53 @@ func Test_SimpleSetJoin(t *testing.T) {
 	}
 }
 
+func Test_SimpleSetIter(t *testing.T) {
+	t.Parallel()
+
+	testSet := New[string]("a", "b", "c", "d", "e", "f", "g", "h")
+	assert.True(t, testSet.Size() == 8, "test set initialization went wrong, expected 8 elements")
+
+	t.Run("Should run once per set element when continuing", func(t *testing.T) {
+		t.Parallel()
+
+		runs := 0
+		for range testSet.Iter() {
+			runs++
+		}
+
+		assert.Equal(t, testSet.Size(), runs)
+	})
+
+	t.Run("Should run once when breaking", func(t *testing.T) {
+		t.Parallel()
+
+		runs := 0
+		for range testSet.Iter() {
+			runs++
+			break
+		}
+
+		assert.Equal(t, 1, runs)
+	})
+
+	t.Run("Should run until inner function condition dictates", func(t *testing.T) {
+		t.Parallel()
+
+		stopAt := testSet.Size() / 2
+
+		runs := 0
+		for range testSet.Iter() {
+			runs++
+
+			if runs >= stopAt {
+				break
+			}
+		}
+
+		assert.Equal(t, stopAt, runs)
+	})
+}
+
 func Test_SimpleSetCopy(t *testing.T) {
 	t.Parallel()
 
