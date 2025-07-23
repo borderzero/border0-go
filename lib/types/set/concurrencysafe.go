@@ -1,23 +1,26 @@
 package set
 
-import "sync"
+import (
+	"iter"
+	"sync"
+)
 
-// ConcurrencySafeSet represents a set of unique elements
+// ConcurrencySafeSet represents a set of unique elements.
 type ConcurrencySafeSet[T comparable] struct {
 	sync.RWMutex
 
 	inner SimpleSet[T]
 }
 
-// ensures ConcurrencySafeSet implements Set at compile time
-var _ Set[interface{}] = (*ConcurrencySafeSet[interface{}])(nil)
+// ensures ConcurrencySafeSet implements Set at compile time.
+var _ Set[any] = (*ConcurrencySafeSet[any])(nil)
 
-// NewConcurrencySafe returns a new concurrency-safe set
+// NewConcurrencySafe returns a new concurrency-safe set.
 func NewConcurrencySafe[T comparable](ss ...T) *ConcurrencySafeSet[T] {
-	return &ConcurrencySafeSet[T]{inner: New[T](ss...)}
+	return &ConcurrencySafeSet[T]{inner: New(ss...)}
 }
 
-// Has returns true if an element is in a set
+// Has returns true if an element is in a set.
 func (s *ConcurrencySafeSet[T]) Has(e T) bool {
 	s.RLock()
 	defer s.RUnlock()
@@ -25,7 +28,7 @@ func (s *ConcurrencySafeSet[T]) Has(e T) bool {
 	return s.inner.Has(e)
 }
 
-// Add adds a list of elements to a set
+// Add adds a list of elements to a set.
 func (s *ConcurrencySafeSet[T]) Add(ss ...T) Set[T] {
 	s.Lock()
 	defer s.Unlock()
@@ -34,7 +37,7 @@ func (s *ConcurrencySafeSet[T]) Add(ss ...T) Set[T] {
 	return s
 }
 
-// Remove removes a list of elements from a set
+// Remove removes a list of elements from a set.
 func (s *ConcurrencySafeSet[T]) Remove(ss ...T) Set[T] {
 	s.Lock()
 	defer s.Unlock()
@@ -43,7 +46,7 @@ func (s *ConcurrencySafeSet[T]) Remove(ss ...T) Set[T] {
 	return s
 }
 
-// Join joins two sets
+// Join joins two sets.
 func (s *ConcurrencySafeSet[T]) Join(ss Set[T]) Set[T] {
 	// NOTE: this is done before acquiring the lock
 	// to avoid the case where the set is being joined
@@ -57,7 +60,16 @@ func (s *ConcurrencySafeSet[T]) Join(ss Set[T]) Set[T] {
 	return s
 }
 
-// Copy returns a copy of a set
+// Iter returns an iterator for a copy of the set. Note that
+// elements are iterated through in no particular order.
+func (s *ConcurrencySafeSet[T]) Iter() iter.Seq[T] {
+	s.RLock()
+	defer s.RUnlock()
+
+	return New(s.inner.Slice()...).Iter()
+}
+
+// Copy returns a copy of a set.
 func (s *ConcurrencySafeSet[T]) Copy() Set[T] {
 	s.RLock()
 	defer s.RUnlock()
@@ -65,7 +77,7 @@ func (s *ConcurrencySafeSet[T]) Copy() Set[T] {
 	return &ConcurrencySafeSet[T]{inner: New(s.inner.Slice()...)}
 }
 
-// Slice returns the set as a slice
+// Slice returns the set as a slice.
 func (s *ConcurrencySafeSet[T]) Slice() []T {
 	if s == nil || s.inner == nil {
 		return []T{}
@@ -77,7 +89,7 @@ func (s *ConcurrencySafeSet[T]) Slice() []T {
 	return s.inner.Slice()
 }
 
-// Size returns the number of elements in the set
+// Size returns the number of elements in the set.
 func (s *ConcurrencySafeSet[T]) Size() int {
 	if s == nil || s.inner == nil {
 		return 0
