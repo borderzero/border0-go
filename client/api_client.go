@@ -40,6 +40,10 @@ const (
 	notFoundRetryMax     = 3
 	notFoundRetryWaitMin = time.Millisecond * 500
 	notFoundRetryWaitMax = time.Millisecond * 1000
+
+	tooManyRequestsRetryMax     = 10
+	tooManyRequestsRetryWaitMin = time.Millisecond * 1000
+	tooManyRequestsRetryWaitMax = time.Millisecond * 5000
 )
 
 // default config setting values
@@ -110,12 +114,21 @@ func (api *APIClient) request(ctx context.Context, method, path string, input, o
 		shouldRetry = false
 		code, err = api.http.Request(ctx, method, api.baseURL+path, input, output)
 		if err != nil {
+			// Retry on 404 to handle cross-region replication latency.
 			if code == http.StatusNotFound {
 				shouldRetry = true
 				retryMax = notFoundRetryMax
 				waitMin = notFoundRetryWaitMin
 				waitMax = notFoundRetryWaitMax
 			}
+			// Retry on 429 to handle rate limits being exceeded temporarily.
+			if code == http.StatusTooManyRequests {
+				shouldRetry = true
+				retryMax = tooManyRequestsRetryMax
+				waitMin = tooManyRequestsRetryWaitMin
+				waitMax = tooManyRequestsRetryWaitMax
+			}
+			// Retry on 5xx to handle temporary api issues.
 			if code >= http.StatusInternalServerError {
 				shouldRetry = true
 				retryMax = api.retryMax
