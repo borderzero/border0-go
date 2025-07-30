@@ -25,7 +25,7 @@ type SocketService interface {
 // a Border0 organization.
 func (api *APIClient) Socket(ctx context.Context, idOrName string) (out *Socket, err error) {
 	out = new(Socket)
-	_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/socket/%s", idOrName), nil, out)
+	_, err = api.request(ctx, http.MethodGet, fmt.Sprintf("/socket/%s?activeOnly=true", idOrName), nil, out)
 	if err != nil {
 		if NotFound(err) {
 			return nil, fmt.Errorf("socket [%s] not found: %w", idOrName, err)
