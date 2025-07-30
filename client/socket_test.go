@@ -33,7 +33,7 @@ func Test_APIClient_Socket(t *testing.T) {
 			name: "failed to get socket",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
-					Request(ctx, http.MethodGet, defaultBaseURL+"/socket/test-name", nil, new(Socket)).
+					Request(ctx, http.MethodGet, defaultBaseURL+"/socket/test-name?activeOnly=true", nil, new(Socket)).
 					Return(http.StatusBadRequest, errors.New("failed to get socket"))
 			},
 			givenIDOrName: "test-name",
@@ -44,7 +44,7 @@ func Test_APIClient_Socket(t *testing.T) {
 			name: "404 not found error returned, let's make sure we wrap the error with more info",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
-					Request(ctx, http.MethodGet, defaultBaseURL+"/socket/test-name", nil, new(Socket)).
+					Request(ctx, http.MethodGet, defaultBaseURL+"/socket/test-name?activeOnly=true", nil, new(Socket)).
 					Return(http.StatusNotFound, Error{Code: http.StatusNotFound, Message: "socket not found"})
 			},
 			givenIDOrName: "test-name",
@@ -56,7 +56,7 @@ func Test_APIClient_Socket(t *testing.T) {
 				// have to use On() instead of EXPECT() because we need to set the output
 				// and the Run() function would raise nil pointer panic if we use it with
 				// EXPECT()
-				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/socket/test-name", nil, new(Socket)).
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/socket/test-name?activeOnly=true", nil, new(Socket)).
 					Return(http.StatusOK, nil).
 					Run(func(args mock.Arguments) {
 						output := args.Get(4).(*Socket)
