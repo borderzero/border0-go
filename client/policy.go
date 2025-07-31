@@ -175,7 +175,6 @@ type Policy struct {
 	CreatedAt   time.Time           `json:"created_at"`
 	SocketIDs   []string            `json:"socket_ids"`
 	Deleted     bool                `json:"deleted"`
-	SocketTags  map[string]string   `json:"socket_tags"`
 	TagRules    []map[string]string `json:"tag_rules"`
 }
 
