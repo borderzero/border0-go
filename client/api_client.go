@@ -125,8 +125,25 @@ func (api *APIClient) request(ctx context.Context, method, path string, input, o
 			if code == http.StatusTooManyRequests {
 				shouldRetry = true
 				retryMax = tooManyRequestsRetryMax
-				waitMin = tooManyRequestsRetryWaitMin
-				waitMax = tooManyRequestsRetryWaitMax
+				// Check if error contains Retry-After header
+				var apiErr Error
+				if errors.As(err, &apiErr) && apiErr.RetryAfter != nil {
+					// Use server-specified retry delay, but cap it at our maximum
+					serverWait := *apiErr.RetryAfter
+					if serverWait < tooManyRequestsRetryWaitMin {
+						// Use our minimum if server suggests a shorter wait, which could be zero
+						waitMin = tooManyRequestsRetryWaitMin
+						waitMax = tooManyRequestsRetryWaitMin
+					} else {
+						// Respect server's Retry-After value, even if it's longer than our maximum
+						waitMin = serverWait
+						waitMax = serverWait
+					}
+				} else {
+					// Fallback to default 429 retry settings if no Retry-After header
+					waitMin = tooManyRequestsRetryWaitMin
+					waitMax = tooManyRequestsRetryWaitMax
+				}
 			}
 			// Retry on 5xx to handle temporary api issues.
 			if code >= http.StatusInternalServerError {
