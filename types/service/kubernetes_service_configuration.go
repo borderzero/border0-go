@@ -22,6 +22,7 @@ const (
 // configuration for kubernetes services (fka sockets).
 type KubernetesServiceConfiguration struct {
 	KubernetesServiceType string `json:"kubernetes_service_type"`
+	ImpersonationEnabled  bool   `json:"impersonation_enabled,omitempty"`
 
 	// mutually exclusive fields below
 	StandardKubernetesServiceConfiguration *StandardKubernetesServiceConfiguration `json:"standard_kubernetes_service_configuration,omitempty"`
