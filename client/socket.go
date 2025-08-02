@@ -114,6 +114,7 @@ func (api *APIClient) SignSocketKey(ctx context.Context, idOrName string, in *So
 // Use `ConnectorIDs` to link a socket to a connector, and use `UpstreamConfig` to configure upstream for a socket.
 type Socket struct {
 	Name                 string            `json:"name"`
+	DisplayName          string            `json:"display_name,omitempty"`
 	SocketID             string            `json:"socket_id"`
 	SocketType           string            `json:"socket_type"`
 	Description          string            `json:"description,omitempty"`
