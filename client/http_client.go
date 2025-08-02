@@ -9,6 +9,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // HTTPClient is a wrapper around http.Client that handles authentication,
@@ -93,6 +96,15 @@ func APIErrorFrom(resp *http.Response) Error {
 		Code: resp.StatusCode,
 	}
 
+	// Parse Retry-After header if present for rate limiting responses
+	if resp.StatusCode == http.StatusTooManyRequests {
+		if retryAfter := resp.Header.Get("Retry-After"); retryAfter != "" {
+			if duration, err := parseRetryAfter(retryAfter); err == nil {
+				apiErr.RetryAfter = &duration
+			}
+		}
+	}
+
 	var buf bytes.Buffer
 	tee := io.TeeReader(resp.Body, &buf)
 
@@ -114,11 +126,27 @@ func APIErrorFrom(resp *http.Response) Error {
 	return apiErr
 }
 
+// parseRetryAfter parses the Retry-After header value (always in seconds) and returns a time.Duration.
+func parseRetryAfter(retryAfter string) (time.Duration, error) {
+	if retryAfter == "" {
+		return 0, fmt.Errorf("empty Retry-After header value")
+	}
+	seconds, err := strconv.Atoi(strings.TrimSpace(retryAfter))
+	if err != nil {
+		return 0, fmt.Errorf("invalid Retry-After header value: %w", err)
+	}
+	if seconds < 0 {
+		return 0, fmt.Errorf("negative Retry-After value: %d", seconds)
+	}
+	return time.Duration(seconds) * time.Second, nil
+}
+
 // Error is an error returned by the API server.
 type Error struct {
-	Code     int    `json:"status_code"`
-	Message  string `json:"error_message"`
-	Fallback string `json:"message"`
+	Code       int            `json:"status_code"`
+	Message    string         `json:"error_message"`
+	Fallback   string         `json:"message"`
+	RetryAfter *time.Duration `json:"-"` // For internal use, not part of the API response
 }
 
 // Error returns string representation of an Error.
