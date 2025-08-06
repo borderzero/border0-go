@@ -92,3 +92,8 @@ func (s SimpleSet[T]) Equals(comp Set[T]) bool {
 
 	return true
 }
+
+// NewOfSameType returns a new empty set of the same type as the parent set.
+func (s SimpleSet[T]) NewOfSameType(ss ...T) Set[T] {
+	return New(ss...)
+}
