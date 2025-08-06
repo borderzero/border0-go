@@ -10,6 +10,7 @@ import (
 type Debouncer[T any] interface {
 	Do(T)
 	Flush()
+	Close()
 }
 
 // debouncer is the default Debouncer implementation.
@@ -17,6 +18,7 @@ type debouncer[T any] struct {
 	debounceTime   time.Duration
 	maxWaitTime    time.Duration
 	debounceChan   chan T
+	wg             sync.WaitGroup
 	mu             sync.Mutex
 	timer          *time.Timer
 	maxWaitTimer   *time.Timer
@@ -34,11 +36,13 @@ func New[T any](debounceTime, maxWaitTime time.Duration, fn func(T)) Debouncer[T
 		debounceChan: debounceChan,
 		fn:           fn,
 	}
+	d.wg.Add(1)
 	go d.start()
 	return d
 }
 
 func (d *debouncer[T]) start() {
+	defer d.wg.Done()
 	for msg := range d.debounceChan {
 		func() {
 			d.mu.Lock()
@@ -113,4 +117,11 @@ func (d *debouncer[T]) Flush() {
 		d.hasPending = false
 		d.fn(d.pendingCallArg)
 	}
+}
+
+// Close gracefully closes and flushes the debouncer.
+func (d *debouncer[T]) Close() {
+	close(d.debounceChan)
+	d.wg.Wait()
+	d.Flush()
 }
