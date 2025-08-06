@@ -116,3 +116,8 @@ func (s *ConcurrencySafeSet[T]) Equals(comp Set[T]) bool {
 
 	return s.inner.Equals(comp)
 }
+
+// NewOfSameType returns a new empty set of the same type as the parent set.
+func (s *ConcurrencySafeSet[T]) NewOfSameType(ss ...T) Set[T] {
+	return NewConcurrencySafe(ss...)
+}
