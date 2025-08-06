@@ -5,7 +5,7 @@ go 1.23.6
 require (
 	github.com/borderzero/border0-go v1.4.84-prerelease
 	github.com/gin-gonic/gin v1.10.0
-	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/labstack/echo/v4 v4.13.3
 )
 
