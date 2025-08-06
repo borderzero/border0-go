@@ -7,56 +7,110 @@ import (
 
 // Debouncer represents an entity
 // capable of debouncing function calls.
-type Debouncer[T any] struct {
+type Debouncer[T any] interface {
+	Do(T)
+	Flush()
+}
+
+// debouncer is the default Debouncer implementation.
+type debouncer[T any] struct {
 	debounceTime   time.Duration
+	maxWaitTime    time.Duration
 	debounceChan   chan T
 	mu             sync.Mutex
 	timer          *time.Timer
+	maxWaitTimer   *time.Timer
 	pendingCallArg T
+	hasPending     bool
 	fn             func(T)
 }
 
-// NewDebouncer is the debouncer constructor.
-func NewDebouncer[T any](debounceTime time.Duration, fn func(T)) chan<- T {
+// New is the Debouncer constructor.
+func New[T any](debounceTime, maxWaitTime time.Duration, fn func(T)) Debouncer[T] {
 	debounceChan := make(chan T, 1)
-	debouncer := &Debouncer[T]{
+	d := &debouncer[T]{
 		debounceTime: debounceTime,
+		maxWaitTime:  maxWaitTime,
 		debounceChan: debounceChan,
 		fn:           fn,
 	}
-
-	go debouncer.start()
-	return debounceChan
+	go d.start()
+	return d
 }
 
-// Start starts the debouncer.
-func (d *Debouncer[T]) start() {
+func (d *debouncer[T]) start() {
 	for msg := range d.debounceChan {
-		d.mu.Lock()
+		func() {
+			d.mu.Lock()
+			defer d.mu.Unlock()
 
-		// Update the pending argument.
-		d.pendingCallArg = msg
+			d.pendingCallArg = msg
+			d.hasPending = true
 
-		// Stop and drain the existing timer, if needed.
-		if d.timer != nil {
-			if !d.timer.Stop() {
-				select {
-				case <-d.timer.C:
-				default:
+			// Reset debounce timer
+			if d.timer != nil {
+				if !d.timer.Stop() {
+					select {
+					case <-d.timer.C:
+					default:
+					}
 				}
 			}
+			d.timer = time.AfterFunc(d.debounceTime, d.Flush)
+
+			// Start or keep max wait timer
+			if d.maxWaitTime > 0 && d.maxWaitTimer == nil {
+				d.maxWaitTimer = time.AfterFunc(d.maxWaitTime, d.Flush)
+			}
+		}()
+	}
+}
+
+// Do submits a new function request.
+func (d *debouncer[T]) Do(t T) {
+	select {
+	case d.debounceChan <- t:
+	default:
+		// channel is full, drop the old message
+		select {
+		case <-d.debounceChan:
+		default:
 		}
+		// now send the new one (guaranteed to succeed)
+		d.debounceChan <- t
+	}
+}
 
-		// Start a new timer.
-		d.timer = time.AfterFunc(d.debounceTime, func() {
-			d.mu.Lock()
-			arg := d.pendingCallArg
-			d.mu.Unlock()
+// Flush flushes the debouncer immediately (calling the function) without debouncing.
+func (d *debouncer[T]) Flush() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
-			// Call the debounced function.
-			d.fn(arg)
-		})
+	// stop debounce timer
+	if d.timer != nil {
+		if !d.timer.Stop() {
+			select {
+			case <-d.timer.C:
+			default:
+			}
+		}
+		d.timer = nil
+	}
 
-		d.mu.Unlock()
+	// stop max wait timer
+	if d.maxWaitTimer != nil {
+		if !d.maxWaitTimer.Stop() {
+			select {
+			case <-d.maxWaitTimer.C:
+			default:
+			}
+		}
+		d.maxWaitTimer = nil
+	}
+
+	// call the function
+	if d.hasPending {
+		d.hasPending = false
+		d.fn(d.pendingCallArg)
 	}
 }
