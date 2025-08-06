@@ -19,5 +19,9 @@ func (api *APIClient) ServerInfo(ctx context.Context) (*ServerInfo, error) {
 }
 
 type ServerInfo struct {
-	Primary *bool `json:"primary,omitempty"`
+	DataConsistency *DataConsistency `json:"data_consistency,omitempty"`
+}
+
+type DataConsistency struct {
+	RxAfterTxDelayMS int64 `json:"rx_after_tx_delay_ms,omitempty"`
 }
