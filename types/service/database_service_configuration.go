@@ -160,6 +160,8 @@ type StandardDatabaseServiceConfiguration struct {
 	DatabaseProtocol   string `json:"protocol"`
 	AuthenticationType string `json:"authentication_type"`
 
+	DatabaseNameOverride string `json:"database_name_override,omitempty"`
+
 	UsernameAndPasswordAuth *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
 }
@@ -207,6 +209,8 @@ type AwsRdsDatabaseServiceConfiguration struct {
 
 	DatabaseProtocol   string `json:"protocol"`
 	AuthenticationType string `json:"authentication_type"`
+
+	DatabaseNameOverride string `json:"database_name_override,omitempty"`
 
 	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	IamAuth                 *AwsRdsIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
@@ -293,8 +297,9 @@ func (config GcpCloudSqlDatabaseServiceConfiguration) Validate() error {
 type GcpCloudSqlStandardConfiguration struct {
 	HostnameAndPort
 
-	DatabaseProtocol   string `json:"protocol"`
-	AuthenticationType string `json:"authentication_type"`
+	DatabaseProtocol     string `json:"protocol"`
+	AuthenticationType   string `json:"authentication_type"`
+	DatabaseNameOverride string `json:"database_name_override,omitempty"`
 
 	UsernameAndPasswordAuth *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
