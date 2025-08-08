@@ -76,6 +76,7 @@ const (
 // - standard (when database service type is standard)
 //     - hostname and port
 //     - database protocol: mysql, postgres
+//     - database_name_override (optional)
 //     - authentication type: username_and_password, tls
 //     - username and password auth (when authentication type is username_and_password)
 //         - username
@@ -99,6 +100,7 @@ const (
 // - aws rds (when database service type is aws_rds)
 //     - hostname and port
 //     - database protocol: mysql, postgres
+//     - database_name_override (optional)
 //     - authentication type: username_and_password, tls
 //     - username and password auth (when authentication type is username_and_password)
 //         - username
@@ -114,6 +116,7 @@ const (
 //     - standard (when cloudsql_connector_enabled is false)
 //         - hostname and port
 //         - database protocol: mysql
+//         - database_name_override (optional)
 //         - authentication type: username_and_password, tls
 //         - username and password auth (when authentication type is username_and_password)
 //             - username
@@ -126,6 +129,7 @@ const (
 //             - key
 //     - connector (when cloudsql_connector_enabled is true)
 //         - database protocol: mysql, postgres
+//         - database_name_override (optional)
 //         - authentication type: username_password, iam
 //	   - username and password auth (when authentication type is username_and_password)
 //             - username
@@ -234,6 +238,8 @@ type StandardDatabaseServiceConfiguration struct {
 	DatabaseProtocol   string `json:"protocol"`
 	AuthenticationType string `json:"authentication_type"`
 
+	DatabaseNameOverride string `json:"database_name_override,omitempty"`
+
 	UsernameAndPasswordAuth *DatabaseUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	TlsAuth                 *DatabaseTlsAuthConfiguration                 `json:"tls_auth_configuration,omitempty"`
 	Kerberos                *DatabaseKerberosAuthConfiguration            `json:"kerberos_configuration,omitempty"`
@@ -337,6 +343,8 @@ type AwsRdsDatabaseServiceConfiguration struct {
 	DatabaseProtocol   string `json:"protocol"`
 	AuthenticationType string `json:"authentication_type"`
 
+	DatabaseNameOverride string `json:"database_name_override,omitempty"`
+
 	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	IamAuth                 *AwsRdsIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
 }
@@ -382,8 +390,9 @@ func (config AwsRdsDatabaseServiceConfiguration) Validate() error {
 type AwsDocumentDBDatabaseServiceConfiguration struct {
 	HostnameAndPort
 
-	DatabaseProtocol   string `json:"protocol"`
-	AuthenticationType string `json:"authentication_type"`
+	DatabaseProtocol     string `json:"protocol"`
+	AuthenticationType   string `json:"authentication_type"`
+	DatabaseNameOverride string `json:"database_name_override,omitempty"`
 
 	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	IamAuth                 *MongoDBAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
