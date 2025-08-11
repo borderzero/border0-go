@@ -2,6 +2,7 @@ package debouncer
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -15,43 +16,67 @@ type Debouncer[T any] interface {
 
 // debouncer is the default Debouncer implementation.
 type debouncer[T any] struct {
-	debounceTime   time.Duration
-	maxWaitTime    time.Duration
-	debounceChan   chan T
-	wg             sync.WaitGroup
-	mu             sync.Mutex
-	timer          *time.Timer
-	maxWaitTimer   *time.Timer
+	// timer for debouncing
+	debounceTime time.Duration
+	timer        *time.Timer
+
+	// timer for preventing infinite debouncing
+	maxWaitTime  time.Duration
+	maxWaitTimer *time.Timer
+
+	// pending invocation indicator
+	hasPending bool
+
+	// argument for next invocation
 	pendingCallArg T
-	hasPending     bool
-	fn             func(T)
+
+	// lock for timers, current pending arg and pending indicator
+	updateLock sync.Mutex
+
+	// wait group for waiting for the debouncer to be flushed
+	processorWG sync.WaitGroup
+
+	// channel for triggering invocations
+	invocationChan chan T
+
+	// lock for enforcing the arg policy during Do()
+	sendLock sync.Mutex
+
+	// user provided function
+	fn func(T)
+
+	// closed indicator
+	closed atomic.Bool
 }
 
 // New is the Debouncer constructor.
-func New[T any](debounceTime, maxWaitTime time.Duration, fn func(T)) Debouncer[T] {
-	debounceChan := make(chan T, 1)
+func New[T any](fn func(T), opts ...Option) Debouncer[T] {
+	return newWithOpts(fn, newDefaultConfig().Apply(opts...))
+}
+
+func newWithOpts[T any](fn func(T), cfg *config) Debouncer[T] {
 	d := &debouncer[T]{
-		debounceTime: debounceTime,
-		maxWaitTime:  maxWaitTime,
-		debounceChan: debounceChan,
-		fn:           fn,
+		debounceTime:   cfg.debounceTime,
+		maxWaitTime:    cfg.maxWaitTime,
+		invocationChan: make(chan T, 1),
+		fn:             fn,
 	}
-	d.wg.Add(1)
-	go d.start()
+	d.processorWG.Add(1)
+	go d.processor()
 	return d
 }
 
-func (d *debouncer[T]) start() {
-	defer d.wg.Done()
-	for msg := range d.debounceChan {
+func (d *debouncer[T]) processor() {
+	defer d.processorWG.Done()
+	for msg := range d.invocationChan {
 		func() {
-			d.mu.Lock()
-			defer d.mu.Unlock()
+			d.updateLock.Lock()
+			defer d.updateLock.Unlock()
 
 			d.pendingCallArg = msg
 			d.hasPending = true
 
-			// Reset debounce timer
+			// reset debounce timer
 			if d.timer != nil {
 				if !d.timer.Stop() {
 					select {
@@ -62,7 +87,7 @@ func (d *debouncer[T]) start() {
 			}
 			d.timer = time.AfterFunc(d.debounceTime, d.Flush)
 
-			// Start or keep max wait timer
+			// start or keep max wait timer
 			if d.maxWaitTime > 0 && d.maxWaitTimer == nil {
 				d.maxWaitTimer = time.AfterFunc(d.maxWaitTime, d.Flush)
 			}
@@ -72,23 +97,30 @@ func (d *debouncer[T]) start() {
 
 // Do submits a new function request.
 func (d *debouncer[T]) Do(t T) {
+	d.sendLock.Lock()
+	defer d.sendLock.Unlock()
+
+	if d.closed.Load() {
+		return
+	}
+
 	select {
-	case d.debounceChan <- t:
+	case d.invocationChan <- t:
 	default:
 		// channel is full, drop the old message
 		select {
-		case <-d.debounceChan:
+		case <-d.invocationChan:
 		default:
 		}
 		// now send the new one (guaranteed to succeed)
-		d.debounceChan <- t
+		d.invocationChan <- t
 	}
 }
 
 // Flush flushes the debouncer immediately (calling the function) without debouncing.
 func (d *debouncer[T]) Flush() {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+	d.updateLock.Lock()
+	defer d.updateLock.Unlock()
 
 	// stop debounce timer
 	if d.timer != nil {
@@ -121,7 +153,19 @@ func (d *debouncer[T]) Flush() {
 
 // Close gracefully closes and flushes the debouncer.
 func (d *debouncer[T]) Close() {
-	close(d.debounceChan)
-	d.wg.Wait()
+	if !d.closed.CompareAndSwap(false, true) {
+		// already closed
+		return
+	}
+
+	d.closeChannel()
+	d.processorWG.Wait()
 	d.Flush()
+}
+
+func (d *debouncer[T]) closeChannel() {
+	d.sendLock.Lock()
+	defer d.sendLock.Unlock()
+
+	close(d.invocationChan)
 }
