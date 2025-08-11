@@ -9,9 +9,16 @@ import (
 // Debouncer represents an entity
 // capable of debouncing function calls.
 type Debouncer[T any] interface {
-	Do(T)
-	Flush()
+	Flushable
+
+	Do(T) Flushable
 	Close()
+}
+
+// Flushable represents an entity
+// capable of being flushed.
+type Flushable interface {
+	Flush()
 }
 
 // debouncer is the default Debouncer implementation.
@@ -24,11 +31,8 @@ type debouncer[T any] struct {
 	maxWaitTime  time.Duration
 	maxWaitTimer *time.Timer
 
-	// pending invocation indicator
-	hasPending bool
-
 	// argument for next invocation
-	pendingCallArg T
+	pendingCallArg atomic.Pointer[T]
 
 	// lock for timers, current pending arg and pending indicator
 	updateLock sync.Mutex
@@ -37,7 +41,7 @@ type debouncer[T any] struct {
 	processorWG sync.WaitGroup
 
 	// channel for triggering invocations
-	invocationChan chan T
+	invocationChan chan struct{}
 
 	// lock for enforcing the arg policy during Do()
 	sendLock sync.Mutex
@@ -58,9 +62,10 @@ func newWithOpts[T any](fn func(T), cfg *config) Debouncer[T] {
 	d := &debouncer[T]{
 		debounceTime:   cfg.debounceTime,
 		maxWaitTime:    cfg.maxWaitTime,
-		invocationChan: make(chan T, 1),
+		invocationChan: make(chan struct{}, 1),
 		fn:             fn,
 	}
+	d.pendingCallArg.Store(nil)
 	d.processorWG.Add(1)
 	go d.processor()
 	return d
@@ -68,13 +73,10 @@ func newWithOpts[T any](fn func(T), cfg *config) Debouncer[T] {
 
 func (d *debouncer[T]) processor() {
 	defer d.processorWG.Done()
-	for msg := range d.invocationChan {
+	for range d.invocationChan {
 		func() {
 			d.updateLock.Lock()
 			defer d.updateLock.Unlock()
-
-			d.pendingCallArg = msg
-			d.hasPending = true
 
 			// reset debounce timer
 			if d.timer != nil {
@@ -96,25 +98,22 @@ func (d *debouncer[T]) processor() {
 }
 
 // Do submits a new function request.
-func (d *debouncer[T]) Do(t T) {
+func (d *debouncer[T]) Do(t T) Flushable {
 	d.sendLock.Lock()
 	defer d.sendLock.Unlock()
 
 	if d.closed.Load() {
-		return
+		return d
 	}
 
+	// update the arg
+	d.pendingCallArg.Store(&t)
+
 	select {
-	case d.invocationChan <- t:
+	case d.invocationChan <- struct{}{}:
 	default:
-		// channel is full, drop the old message
-		select {
-		case <-d.invocationChan:
-		default:
-		}
-		// now send the new one (guaranteed to succeed)
-		d.invocationChan <- t
 	}
+	return d
 }
 
 // Flush flushes the debouncer immediately (calling the function) without debouncing.
@@ -144,10 +143,9 @@ func (d *debouncer[T]) Flush() {
 		d.maxWaitTimer = nil
 	}
 
-	// call the function
-	if d.hasPending {
-		d.hasPending = false
-		d.fn(d.pendingCallArg)
+	// consume the pending arg exactly once i.e. second Flush() is a no-op
+	if arg := d.pendingCallArg.Swap(nil); arg != nil {
+		d.fn(*arg)
 	}
 }
 
