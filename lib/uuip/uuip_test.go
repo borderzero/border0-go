@@ -11,10 +11,7 @@ func TestUUIDToIPv6AndBack(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		originalUUID := uuid.New()
 
-		ipv6, err := UUIDToIPv6(originalUUID)
-		if err != nil {
-			t.Fatalf("UUIDToIPv6 failed: %v", err)
-		}
+		ipv6 := UUIDToIPv6(originalUUID)
 
 		decodedUUID, err := IPv6ToUUID(ipv6)
 		if err != nil {
@@ -42,10 +39,7 @@ func TestUUIDToIPv6_InvalidLength(t *testing.T) {
 	copy(shortUUID[:], []byte("short"))
 
 	// Should still pass because uuid.UUID is always 16 bytes (even if garbage)
-	ipv6, err := UUIDToIPv6(shortUUID)
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
-	}
+	ipv6 := UUIDToIPv6(shortUUID)
 
 	// Check it's a valid IPv6 address
 	if !ipv6.Is6() {

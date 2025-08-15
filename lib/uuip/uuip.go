@@ -8,8 +8,8 @@ import (
 )
 
 // UUIDToIPv6 converts a UUID to a netip.Addr (IPv6).
-func UUIDToIPv6(u uuid.UUID) (netip.Addr, error) {
-	return netip.AddrFrom16(u), nil
+func UUIDToIPv6(u uuid.UUID) netip.Addr {
+	return netip.AddrFrom16(u)
 }
 
 // IPv6ToUUID converts a netip.Addr (IPv6) to a UUID.
