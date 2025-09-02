@@ -32,6 +32,28 @@ func recvNone[T any](t *testing.T, ch <-chan T, within time.Duration) {
 	}
 }
 
+func TestSingleCall_TriggersAfterDebounce(t *testing.T) {
+	calls := make(chan int, 1)
+	defer close(calls)
+
+	d := New(
+		func(v int) { calls <- v },
+		WithDebounceTime(100*time.Millisecond),
+	)
+	defer d.Close()
+
+	d.Do(42)
+
+	// Shouldn't fire before debounce.
+	recvNone(t, calls, 50*time.Millisecond)
+
+	// Should fire after debounce.
+	got := recvOne(t, calls, 150*time.Millisecond)
+	if got != 42 {
+		t.Fatalf("expected 42 after debounce delay, got %d", got)
+	}
+}
+
 func TestDebounce_LastCallWins(t *testing.T) {
 	calls := make(chan int, 10)
 	defer close(calls)
