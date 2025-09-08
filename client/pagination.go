@@ -43,8 +43,8 @@ type Paginator[T any] struct {
 //
 // This is currently only used by the pagination iterator.
 type PageResult[T any] struct {
-	Page []T
-	Err  error
+	Items []T
+	Err   error
 }
 
 // newPaginator creates a new Paginator.
@@ -93,7 +93,7 @@ func (p *Paginator[T]) Iter(ctx context.Context) iter.Seq[PageResult[T]] {
 
 			// if there's an error, yield the error and stop
 			if err != nil {
-				yield(PageResult[T]{Page: nil, Err: err})
+				yield(PageResult[T]{Items: nil, Err: err})
 				return
 			}
 
@@ -103,7 +103,7 @@ func (p *Paginator[T]) Iter(ctx context.Context) iter.Seq[PageResult[T]] {
 			}
 
 			// stop early if caller requests it (e.g. via break)
-			if !yield(PageResult[T]{Page: items}) {
+			if !yield(PageResult[T]{Items: items}) {
 				return
 			}
 		}

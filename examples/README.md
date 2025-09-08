@@ -34,3 +34,4 @@ BORDER0_AUTH_TOKEN=_your_access_token_ go run main.go
 - [09-create-policy-and-attach](./09-create-policy-and-attach): Create a policy and a socket, and then attach the policy to the socket.
 - [10-detach-policy-and-delete](./10-detach-policy-and-delete): Detach the policy and delete the policy and socket created from the previous example.
 - [11-list-connectors](./11-list-connectors): List all your connectors and print the details of each connector to the console.
+- [12-list-groups-with-paginator](./12-list-groups-with-paginator): List all your groups using the paginator and print the details of each group to the console.
