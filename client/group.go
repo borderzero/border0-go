@@ -32,7 +32,7 @@ func (api *APIClient) Group(ctx context.Context, id string) (out *Group, err err
 // Groups fetches all groups from your Border0 organization.
 func (api *APIClient) Groups(ctx context.Context) (out *Groups, err error) {
 	out = new(Groups)
-	_, err = api.request(ctx, http.MethodGet, "/organizations/iam/groups", nil, out)
+	_, err = api.request(ctx, http.MethodGet, "/organizations/iam/groups?page_size=1000", nil, out)
 	if err != nil {
 		return nil, err
 	}
