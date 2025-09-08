@@ -6,10 +6,13 @@ import (
 	"net/http"
 )
 
+const defaultPageSizeGroups = 100
+
 // GroupService is an interface for API client methods that interact with Border0 API to manage groups.
 type GroupService interface {
 	Group(ctx context.Context, id string) (out *Group, err error)
 	Groups(ctx context.Context) (out *Groups, err error)
+	GroupsPaginator(ctx context.Context, pageSize int) *Paginator[Group]
 	CreateGroup(ctx context.Context, in *Group) (out *Group, err error)
 	UpdateGroup(ctx context.Context, in *Group) (out *Group, err error)
 	UpdateGroupMemberships(ctx context.Context, in *Group, userIDs []string) (out *Group, err error)
@@ -31,12 +34,32 @@ func (api *APIClient) Group(ctx context.Context, id string) (out *Group, err err
 
 // Groups fetches all groups from your Border0 organization.
 func (api *APIClient) Groups(ctx context.Context) (out *Groups, err error) {
-	out = new(Groups)
-	_, err = api.request(ctx, http.MethodGet, "/organizations/iam/groups?page_size=1000", nil, out)
-	if err != nil {
-		return nil, err
+	paginator := api.GroupsPaginator(ctx, defaultPageSizeGroups)
+	var all []Group
+	for paginator.HasNext() {
+		items, err := paginator.Next(ctx)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, items...)
 	}
-	return out, nil
+	return &Groups{List: all}, nil
+}
+
+// GroupsPaginator returns a paginator to iterate pages of groups.
+func (api *APIClient) GroupsPaginator(ctx context.Context, pageSize int) *Paginator[Group] {
+	if pageSize <= 0 {
+		pageSize = defaultPageSizeGroups
+	}
+	fetch := func(ctx context.Context, api *APIClient, page, size int) (items []Group, nextPage int, err error) {
+		var res paginatedResponse[Group]
+		path := fmt.Sprintf("/organizations/iam/groups?page=%d&page_size=%d", page, size)
+		if _, err = api.request(ctx, http.MethodGet, path, nil, &res); err != nil {
+			return nil, 0, err
+		}
+		return res.List, res.Pagination.NextPage, nil
+	}
+	return newPaginator(api, fetch, pageSize)
 }
 
 // CreateGroup creates a new group in your Border0 organization.

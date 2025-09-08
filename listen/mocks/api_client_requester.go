@@ -1402,6 +1402,55 @@ func (_c *APIClientRequester_Groups_Call) RunAndReturn(run func(context.Context)
 	return _c
 }
 
+// GroupsPaginator provides a mock function with given fields: ctx, pageSize
+func (_m *APIClientRequester) GroupsPaginator(ctx context.Context, pageSize int) *client.Paginator[client.Group] {
+	ret := _m.Called(ctx, pageSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GroupsPaginator")
+	}
+
+	var r0 *client.Paginator[client.Group]
+	if rf, ok := ret.Get(0).(func(context.Context, int) *client.Paginator[client.Group]); ok {
+		r0 = rf(ctx, pageSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Paginator[client.Group])
+		}
+	}
+
+	return r0
+}
+
+// APIClientRequester_GroupsPaginator_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GroupsPaginator'
+type APIClientRequester_GroupsPaginator_Call struct {
+	*mock.Call
+}
+
+// GroupsPaginator is a helper method to define mock.On call
+//   - ctx context.Context
+//   - pageSize int
+func (_e *APIClientRequester_Expecter) GroupsPaginator(ctx interface{}, pageSize interface{}) *APIClientRequester_GroupsPaginator_Call {
+	return &APIClientRequester_GroupsPaginator_Call{Call: _e.mock.On("GroupsPaginator", ctx, pageSize)}
+}
+
+func (_c *APIClientRequester_GroupsPaginator_Call) Run(run func(ctx context.Context, pageSize int)) *APIClientRequester_GroupsPaginator_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_GroupsPaginator_Call) Return(_a0 *client.Paginator[client.Group]) *APIClientRequester_GroupsPaginator_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *APIClientRequester_GroupsPaginator_Call) RunAndReturn(run func(context.Context, int) *client.Paginator[client.Group]) *APIClientRequester_GroupsPaginator_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Policies provides a mock function with given fields: ctx
 func (_m *APIClientRequester) Policies(ctx context.Context) ([]client.Policy, error) {
 	ret := _m.Called(ctx)
