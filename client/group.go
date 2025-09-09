@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 const defaultPageSizeGroups = 100
@@ -34,8 +36,8 @@ func (api *APIClient) Group(ctx context.Context, id string) (out *Group, err err
 
 // Groups fetches all groups from your Border0 organization.
 func (api *APIClient) Groups(ctx context.Context) (out *Groups, err error) {
-	paginator := api.GroupsPaginator(ctx, defaultPageSizeGroups)
 	var all []Group
+	paginator := api.GroupsPaginator(ctx, defaultPageSizeGroups)
 	for paginator.HasNext() {
 		items, err := paginator.Next(ctx)
 		if err != nil {
@@ -52,8 +54,12 @@ func (api *APIClient) GroupsPaginator(ctx context.Context, pageSize int) *Pagina
 		pageSize = defaultPageSizeGroups
 	}
 	fetch := func(ctx context.Context, api *APIClient, page, size int) (items []Group, nextPage int, err error) {
+		params := url.Values{}
+		params.Add("page", strconv.Itoa(page))
+		params.Add("page_size", strconv.Itoa(size))
+		path := fmt.Sprintf("/organizations/iam/groups?%s", params.Encode())
+
 		var res paginatedResponse[Group]
-		path := fmt.Sprintf("/organizations/iam/groups?page=%d&page_size=%d", page, size)
 		if _, err = api.request(ctx, http.MethodGet, path, nil, &res); err != nil {
 			return nil, 0, err
 		}

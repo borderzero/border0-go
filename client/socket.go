@@ -4,15 +4,43 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/borderzero/border0-go/types/service"
 )
 
+const defaultPageSizeSockets = 100
+
+type socketFilters struct {
+	name       string
+	search     string
+	socketType string
+}
+
+type SocketFilter func(*socketFilters)
+
+// WithName sets the socket filter for searching by socket name.
+func WithName(name string) SocketFilter {
+	return func(sf *socketFilters) { sf.name = name }
+}
+
+// WithType sets the socket filter for searching by socket type.
+func WithType(socketType string) SocketFilter {
+	return func(sf *socketFilters) { sf.socketType = socketType }
+}
+
+// WithSearch sets the socket filter for searching by keywords.
+func WithSearch(search string) SocketFilter {
+	return func(sf *socketFilters) { sf.search = search }
+}
+
 // SocketService is an interface for API client methods that interact with Border0 API to manage sockets.
 type SocketService interface {
 	Socket(ctx context.Context, idOrName string) (out *Socket, err error)
-	Sockets(ctx context.Context) (out []Socket, err error)
+	Sockets(ctx context.Context, filters ...SocketFilter) (out []Socket, err error)
+	SocketsPaginator(ctx context.Context, pageSize int, filters ...SocketFilter) *Paginator[Socket]
 	CreateSocket(ctx context.Context, in *Socket) (out *Socket, err error)
 	UpdateSocket(ctx context.Context, idOrName string, in *Socket) (out *Socket, err error)
 	DeleteSocket(ctx context.Context, idOrName string) (err error)
@@ -36,12 +64,52 @@ func (api *APIClient) Socket(ctx context.Context, idOrName string) (out *Socket,
 }
 
 // Sockets fetches all sockets in your Border0 organization.
-func (api *APIClient) Sockets(ctx context.Context) (out []Socket, err error) {
-	_, err = api.request(ctx, http.MethodGet, "/socket", nil, &out)
-	if err != nil {
-		return nil, err
+func (api *APIClient) Sockets(ctx context.Context, filters ...SocketFilter) (out []Socket, err error) {
+	var all []Socket
+	paginator := api.SocketsPaginator(ctx, defaultPageSizeSockets, filters...)
+	for paginator.HasNext() {
+		items, err := paginator.Next(ctx)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, items...)
 	}
-	return out, nil
+	return all, nil
+}
+
+// SocketsPaginator returns a paginator to iterate pages of sockets.
+func (api *APIClient) SocketsPaginator(ctx context.Context, pageSize int, filters ...SocketFilter) *Paginator[Socket] {
+	if pageSize <= 0 {
+		pageSize = defaultPageSizeSockets
+	}
+
+	filter := &socketFilters{}
+	for _, setFilter := range filters {
+		setFilter(filter)
+	}
+
+	fetch := func(ctx context.Context, api *APIClient, page, size int) (items []Socket, nextPage int, err error) {
+		params := url.Values{}
+		params.Add("page", strconv.Itoa(page))
+		params.Add("page_size", strconv.Itoa(size))
+		if filter.name != "" {
+			params.Add("name", filter.name)
+		}
+		if filter.search != "" {
+			params.Add("search", filter.search)
+		}
+		if filter.socketType != "" {
+			params.Add("socket_type", filter.socketType)
+		}
+		path := fmt.Sprintf("/sockets?%s", params.Encode())
+
+		var res paginatedResponse[Socket]
+		if _, err = api.request(ctx, http.MethodGet, path, nil, &res); err != nil {
+			return nil, 0, err
+		}
+		return res.List, res.Pagination.NextPage, nil
+	}
+	return newPaginator(api, fetch, pageSize)
 }
 
 // CreateSocket creates a new socket in your Border0 organization. Socket name must be unique within your organization,

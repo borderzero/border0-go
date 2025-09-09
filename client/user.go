@@ -4,12 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 )
+
+const defaultPageSizeUsers = 100
 
 // UserService is an interface for API client methods that interact with Border0 API to manage users.
 type UserService interface {
 	User(ctx context.Context, id string) (out *User, err error)
 	Users(ctx context.Context) (out *Users, err error)
+	UsersPaginator(ctx context.Context, pageSize int) *Paginator[User]
 	CreateUser(ctx context.Context, in *User, opts ...UserOption) (out *User, err error)
 	UpdateUser(ctx context.Context, in *User) (out *User, err error)
 	DeleteUser(ctx context.Context, id string) (err error)
@@ -42,12 +47,36 @@ func (api *APIClient) User(ctx context.Context, id string) (out *User, err error
 
 // Users fetches all users from your Border0 organization.
 func (api *APIClient) Users(ctx context.Context) (out *Users, err error) {
-	out = new(Users)
-	_, err = api.request(ctx, http.MethodGet, "/organizations/iam/users", nil, out)
-	if err != nil {
-		return nil, err
+	var all []User
+	paginator := api.UsersPaginator(ctx, defaultPageSizeUsers)
+	for paginator.HasNext() {
+		items, err := paginator.Next(ctx)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, items...)
 	}
-	return out, nil
+	return &Users{List: all}, nil
+}
+
+// UsersPaginator returns a paginator to iterate pages of users.
+func (api *APIClient) UsersPaginator(ctx context.Context, pageSize int) *Paginator[User] {
+	if pageSize <= 0 {
+		pageSize = defaultPageSizeUsers
+	}
+	fetch := func(ctx context.Context, api *APIClient, page, size int) (items []User, nextPage int, err error) {
+		params := url.Values{}
+		params.Add("page", strconv.Itoa(page))
+		params.Add("page_size", strconv.Itoa(size))
+		path := fmt.Sprintf("/organizations/iam/users?%s", params.Encode())
+
+		var res paginatedResponse[User]
+		if _, err = api.request(ctx, http.MethodGet, path, nil, &res); err != nil {
+			return nil, 0, err
+		}
+		return res.List, res.Pagination.NextPage, nil
+	}
+	return newPaginator(api, fetch, pageSize)
 }
 
 // CreateUser creates a new user in your Border0 organization. User email must

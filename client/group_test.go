@@ -408,90 +408,90 @@ func Test_APIClient_DeleteGroup(t *testing.T) {
 }
 
 func Test_APIClient_Groups(t *testing.T) {
-    t.Parallel()
+	t.Parallel()
 
-    ctx := context.Background()
+	ctx := context.Background()
 
-    page1 := []Group{{ID: "g-1", DisplayName: "group-1"}, {ID: "g-2", DisplayName: "group-2"}}
-    page2 := []Group{{ID: "g-3", DisplayName: "group-3"}}
+	page1 := []Group{{ID: "g-1", DisplayName: "group-1"}, {ID: "g-2", DisplayName: "group-2"}}
+	page2 := []Group{{ID: "g-3", DisplayName: "group-3"}}
 
-    tests := []struct {
-        name          string
-        mockRequester func(context.Context, *mocks.ClientHTTPRequester)
-        wantGroups    *Groups
-        wantErr       error
-    }{
-        {
-            name: "error on first page",
-            mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
-                requester.EXPECT().
-                    Request(ctx, http.MethodGet, fmt.Sprintf("%s/organizations/iam/groups?page=1&page_size=%d", defaultBaseURL, defaultPageSizeGroups), nil, new(paginatedResponse[Group])).
-                    Return(http.StatusBadRequest, errors.New("failed to list groups"))
-            },
-            wantGroups: nil,
-            wantErr:    errors.New("failed after 1 attempt: failed to list groups"),
-        },
-        {
-            name: "happy path across two pages",
-            mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
-                // page 1
-                requester.On(
-                    "Request",
-                    ctx,
-                    http.MethodGet,
-                    fmt.Sprintf("%s/organizations/iam/groups?page=1&page_size=%d", defaultBaseURL, defaultPageSizeGroups),
-                    nil,
-                    new(paginatedResponse[Group]),
-                ).Return(http.StatusOK, nil).Run(func(args mock.Arguments) {
-                    out := args.Get(4).(*paginatedResponse[Group])
-                    *out = paginatedResponse[Group]{
-                        Pagination: pagination{NextPage: 2},
-                        List:       page1,
-                    }
-                })
+	tests := []struct {
+		name          string
+		mockRequester func(context.Context, *mocks.ClientHTTPRequester)
+		wantGroups    *Groups
+		wantErr       error
+	}{
+		{
+			name: "error on first page",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				requester.EXPECT().
+					Request(ctx, http.MethodGet, fmt.Sprintf("%s/organizations/iam/groups?page=1&page_size=%d", defaultBaseURL, defaultPageSizeGroups), nil, new(paginatedResponse[Group])).
+					Return(http.StatusBadRequest, errors.New("failed to list groups"))
+			},
+			wantGroups: nil,
+			wantErr:    errors.New("failed after 1 attempt: failed to list groups"),
+		},
+		{
+			name: "happy path across two pages",
+			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
+				// page 1
+				requester.On(
+					"Request",
+					ctx,
+					http.MethodGet,
+					fmt.Sprintf("%s/organizations/iam/groups?page=1&page_size=%d", defaultBaseURL, defaultPageSizeGroups),
+					nil,
+					new(paginatedResponse[Group]),
+				).Return(http.StatusOK, nil).Run(func(args mock.Arguments) {
+					out := args.Get(4).(*paginatedResponse[Group])
+					*out = paginatedResponse[Group]{
+						Pagination: pagination{NextPage: 2},
+						List:       page1,
+					}
+				})
 
-                // page 2
-                requester.On(
-                    "Request",
-                    ctx,
-                    http.MethodGet,
-                    fmt.Sprintf("%s/organizations/iam/groups?page=2&page_size=%d", defaultBaseURL, defaultPageSizeGroups),
-                    nil,
-                    new(paginatedResponse[Group]),
-                ).Return(http.StatusOK, nil).Run(func(args mock.Arguments) {
-                    out := args.Get(4).(*paginatedResponse[Group])
-                    *out = paginatedResponse[Group]{
-                        Pagination: pagination{NextPage: 0},
-                        List:       page2,
-                    }
-                })
-            },
-            wantGroups: &Groups{List: append(append([]Group{}, page1...), page2...)},
-            wantErr:    nil,
-        },
-    }
+				// page 2
+				requester.On(
+					"Request",
+					ctx,
+					http.MethodGet,
+					fmt.Sprintf("%s/organizations/iam/groups?page=2&page_size=%d", defaultBaseURL, defaultPageSizeGroups),
+					nil,
+					new(paginatedResponse[Group]),
+				).Return(http.StatusOK, nil).Run(func(args mock.Arguments) {
+					out := args.Get(4).(*paginatedResponse[Group])
+					*out = paginatedResponse[Group]{
+						Pagination: pagination{NextPage: 0},
+						List:       page2,
+					}
+				})
+			},
+			wantGroups: &Groups{List: append(append([]Group{}, page1...), page2...)},
+			wantErr:    nil,
+		},
+	}
 
-    for _, test := range tests {
-        test := test
-        t.Run(test.name, func(t *testing.T) {
-            t.Parallel()
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
 
-            requester := new(mocks.ClientHTTPRequester)
-            test.mockRequester(ctx, requester)
+			requester := new(mocks.ClientHTTPRequester)
+			test.mockRequester(ctx, requester)
 
-            api := New(
-                WithRetryMax(0),
-            )
-            api.http = requester
+			api := New(
+				WithRetryMax(0),
+			)
+			api.http = requester
 
-            gotGroups, gotErr := api.Groups(ctx)
+			gotGroups, gotErr := api.Groups(ctx)
 
-            if test.wantErr == nil {
-                assert.NoError(t, gotErr)
-            } else {
-                assert.EqualError(t, gotErr, test.wantErr.Error())
-            }
-            assert.Equal(t, test.wantGroups, gotGroups)
-        })
-    }
+			if test.wantErr == nil {
+				assert.NoError(t, gotErr)
+			} else {
+				assert.EqualError(t, gotErr, test.wantErr.Error())
+			}
+			assert.Equal(t, test.wantGroups, gotGroups)
+		})
+	}
 }
