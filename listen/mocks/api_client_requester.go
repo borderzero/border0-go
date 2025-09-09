@@ -2092,9 +2092,16 @@ func (_c *APIClientRequester_SocketUpstreamConfigs_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// Sockets provides a mock function with given fields: ctx
-func (_m *APIClientRequester) Sockets(ctx context.Context) ([]client.Socket, error) {
-	ret := _m.Called(ctx)
+// Sockets provides a mock function with given fields: ctx, filters
+func (_m *APIClientRequester) Sockets(ctx context.Context, filters ...client.SocketFilter) ([]client.Socket, error) {
+	_va := make([]interface{}, len(filters))
+	for _i := range filters {
+		_va[_i] = filters[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Sockets")
@@ -2102,19 +2109,19 @@ func (_m *APIClientRequester) Sockets(ctx context.Context) ([]client.Socket, err
 
 	var r0 []client.Socket
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]client.Socket, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, ...client.SocketFilter) ([]client.Socket, error)); ok {
+		return rf(ctx, filters...)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []client.Socket); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, ...client.SocketFilter) []client.Socket); ok {
+		r0 = rf(ctx, filters...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]client.Socket)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, ...client.SocketFilter) error); ok {
+		r1 = rf(ctx, filters...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -2129,13 +2136,21 @@ type APIClientRequester_Sockets_Call struct {
 
 // Sockets is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *APIClientRequester_Expecter) Sockets(ctx interface{}) *APIClientRequester_Sockets_Call {
-	return &APIClientRequester_Sockets_Call{Call: _e.mock.On("Sockets", ctx)}
+//   - filters ...client.SocketFilter
+func (_e *APIClientRequester_Expecter) Sockets(ctx interface{}, filters ...interface{}) *APIClientRequester_Sockets_Call {
+	return &APIClientRequester_Sockets_Call{Call: _e.mock.On("Sockets",
+		append([]interface{}{ctx}, filters...)...)}
 }
 
-func (_c *APIClientRequester_Sockets_Call) Run(run func(ctx context.Context)) *APIClientRequester_Sockets_Call {
+func (_c *APIClientRequester_Sockets_Call) Run(run func(ctx context.Context, filters ...client.SocketFilter)) *APIClientRequester_Sockets_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		variadicArgs := make([]client.SocketFilter, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(client.SocketFilter)
+			}
+		}
+		run(args[0].(context.Context), variadicArgs...)
 	})
 	return _c
 }
@@ -2145,7 +2160,71 @@ func (_c *APIClientRequester_Sockets_Call) Return(out []client.Socket, err error
 	return _c
 }
 
-func (_c *APIClientRequester_Sockets_Call) RunAndReturn(run func(context.Context) ([]client.Socket, error)) *APIClientRequester_Sockets_Call {
+func (_c *APIClientRequester_Sockets_Call) RunAndReturn(run func(context.Context, ...client.SocketFilter) ([]client.Socket, error)) *APIClientRequester_Sockets_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SocketsPaginator provides a mock function with given fields: ctx, pageSize, filters
+func (_m *APIClientRequester) SocketsPaginator(ctx context.Context, pageSize int, filters ...client.SocketFilter) *client.Paginator[client.Socket] {
+	_va := make([]interface{}, len(filters))
+	for _i := range filters {
+		_va[_i] = filters[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, pageSize)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SocketsPaginator")
+	}
+
+	var r0 *client.Paginator[client.Socket]
+	if rf, ok := ret.Get(0).(func(context.Context, int, ...client.SocketFilter) *client.Paginator[client.Socket]); ok {
+		r0 = rf(ctx, pageSize, filters...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Paginator[client.Socket])
+		}
+	}
+
+	return r0
+}
+
+// APIClientRequester_SocketsPaginator_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SocketsPaginator'
+type APIClientRequester_SocketsPaginator_Call struct {
+	*mock.Call
+}
+
+// SocketsPaginator is a helper method to define mock.On call
+//   - ctx context.Context
+//   - pageSize int
+//   - filters ...client.SocketFilter
+func (_e *APIClientRequester_Expecter) SocketsPaginator(ctx interface{}, pageSize interface{}, filters ...interface{}) *APIClientRequester_SocketsPaginator_Call {
+	return &APIClientRequester_SocketsPaginator_Call{Call: _e.mock.On("SocketsPaginator",
+		append([]interface{}{ctx, pageSize}, filters...)...)}
+}
+
+func (_c *APIClientRequester_SocketsPaginator_Call) Run(run func(ctx context.Context, pageSize int, filters ...client.SocketFilter)) *APIClientRequester_SocketsPaginator_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]client.SocketFilter, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(client.SocketFilter)
+			}
+		}
+		run(args[0].(context.Context), args[1].(int), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_SocketsPaginator_Call) Return(_a0 *client.Paginator[client.Socket]) *APIClientRequester_SocketsPaginator_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *APIClientRequester_SocketsPaginator_Call) RunAndReturn(run func(context.Context, int, ...client.SocketFilter) *client.Paginator[client.Socket]) *APIClientRequester_SocketsPaginator_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -2736,6 +2815,55 @@ func (_c *APIClientRequester_Users_Call) Return(out *client.Users, err error) *A
 }
 
 func (_c *APIClientRequester_Users_Call) RunAndReturn(run func(context.Context) (*client.Users, error)) *APIClientRequester_Users_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UsersPaginator provides a mock function with given fields: ctx, pageSize
+func (_m *APIClientRequester) UsersPaginator(ctx context.Context, pageSize int) *client.Paginator[client.User] {
+	ret := _m.Called(ctx, pageSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UsersPaginator")
+	}
+
+	var r0 *client.Paginator[client.User]
+	if rf, ok := ret.Get(0).(func(context.Context, int) *client.Paginator[client.User]); ok {
+		r0 = rf(ctx, pageSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Paginator[client.User])
+		}
+	}
+
+	return r0
+}
+
+// APIClientRequester_UsersPaginator_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UsersPaginator'
+type APIClientRequester_UsersPaginator_Call struct {
+	*mock.Call
+}
+
+// UsersPaginator is a helper method to define mock.On call
+//   - ctx context.Context
+//   - pageSize int
+func (_e *APIClientRequester_Expecter) UsersPaginator(ctx interface{}, pageSize interface{}) *APIClientRequester_UsersPaginator_Call {
+	return &APIClientRequester_UsersPaginator_Call{Call: _e.mock.On("UsersPaginator", ctx, pageSize)}
+}
+
+func (_c *APIClientRequester_UsersPaginator_Call) Run(run func(ctx context.Context, pageSize int)) *APIClientRequester_UsersPaginator_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int))
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_UsersPaginator_Call) Return(_a0 *client.Paginator[client.User]) *APIClientRequester_UsersPaginator_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *APIClientRequester_UsersPaginator_Call) RunAndReturn(run func(context.Context, int) *client.Paginator[client.User]) *APIClientRequester_UsersPaginator_Call {
 	_c.Call.Return(run)
 	return _c
 }

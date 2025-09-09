@@ -70,7 +70,6 @@ func Test_APIClient_Socket(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -115,7 +114,7 @@ func Test_APIClient_Sockets(t *testing.T) {
 			name: "failed to get sockets",
 			mockRequester: func(ctx context.Context, requester *mocks.ClientHTTPRequester) {
 				requester.EXPECT().
-					Request(ctx, http.MethodGet, defaultBaseURL+"/socket", nil, new([]Socket)).
+					Request(ctx, http.MethodGet, defaultBaseURL+"/sockets?page=1&page_size=100", nil, new(paginatedResponse[Socket])).
 					Return(http.StatusInternalServerError, errors.New("failed to get sockets"))
 			},
 			wantSockets: nil,
@@ -127,11 +126,11 @@ func Test_APIClient_Sockets(t *testing.T) {
 				// have to use On() instead of EXPECT() because we need to set the output
 				// and the Run() function would raise nil pointer panic if we use it with
 				// EXPECT()
-				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/socket", nil, new([]Socket)).
+				requester.On("Request", ctx, http.MethodGet, defaultBaseURL+"/sockets?page=1&page_size=100", nil, new(paginatedResponse[Socket])).
 					Return(http.StatusOK, nil).
 					Run(func(args mock.Arguments) {
-						output := args.Get(4).(*[]Socket)
-						*output = testSockets
+						output := args.Get(4).(*paginatedResponse[Socket])
+						output.List = testSockets
 					})
 			},
 			wantSockets: testSockets,
@@ -140,7 +139,6 @@ func Test_APIClient_Sockets(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -210,7 +208,6 @@ func Test_APIClient_CreateSocket(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -283,7 +280,6 @@ func Test_APIClient_UpdateSocket(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -350,7 +346,6 @@ func Test_APIClient_DeleteSocket(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -442,7 +437,6 @@ func Test_APIClient_SocketUpstreamConfigs(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -516,7 +510,6 @@ func Test_APIClient_SocketConnectors(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -591,7 +584,6 @@ func Test_APIClient_SignSocketKey(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
