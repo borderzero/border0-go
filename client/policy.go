@@ -7,6 +7,20 @@ import (
 	"time"
 )
 
+// AwsS3Action represents actions for aws s3 socket policy rules.
+type AwsS3Action string
+
+const (
+	// AwsS3ActionList is the aws s3 action that represents listing buckets or objects.
+	AwsS3ActionList AwsS3Action = "list"
+	// AwsS3ActionRead is the aws s3 action that represents reading buckets or objects.
+	AwsS3ActionRead AwsS3Action = "read"
+	// AwsS3ActionWrite is the aws s3 action that represents creating or updating buckets or objects.
+	AwsS3ActionWrite AwsS3Action = "write"
+	// AwsS3ActionDelete is the aws s3 action that represents deleting buckets or objects.
+	AwsS3ActionDelete AwsS3Action = "delete"
+)
+
 // PolicyService is an interface for API client methods that interact with Border0 API to manage policies and policy socket attachments.
 type PolicyService interface {
 	Policy(ctx context.Context, id string) (out *Policy, err error)
@@ -267,6 +281,7 @@ type PolicyPermissions struct {
 	VPN        *VPNPermissions        `json:"vpn,omitempty"`
 	Kubernetes *KubernetesPermissions `json:"kubernetes,omitempty"`
 	Network    *NetworkPermissions    `json:"network,omitempty"`
+	AwsS3      *AwsS3Permissions      `json:"aws_s3,omitempty"`
 }
 
 // DatabasePermissions represents database permissions for policy (v2).
@@ -363,3 +378,24 @@ type KubernetesRule struct {
 
 // NetworkPermissions represents network service permissions for policy (v2).
 type NetworkPermissions struct{}
+
+// AwsS3Permissions represents aws s3 service permissions for policy (v2).
+type AwsS3Permissions struct {
+	Rules *[]AwsS3Rule `json:"rules,omitempty"`
+}
+
+// AwsS3Rule represents a single S3 access rule for policy evaluation.
+// It defines what actions are allowed on which buckets and paths.
+type AwsS3Rule struct {
+	// Buckets is a list of bucket name patterns (supports wildcards)
+	// Examples: ["my-bucket"], ["prod-*"], ["*"]
+	Buckets []string `json:"buckets,omitempty"`
+
+	// Paths is a list of object key path patterns (supports wildcards and globs)
+	// Examples: ["/src/**/*.js"], ["/data/*"], ["*"]
+	Paths []string `json:"paths,omitempty"`
+
+	// Actions is a list of allowed S3 actions
+	// Valid values: "list", "read", "write", "delete"
+	Actions []string `json:"actions,omitempty"`
+}
