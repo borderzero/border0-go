@@ -16,6 +16,7 @@ const (
 	DatabaseServiceTypeGcpCloudSql   = "gcp_cloudsql"   // Google Cloud SQL database, supports IAM, TLS and password auth
 	DatabaseServiceTypeAzureSql      = "azure_sql"      // Azure SQL database, supports SQL authentication, azure password auth
 	DatabaseServiceTypeAwsDocumentDB = "aws_documentdb" // AWS DocumentDB database, supports TLS, password auth and IAM auth
+	DatabaseServiceTypeMongoDBAtlas  = "mongodb_atlas"  // MongoDB Atlas database, supports TLS and AWS IAM auth
 )
 
 const (
@@ -166,6 +167,7 @@ type DatabaseServiceConfiguration struct {
 	GcpCloudSql   *GcpCloudSqlDatabaseServiceConfiguration   `json:"gcp_cloudsql_database_service_configuration,omitempty"`
 	AzureSql      *AzureSqlDatabaseServiceConfiguration      `json:"azure_sql_database_service_configuration,omitempty"`
 	AwsDocumentDB *AwsDocumentDBDatabaseServiceConfiguration `json:"aws_documentdb_database_service_configuration,omitempty"`
+	MongoDBAtlas  *MongoDBAtlasDatabaseServiceConfiguration  `json:"mongodb_atlas_database_service_configuration,omitempty"`
 }
 
 // Validate ensures that the `DatabaseServiceConfiguration` is valid.
@@ -175,7 +177,7 @@ func (config DatabaseServiceConfiguration) Validate() error {
 	}
 	switch config.DatabaseServiceType {
 	case DatabaseServiceTypeStandard:
-		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql, config.AwsDocumentDB) {
+		if nilcheck.AnyNotNil(config.AwsRds, config.GcpCloudSql, config.AzureSql, config.AwsDocumentDB, config.MongoDBAtlas) {
 			return errors.New("database service type standard can only have standard configuration defined")
 		}
 		if config.Standard == nil {
@@ -183,7 +185,7 @@ func (config DatabaseServiceConfiguration) Validate() error {
 		}
 		return config.Standard.Validate()
 	case DatabaseServiceTypeAwsRds:
-		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.AwsDocumentDB) {
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.AwsDocumentDB, config.MongoDBAtlas) {
 			return errors.New("database service type aws_rds can only have aws rds configuration defined")
 		}
 		if config.AwsRds == nil {
@@ -191,7 +193,7 @@ func (config DatabaseServiceConfiguration) Validate() error {
 		}
 		return config.AwsRds.Validate()
 	case DatabaseServiceTypeAwsDocumentDB:
-		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.AwsRds) {
+		if nilcheck.AnyNotNil(config.Standard, config.GcpCloudSql, config.AzureSql, config.AwsRds, config.MongoDBAtlas) {
 			return errors.New("database service type aws_documentdb can only have aws documentdb configuration defined")
 		}
 		if config.AwsDocumentDB == nil {
@@ -199,7 +201,7 @@ func (config DatabaseServiceConfiguration) Validate() error {
 		}
 		return config.AwsDocumentDB.Validate()
 	case DatabaseServiceTypeGcpCloudSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql, config.AwsDocumentDB) {
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.AzureSql, config.AwsDocumentDB, config.MongoDBAtlas) {
 			return errors.New("database service type gcp_cloudsql can only have gcp cloudsql configuration defined")
 		}
 		if config.GcpCloudSql == nil {
@@ -207,13 +209,21 @@ func (config DatabaseServiceConfiguration) Validate() error {
 		}
 		return config.GcpCloudSql.Validate()
 	case DatabaseServiceTypeAzureSql:
-		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AwsDocumentDB) {
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AwsDocumentDB, config.MongoDBAtlas) {
 			return errors.New("database service type azure_sql can only have azure sql configuration defined")
 		}
 		if config.AzureSql == nil {
 			return errors.New("Azure SQL database service configuration is required")
 		}
 		return config.AzureSql.Validate()
+	case DatabaseServiceTypeMongoDBAtlas:
+		if nilcheck.AnyNotNil(config.Standard, config.AwsRds, config.GcpCloudSql, config.AwsDocumentDB, config.AzureSql) {
+			return errors.New("database service type mongodb_atlas can only have mongodb atlas configuration defined")
+		}
+		if config.MongoDBAtlas == nil {
+			return errors.New("MongoDB Atlas database service configuration is required")
+		}
+		return config.MongoDBAtlas.Validate()
 	}
 	return fmt.Errorf("invalid database service type: %s", config.DatabaseServiceType)
 }
@@ -410,6 +420,59 @@ func (config AwsDocumentDBDatabaseServiceConfiguration) Validate() error {
 
 	if err := config.HostnameAndPort.Validate(); err != nil {
 		return err
+	}
+
+	switch config.AuthenticationType {
+	case DatabaseAuthenticationTypeUsernameAndPassword:
+		if config.IamAuth != nil {
+			return errors.New("authentication type is username_and_password, but IAM auth configuration is provided")
+		}
+		if config.UsernameAndPasswordAuth == nil {
+			return errors.New("username and password auth configuration is required")
+		}
+		return config.UsernameAndPasswordAuth.Validate()
+	case DatabaseAuthenticationTypeIam:
+		if config.UsernameAndPasswordAuth != nil {
+			return errors.New("authentication type is iam, but username and password auth configuration is provided")
+		}
+		if config.IamAuth == nil {
+			return errors.New("IAM auth configuration is required")
+		}
+		return config.IamAuth.Validate()
+	}
+	return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
+}
+
+// MongoDBAtlasDatabaseServiceConfiguration represents service configuration for MongoDB Atlas databases.
+// MongoDB Atlas databases are fully managed MongoDB clusters hosted on AWS, Azure, or GCP.
+//
+// For upstream authentication, supported auth types are: `username_and_password` (SCRAM-SHA-1)
+// and `iam` (AWS IAM authentication). MongoDB Atlas uses the mongodb+srv connection scheme.
+type MongoDBAtlasDatabaseServiceConfiguration struct {
+	// Hostname is the MongoDB Atlas cluster hostname (e.g., cluster0.xxxxx.mongodb.net)
+	// Note: Port is not used for Atlas as it uses SRV records
+	Hostname string `json:"hostname"`
+
+	DatabaseProtocol   string `json:"protocol"`
+	AuthenticationType string `json:"authentication_type"`
+	DatabaseName       string `json:"database_name,omitempty"`
+
+	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	IamAuth                 *MongoDBAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
+}
+
+// Validate ensures that the `MongoDBAtlasDatabaseServiceConfiguration` is valid.
+func (config MongoDBAtlasDatabaseServiceConfiguration) Validate() error {
+	if config.Hostname == "" {
+		return errors.New("hostname is required")
+	}
+
+	if config.DatabaseProtocol == "" {
+		return errors.New("database protocol is required")
+	}
+
+	if config.DatabaseProtocol != DatabaseProtocolMongoDB {
+		return fmt.Errorf("invalid database protocol for MongoDB Atlas: %s (only mongodb is supported)", config.DatabaseProtocol)
 	}
 
 	switch config.AuthenticationType {
