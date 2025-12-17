@@ -404,8 +404,8 @@ type AwsDocumentDBDatabaseServiceConfiguration struct {
 	AuthenticationType string `json:"authentication_type"`
 	DatabaseName       string `json:"database_name,omitempty"`
 
-	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *MongoAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
+	UsernameAndPasswordAuth *UsernamePasswordCaAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	IamAuth                 *MongoAWSAuthConfiguration           `json:"iam_auth_configuration,omitempty"`
 }
 
 // Validate ensures that the `AwsDocumentDBDatabaseServiceConfiguration` is valid.
@@ -457,8 +457,8 @@ type MongoDBAtlasDatabaseServiceConfiguration struct {
 	AuthenticationType string `json:"authentication_type"`
 	DatabaseName       string `json:"database_name,omitempty"`
 
-	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *MongoAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
+	UsernameAndPasswordAuth *UsernamePasswordCaAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	IamAuth                 *MongoAWSAuthConfiguration           `json:"iam_auth_configuration,omitempty"`
 }
 
 // Validate ensures that the `MongoDBAtlasDatabaseServiceConfiguration` is valid.
@@ -736,15 +736,16 @@ func (config DatabaseTlsAuthConfiguration) Validate() error {
 	return nil
 }
 
-// AwsRdsUsernameAndPasswordAuthConfiguration represents auth configuration for AWS RDS databases that use username
-// and password. Optionally you can provide AWS CA bundle to verify the server's certificate.
-type AwsRdsUsernameAndPasswordAuthConfiguration struct {
+// UsernamePasswordCaAuthConfiguration represents auth configuration for databases that use username
+// and password. Optionally you can provide a CA certificate to verify the server's certificate.
+// This is a generic type used by AWS RDS, AWS DocumentDB, MongoDB Atlas, and other database types.
+type UsernamePasswordCaAuthConfiguration struct {
 	UsernameAndPassword
 	CaCertificate string `json:"ca_certificate,omitempty"`
 }
 
-// Validate ensures that the `AwsRdsUsernameAndPasswordAuthConfiguration` has all the required fields.
-func (config AwsRdsUsernameAndPasswordAuthConfiguration) Validate() error {
+// Validate ensures that the `UsernamePasswordCaAuthConfiguration` has all the required fields.
+func (config UsernamePasswordCaAuthConfiguration) Validate() error {
 	if config.Username == "" {
 		return errors.New("username is required")
 	}
@@ -753,6 +754,10 @@ func (config AwsRdsUsernameAndPasswordAuthConfiguration) Validate() error {
 	}
 	return nil
 }
+
+// AwsRdsUsernameAndPasswordAuthConfiguration is an alias for backwards compatibility.
+// Deprecated: Use UsernamePasswordCaAuthConfiguration instead.
+type AwsRdsUsernameAndPasswordAuthConfiguration = UsernamePasswordCaAuthConfiguration
 
 // AwsRdsIamAuthConfiguration represents auth configuration for AWS RDS databases that use IAM authentication. You must
 // provide AWS credentials and a username. Optionally AWS CA bundle can be supplied to verify the server's certificate.
