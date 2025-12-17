@@ -405,7 +405,7 @@ type AwsDocumentDBDatabaseServiceConfiguration struct {
 	DatabaseName       string `json:"database_name,omitempty"`
 
 	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *MongoDBAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
+	IamAuth                 *MongoAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
 }
 
 // Validate ensures that the `AwsDocumentDBDatabaseServiceConfiguration` is valid.
@@ -458,7 +458,7 @@ type MongoDBAtlasDatabaseServiceConfiguration struct {
 	DatabaseName       string `json:"database_name,omitempty"`
 
 	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *MongoDBAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
+	IamAuth                 *MongoAWSAuthConfiguration                `json:"iam_auth_configuration,omitempty"`
 }
 
 // Validate ensures that the `MongoDBAtlasDatabaseServiceConfiguration` is valid.
@@ -779,18 +779,19 @@ func (config AwsRdsIamAuthConfiguration) Validate() error {
 	return nil
 }
 
-// MongoDBAWSAuthConfiguration represents auth configuration for AWS DocumentDB databases that use IAM authentication. You must
-// provide AWS credentials. Optionally AWS CA bundle can be supplied to verify the server's certificate.
-type MongoDBAWSAuthConfiguration struct {
+// MongoAWSAuthConfiguration represents auth configuration for MongoDB databases that use AWS IAM authentication.
+// This is used for AWS DocumentDB and MongoDB Atlas with AWS IAM auth. You must provide AWS credentials.
+// Optionally AWS CA bundle can be supplied to verify the server's certificate.
+type MongoAWSAuthConfiguration struct {
 	AwsCredentials *common.AwsCredentials `json:"aws_credentials,omitempty"`
 	ClusterRegion  string                 `json:"cluster_region"`
 	CaCertificate  string                 `json:"ca_certificate,omitempty"`
 }
 
-// Validate ensures that the `MongoDBAWSAuthConfiguration` has the required field and that the AWS credentials are valid.
-func (config MongoDBAWSAuthConfiguration) Validate() error {
+// Validate ensures that the `MongoAWSAuthConfiguration` has the required field and that the AWS credentials are valid.
+func (config MongoAWSAuthConfiguration) Validate() error {
 	if config.ClusterRegion == "" {
-		return errors.New("AWS DocumentDB cluster region is required")
+		return errors.New("cluster region is required")
 	}
 	if config.AwsCredentials != nil {
 		if err := config.AwsCredentials.Validate(); err != nil {
@@ -799,3 +800,7 @@ func (config MongoDBAWSAuthConfiguration) Validate() error {
 	}
 	return nil
 }
+
+// MongoDBAWSAuthConfiguration is an alias for backwards compatibility.
+// Deprecated: Use MongoAWSAuthConfiguration instead.
+type MongoDBAWSAuthConfiguration = MongoAWSAuthConfiguration
