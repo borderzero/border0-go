@@ -44,7 +44,7 @@ func Test_ValidateAwsS3ServiceConfiguration(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name:          "Should succeed when config is valid with AWS credentials",
+			name: "Should succeed when config is valid with AWS credentials",
 			configuration: &AwsS3ServiceConfiguration{
 				BucketAllowlist: []string{"my-bucket"},
 				AwsCredentials: &common.AwsCredentials{
@@ -68,6 +68,19 @@ func Test_ValidateAwsS3ServiceConfiguration(t *testing.T) {
 			name:          "Should fail when config is not valid (bad pattern in bucket allowlist)",
 			configuration: &AwsS3ServiceConfiguration{BucketAllowlist: []string{"my bucket"}}, // space is not valid
 			expectedError: errors.New("the bucket allowlist entry in index 0 (\"my bucket\") has invalid characters"),
+		},
+		{
+			name: "Should fail when bucket allowlist exceeds maximum entries",
+			configuration: &AwsS3ServiceConfiguration{
+				BucketAllowlist: func() []string {
+					buckets := make([]string, maxAwsS3BucketAllowlistEntries+1)
+					for i := range buckets {
+						buckets[i] = fmt.Sprintf("bucket-%d", i)
+					}
+					return buckets
+				}(),
+			},
+			expectedError: fmt.Errorf("the bucket allowlist cannot contain more than %d entries", maxAwsS3BucketAllowlistEntries),
 		},
 		{
 			name: "Should fail when AWS credentials are invalid",
