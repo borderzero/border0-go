@@ -9,8 +9,8 @@ const (
 	// RecordingTypeKubernetesAPIRequestLog is the recording type for kubernetes api events in table format.
 	RecordingTypeKubernetesAPIRequestLog = "kubernetes_api_request_log"
 
-	// RecordingTypeAWSS3APIRequestLog is the recording type for aws s3 api events in table format.
-	RecordingTypeAWSS3APIRequestLog = "aws_s3_api_request_log"
+	// RecordingTypeAwsS3APIRequestLog is the recording type for aws s3 api events in table format.
+	RecordingTypeAwsS3APIRequestLog = "aws_s3_api_request_log"
 
 	// RecordingTypeDatabaseQueryLog is the recording type for database queries in table format.
 	RecordingTypeDatabaseQueryLog = "database_query_log"
@@ -29,7 +29,7 @@ const (
 var ValidRecordingTypes = set.New(
 	RecordingTypeAsciinema,
 	RecordingTypeKubernetesAPIRequestLog,
-	RecordingTypeAWSS3APIRequestLog,
+	RecordingTypeAwsS3APIRequestLog,
 	RecordingTypeDatabaseQueryLog,
 	RecordingTypeBrowserSessionStream,
 	RecordingTypeHTTPAccessLog,
