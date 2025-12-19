@@ -52,6 +52,9 @@ const (
 
 	// ServiceTypeAwsS3 is the service type for AWS S3 services (fka sockets).
 	ServiceTypeAwsS3 = "aws_s3"
+
+	// ServiceTypeAwsAccess is the service type for AWS Access services (fka sockets).
+	ServiceTypeAwsAccess = "aws_access"
 )
 
 // Configuration represents upstream service configuration.
@@ -71,6 +74,7 @@ type Configuration struct {
 	ElasticsearchServiceConfiguration *ElasticsearchServiceConfiguration `json:"elasticsearch_service_configuration,omitempty"`
 	SnowflakeServiceConfiguration     *SnowflakeServiceConfiguration     `json:"snowflake_service_configuration,omitempty"`
 	AwsS3ServiceConfiguration         *AwsS3ServiceConfiguration         `json:"aws_s3_service_configuration,omitempty"`
+	AwsAccessServiceConfiguration     *AwsAccessServiceConfiguration     `json:"aws_access_service_configuration,omitempty"`
 
 	// remove after february 2025
 	DEPRECATED_SubnetRoutesServiceConfiguration *SubnetRouterServiceConfiguration `json:"subnet_routes_service_configuration,omitempty"`
@@ -96,6 +100,7 @@ func (c *Configuration) Validate() error {
 		ServiceTypeElasticsearch: c.ElasticsearchServiceConfiguration,
 		ServiceTypeSnowflake:     c.SnowflakeServiceConfiguration,
 		ServiceTypeAwsS3:         c.AwsS3ServiceConfiguration,
+		ServiceTypeAwsAccess:     c.AwsAccessServiceConfiguration,
 
 		// remove after february 2025
 		DEPRECATED_ServiceTypeSubnetRoutes: c.DEPRECATED_SubnetRoutesServiceConfiguration,
