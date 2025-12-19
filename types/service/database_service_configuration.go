@@ -356,7 +356,7 @@ type AwsRdsDatabaseServiceConfiguration struct {
 	DatabaseName string `json:"database_name,omitempty"`
 
 	UsernameAndPasswordAuth *UsernamePasswordCaAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
-	IamAuth                 *AwsRdsIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
+	IamAuth                 *AwsRdsIamAuthConfiguration          `json:"iam_auth_configuration,omitempty"`
 }
 
 // Validate ensures that the `AwsRdsDatabaseServiceConfiguration` is valid.
