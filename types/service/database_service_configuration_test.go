@@ -356,7 +356,7 @@ func Test_AwsRdsDatabaseServiceConfiguration_Validate(t *testing.T) {
 		Hostname: "hostname",
 		Port:     3306,
 	}
-	testPasswordAuth := &AwsRdsUsernameAndPasswordAuthConfiguration{
+	testPasswordAuth := &UsernamePasswordCaAuthConfiguration{
 		UsernameAndPassword: UsernameAndPassword{
 			Username: "username",
 			Password: "password",
@@ -722,7 +722,7 @@ func Test_DatabaseTlsAuthConfiguration_Validate(t *testing.T) {
 	}
 }
 
-func Test_AwsRdsUsernameAndPasswordAuthConfiguration_Validate(t *testing.T) {
+func Test_UsernamePasswordCaAuthConfiguration_Validate(t *testing.T) {
 	t.Parallel()
 
 	testUsername := "username"
@@ -730,12 +730,12 @@ func Test_AwsRdsUsernameAndPasswordAuthConfiguration_Validate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		given AwsRdsUsernameAndPasswordAuthConfiguration
+		given UsernamePasswordCaAuthConfiguration
 		want  error
 	}{
 		{
 			name: "username is missing",
-			given: AwsRdsUsernameAndPasswordAuthConfiguration{
+			given: UsernamePasswordCaAuthConfiguration{
 				UsernameAndPassword: UsernameAndPassword{
 					// username is missing
 					Password: testPassword,
@@ -745,7 +745,7 @@ func Test_AwsRdsUsernameAndPasswordAuthConfiguration_Validate(t *testing.T) {
 		},
 		{
 			name: "password is missing",
-			given: AwsRdsUsernameAndPasswordAuthConfiguration{
+			given: UsernamePasswordCaAuthConfiguration{
 				UsernameAndPassword: UsernameAndPassword{
 					Username: testUsername,
 					// password is missing
@@ -755,7 +755,7 @@ func Test_AwsRdsUsernameAndPasswordAuthConfiguration_Validate(t *testing.T) {
 		},
 		{
 			name: "happy path",
-			given: AwsRdsUsernameAndPasswordAuthConfiguration{
+			given: UsernamePasswordCaAuthConfiguration{
 				UsernameAndPassword: UsernameAndPassword{
 					Username: testUsername,
 					Password: testPassword,
