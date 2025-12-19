@@ -355,7 +355,7 @@ type AwsRdsDatabaseServiceConfiguration struct {
 
 	DatabaseName string `json:"database_name,omitempty"`
 
-	UsernameAndPasswordAuth *AwsRdsUsernameAndPasswordAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
+	UsernameAndPasswordAuth *UsernamePasswordCaAuthConfiguration `json:"username_and_password_auth_configuration,omitempty"`
 	IamAuth                 *AwsRdsIamAuthConfiguration                 `json:"iam_auth_configuration,omitempty"`
 }
 
@@ -755,10 +755,6 @@ func (config UsernamePasswordCaAuthConfiguration) Validate() error {
 	return nil
 }
 
-// AwsRdsUsernameAndPasswordAuthConfiguration is an alias for backwards compatibility.
-// Deprecated: Use UsernamePasswordCaAuthConfiguration instead.
-type AwsRdsUsernameAndPasswordAuthConfiguration = UsernamePasswordCaAuthConfiguration
-
 // AwsRdsIamAuthConfiguration represents auth configuration for AWS RDS databases that use IAM authentication. You must
 // provide AWS credentials and a username. Optionally AWS CA bundle can be supplied to verify the server's certificate.
 type AwsRdsIamAuthConfiguration struct {
@@ -805,7 +801,3 @@ func (config MongoAWSAuthConfiguration) Validate() error {
 	}
 	return nil
 }
-
-// MongoDBAWSAuthConfiguration is an alias for backwards compatibility.
-// Deprecated: Use MongoAWSAuthConfiguration instead.
-type MongoDBAWSAuthConfiguration = MongoAWSAuthConfiguration
