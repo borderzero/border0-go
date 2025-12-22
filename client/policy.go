@@ -282,6 +282,7 @@ type PolicyPermissions struct {
 	Kubernetes *KubernetesPermissions `json:"kubernetes,omitempty"`
 	Network    *NetworkPermissions    `json:"network,omitempty"`
 	AwsS3      *AwsS3Permissions      `json:"aws_s3,omitempty"`
+	AwsAccess  *AwsAccessPermissions  `json:"aws_access,omitempty"`
 }
 
 // DatabasePermissions represents database permissions for policy (v2).
@@ -398,4 +399,14 @@ type AwsS3Rule struct {
 	// Actions is a list of allowed S3 actions
 	// Valid values: "list", "read", "write", "delete"
 	Actions []string `json:"actions,omitempty"`
+}
+
+// AwsAccessPermissions represents aws access service permissions for policy (v2).
+type AwsAccessPermissions struct {
+	RoleARNs map[string]AwsAccessRules `json:"aws_iam_role_arns,omitempty"`
+}
+
+// AwsAccessRules represents rules regarding a single AWS IAM role.
+type AwsAccessRules struct {
+	MaxSessionDurationSeconds *int32 `json:"max_session_duration_seconds,omitempty"`
 }
