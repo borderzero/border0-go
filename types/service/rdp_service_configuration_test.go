@@ -18,14 +18,14 @@ func Test_ValidateRdpServiceConfiguration(t *testing.T) {
 		{
 			name: "Happy case for vnc service",
 			configuration: &RdpServiceConfiguration{
-				HostnameAndPort{Hostname: "hello.com", Port: 443},
+				HostnameAndPort: HostnameAndPort{Hostname: "hello.com", Port: 443},
 			},
 			expectedError: nil,
 		},
 		{
 			name: "Should fail for vnc service with invalid hostname/port (missing port)",
 			configuration: &RdpServiceConfiguration{
-				HostnameAndPort{Hostname: "hello.com"},
+				HostnameAndPort: HostnameAndPort{Hostname: "hello.com"},
 			},
 			expectedError: fmt.Errorf("invalid hostname or port: port is a required field"),
 		},

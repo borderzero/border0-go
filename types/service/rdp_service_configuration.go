@@ -6,6 +6,8 @@ import "fmt"
 // configuration for rdp services (fka sockets).
 type RdpServiceConfiguration struct {
 	HostnameAndPort
+	UsernameAndPassword
+	Domain string `json:"domain,omitempty"`
 }
 
 // Validate validates the RdpServiceConfiguration.
