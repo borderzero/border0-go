@@ -1,17 +1,15 @@
-quiet: False
-disable-version-string: True
-with-expecter: True
-outpkg: mocks
 packages:
   github.com/borderzero/border0-go/client:
     interfaces:
       HTTPRequester:
         config:
           dir: client/mocks
-          mockname: ClientHTTPRequester
+          pkgname: mocks
+          structname: ClientHTTPRequester
           filename: client_http_requester.go
       Requester:
         config:
           dir: listen/mocks
-          mockname: APIClientRequester
+          pkgname: mocks
+          structname: APIClientRequester
           filename: api_client_requester.go

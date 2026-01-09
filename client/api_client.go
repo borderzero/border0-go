@@ -34,6 +34,7 @@ type Requester interface {
 	UserService
 	GroupService
 	ServiceAccountService
+	WebIdentityService
 }
 
 const (
