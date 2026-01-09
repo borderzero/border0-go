@@ -140,7 +140,7 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 			name: "attach new policies, but new policies are not found",
 			mockRequester: func(ctx context.Context, requester *mocks.APIClientRequester) {
 				requester.EXPECT().
-					PoliciesByNames(ctx, "test-policy-3").
+					PoliciesByNames(ctx, []string{"test-policy-3"}).
 					Return(nil, errors.New("policy [test-policy-3] does not exist, please create the policy first"))
 			},
 			givenWithPolicies: WithPolicies([]string{"test-policy-1", "test-policy-2", "test-policy-3"}),
@@ -151,7 +151,7 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 			name: "attach new policies, found new policies, but failed to attach",
 			mockRequester: func(ctx context.Context, requester *mocks.APIClientRequester) {
 				requester.EXPECT().
-					PoliciesByNames(ctx, "test-policy-3", "test-policy-4").
+					PoliciesByNames(ctx, []string{"test-policy-3", "test-policy-4"}).
 					Return(policiesToAttach, nil)
 				requester.EXPECT().
 					AttachPoliciesToSocket(ctx, []string{"test-policy-id-3", "test-policy-id-4"}, "test-socket-id-2").
@@ -165,7 +165,7 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 			name: "happy path - attach new policies, found new policies, and attached successfully",
 			mockRequester: func(ctx context.Context, requester *mocks.APIClientRequester) {
 				requester.EXPECT().
-					PoliciesByNames(ctx, "test-policy-3", "test-policy-4").
+					PoliciesByNames(ctx, []string{"test-policy-3", "test-policy-4"}).
 					Return(policiesToAttach, nil)
 				requester.EXPECT().
 					AttachPoliciesToSocket(ctx, []string{"test-policy-id-3", "test-policy-id-4"}, "test-socket-id-2").
@@ -201,7 +201,7 @@ func Test_Listener_ensurePoliciesAttached(t *testing.T) {
 			name: "happy path - attach 2 new policies and detach 1 policy",
 			mockRequester: func(ctx context.Context, requester *mocks.APIClientRequester) {
 				requester.EXPECT().
-					PoliciesByNames(ctx, "test-policy-3", "test-policy-4").
+					PoliciesByNames(ctx, []string{"test-policy-3", "test-policy-4"}).
 					Return(policiesToAttach, nil)
 				requester.EXPECT().
 					AttachPoliciesToSocket(ctx, []string{"test-policy-id-3", "test-policy-id-4"}, "test-socket-id-2").
