@@ -161,3 +161,17 @@ func NotFound(err error) bool {
 	var apiErr Error
 	return errors.As(err, &apiErr) && apiErr.Code == http.StatusNotFound
 }
+
+func BadRequest(err error) (Error, bool) {
+	if err == nil {
+		return Error{}, false
+	}
+	var apiErr Error
+	if !errors.As(err, &apiErr) {
+		return Error{}, false
+	}
+	if apiErr.Code != http.StatusBadRequest {
+		return Error{}, false
+	}
+	return apiErr, true
+}
