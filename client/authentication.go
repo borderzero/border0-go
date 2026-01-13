@@ -22,8 +22,49 @@ import (
 
 // AuthenticationService is an interface for API client methods that interact with Border0 API to manage authentication.
 type AuthenticationService interface {
-	// TODO: IsAuthenticated(ctx context.Context) (bool, error)
+	// IsAuthenticated checks if the client is authenticated.
+	IsAuthenticated(ctx context.Context) (bool, error)
 	Authenticate(ctx context.Context, opts ...auth.Option) error
+}
+
+func (api *APIClient) IsAuthenticated(ctx context.Context) (bool, error) {
+	if api.authToken == "" {
+		return false, nil
+	}
+
+	claims, err := api.TokenClaims()
+	if err != nil {
+		return false, nil
+	}
+
+	//check expiry if present
+	if exp, ok := claims["exp"].(float64); ok {
+		if time.Now().Unix() > int64(exp) {
+			return false, nil
+		}
+	}
+
+	// check if the token is valid on the server by performing a lightweight API call
+	paginator := api.SocketsPaginator(ctx, 1)
+	if _, err := paginator.Next(ctx); err != nil {
+		var apiErr Error
+		if errors.As(err, &apiErr) {
+
+			if apiErr.Code == http.StatusUnauthorized {
+				return false, nil
+			}
+
+			// token is valid but lacks perms to list sockets, we consider this authenticated
+			if apiErr.Code == http.StatusForbidden {
+				return true, nil
+			}
+		}
+
+		//other errors (e.g., network issues) assume not authenticated as verification failed
+		return false, err
+	}
+
+	return true, nil
 }
 
 // Authenticate authenticates the client.
