@@ -39,7 +39,7 @@ func (api *APIClient) IsAuthenticated(ctx context.Context) (bool, error) {
 
 	// check expiry if present
 	if exp, ok := claims["exp"].(float64); ok {
-		if time.Now().Unix() > int64(exp) {
+		if time.Now().Unix() >= int64(exp) {
 			return false, nil
 		}
 	}
@@ -54,7 +54,7 @@ func (api *APIClient) IsAuthenticated(ctx context.Context) (bool, error) {
 				return false, nil
 			}
 
-			// token is valid but lacks perms to list sockets, we consider this authenticated
+			// token is valid but lacks permission, we consider this authenticated
 			if apiErr.Code == http.StatusForbidden {
 				return true, nil
 			}

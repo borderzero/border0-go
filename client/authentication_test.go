@@ -16,7 +16,16 @@ import (
 func Test_APIClient_IsAuthenticated(t *testing.T) {
 	t.Parallel()
 
-	validToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+	validToken := func() string {
+		claims := jwt.MapClaims{
+			"sub":  "1234567890",
+			"name": "John Doe",
+			"iat":  float64(1516239022),
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		s, _ := token.SignedString([]byte("secret"))
+		return s
+	}()
 	expiredToken := func() string {
 		claims := jwt.MapClaims{
 			"exp": float64(time.Now().Add(-1 * time.Hour).Unix()),
