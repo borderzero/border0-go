@@ -37,7 +37,7 @@ func (api *APIClient) IsAuthenticated(ctx context.Context) (bool, error) {
 		return false, nil
 	}
 
-	//check expiry if present
+	// check expiry if present
 	if exp, ok := claims["exp"].(float64); ok {
 		if time.Now().Unix() > int64(exp) {
 			return false, nil
@@ -45,8 +45,8 @@ func (api *APIClient) IsAuthenticated(ctx context.Context) (bool, error) {
 	}
 
 	// check if the token is valid on the server by performing a lightweight API call
-	paginator := api.SocketsPaginator(ctx, 1)
-	if _, err := paginator.Next(ctx); err != nil {
+	_, err = api.request(ctx, http.MethodGet, "/iam/whoami", nil, nil)
+	if err != nil {
 		var apiErr Error
 		if errors.As(err, &apiErr) {
 
@@ -60,7 +60,7 @@ func (api *APIClient) IsAuthenticated(ctx context.Context) (bool, error) {
 			}
 		}
 
-		//other errors (e.g., network issues) assume not authenticated as verification failed
+		// other errors (e.g., network issues) assume not authenticated as verification failed
 		return false, err
 	}
 

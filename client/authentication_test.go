@@ -72,7 +72,7 @@ func Test_APIClient_IsAuthenticated(t *testing.T) {
 			authToken: validTokenWithExp,
 			mockConfig: &mockConfig{
 				method: http.MethodGet,
-				path:   "/sockets?page=1&page_size=1",
+				path:   "/iam/whoami",
 				code:   http.StatusOK, 
 				//we don't care about the body content for IsAuthenticated, just the status code
 				output: &paginatedResponse[Socket]{}, 
@@ -85,7 +85,7 @@ func Test_APIClient_IsAuthenticated(t *testing.T) {
 			authToken: validToken, 
 			mockConfig: &mockConfig{
 				method: http.MethodGet,
-				path:   "/sockets?page=1&page_size=1",
+				path:   "/iam/whoami",
 				code:   http.StatusOK,
 				output: &paginatedResponse[Socket]{},
 			},
@@ -97,7 +97,7 @@ func Test_APIClient_IsAuthenticated(t *testing.T) {
 			authToken: validToken,
 			mockConfig: &mockConfig{
 				method: http.MethodGet,
-				path:   "/sockets?page=1&page_size=1",
+				path:   "/iam/whoami",
 				code:   http.StatusUnauthorized,
 				err:    Error{Code: http.StatusUnauthorized},
 			},
@@ -109,7 +109,7 @@ func Test_APIClient_IsAuthenticated(t *testing.T) {
 			authToken: validToken,
 			mockConfig: &mockConfig{
 				method: http.MethodGet,
-				path:   "/sockets?page=1&page_size=1",
+				path:   "/iam/whoami",
 				code:   http.StatusForbidden,
 				err:    Error{Code: http.StatusForbidden},
 			},
@@ -121,7 +121,7 @@ func Test_APIClient_IsAuthenticated(t *testing.T) {
 			authToken: validToken,
 			mockConfig: &mockConfig{
 				method: http.MethodGet,
-				path:   "/sockets?page=1&page_size=1",
+				path:   "/iam/whoami",
 				code:   0,
 				err:    errors.New("network error"),
 			},
