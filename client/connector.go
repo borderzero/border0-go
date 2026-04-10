@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // ConnectorService is an interface for API client methods that interact with Border0 API to manage connectors and connector tokens.
@@ -118,6 +119,14 @@ func (api *APIClient) DeleteConnectorToken(ctx context.Context, connectorID, tok
 	return nil
 }
 
+// TailscaleAuthKey is the Tailscale auth key issued by the Border0 API on behalf of the
+// organization's Tailscale integration.
+type TailscaleAuthKey struct {
+	ID      string     `json:"id"`
+	Key     string     `json:"key"`
+	Expires *time.Time `json:"expires,omitempty"`
+}
+
 // Connector represents a connector in your Border0 organization.
 type Connector struct {
 	// input and output fields
@@ -130,6 +139,9 @@ type Connector struct {
 	// built-in SSH service
 	BuiltInSshServiceEnabled bool    `json:"built_in_ssh_service_enabled,omitempty"`
 	BuiltInSshService        *Socket `json:"built_in_ssh_service,omitempty"` // optional, nil if built-in SSH service is disabled
+
+	// TailscaleAuthKey is only present for tailscale managed connectors
+	TailscaleAuthKey *TailscaleAuthKey `json:"tailscale_auth_key,omitempty"`
 }
 
 // ConnectorToken represents a token for a connector.
