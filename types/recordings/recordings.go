@@ -23,6 +23,9 @@ const (
 
 	// RecordingTypeSnowflakeQueryLog is the recording type for snowflake queries in table format.
 	RecordingTypeSnowflakeQueryLog = "snowflake_query_log"
+
+	// RecordingTypeRdpSessionRecording is the recording type for RDP session video recordings in fMP4 format.
+	RecordingTypeRdpSessionRecording = "rdp_session_recording"
 )
 
 // ValidRecordingTypes represents allowed values for recording types.
@@ -34,4 +37,5 @@ var ValidRecordingTypes = set.New(
 	RecordingTypeBrowserSessionStream,
 	RecordingTypeHTTPAccessLog,
 	RecordingTypeSnowflakeQueryLog,
+	RecordingTypeRdpSessionRecording,
 )
