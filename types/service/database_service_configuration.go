@@ -34,6 +34,9 @@ const (
 
 	// DatabaseProtocolTypeMongoDB is the database service protocol for mongodb databases.
 	DatabaseProtocolMongoDB = "mongodb"
+
+	// DatabaseProtocolAerospike is the database service protocol for aerospike databases.
+	DatabaseProtocolAerospike = "aerospike"
 )
 
 const (
@@ -288,7 +291,7 @@ func (config StandardDatabaseServiceConfiguration) Validate() error {
 		default:
 			return fmt.Errorf("invalid database authentication type: %s", config.AuthenticationType)
 		}
-	case DatabaseProtocolMongoDB:
+	case DatabaseProtocolMongoDB, DatabaseProtocolAerospike:
 		switch config.AuthenticationType {
 		case DatabaseAuthenticationTypeUsernameAndPassword:
 			if nilcheck.AnyNotNil(config.TlsAuth, config.Kerberos, config.SqlAuthentication) {
