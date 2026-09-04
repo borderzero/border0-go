@@ -1,4 +1,4 @@
-# slice 
+# slice
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/borderzero/border0-go)](https://goreportcard.com/report/github.com/borderzero/border0-go)
 [![Documentation](https://godoc.org/github.com/borderzero/border0-go/lib/types/slice?status.svg)](https://godoc.org/github.com/borderzero/border0-go/lib/types/slice)

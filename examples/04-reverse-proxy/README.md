@@ -5,6 +5,7 @@ This example demonstrates how to use border0-go to create a net.Listener, and us
 Make sure you've exported your token like `export BORDER0_AUTH_TOKEN=your_auth_token_here` before running the example.
 
 # Running the example
+
 ```
 go run main.go
 ```
@@ -17,8 +18,8 @@ This will:
 4) every incoming request will be authenticated we'll print the name and email of the authenticated user to the console. This information is in the X-Auth-Name X-Auth-email headers.
 5) Finnaly we'll reverse the requests to bbc.com and rewrite the content.
 
-
 # Expected output
+
 ```
 $ go run main.go
 Welcome to Border0.com
@@ -30,4 +31,4 @@ Logs
 2023/08/11 14:26:22 serving request from Andree Toonk andree@border0.com
 ```
 
-In this case the newly created socket is named sdk-socket-http and is available at https://sdk-socket-http-border0-demo.border0.io. You can now use this socket to authenticate your requests to bbc.com. 
+In this case the newly created socket is named sdk-socket-http and is available at <https://sdk-socket-http-border0-demo.border0.io>. You can now use this socket to authenticate your requests to bbc.com.

@@ -1,20 +1,22 @@
-# List Connectors Using the border0-go SDK 
+# List Connectors Using the border0-go SDK
 
 This example demonstrates how to use the border0-go SDK to interact with the Border0 API. This particular, this example covers fetching all connectors from the API and printing the details of each connector to the console.
 
 Make sure you've exported your token like `export BORDER0_AUTH_TOKEN=your_auth_token_here` before running the example.
 
 # Running the example
+
 ```
 go run main.go
 ```
 
 This will:
 
-1) Fetch all the connectors in your organization using the `Connectors()` method. 
+1) Fetch all the connectors in your organization using the `Connectors()` method.
 2) we then loop over each connector and print its details to the console.
 
 # Expected output
+
 ```
 $ go run main.go
 ✅ found 2 connectors in this Border0 organization

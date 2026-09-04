@@ -1,10 +1,11 @@
-# Create a socket using the border0-go SDK 
+# Create a socket using the border0-go SDK
 
 This example demonstrates how to use the border0-go SDK to interact with the Border0 API. It covers creating a new socket and fetching its details.
 
 Make sure you've exported your token like `export BORDER0_AUTH_TOKEN=your_auth_token_here` before running the example.
 
 # Running the example
+
 ```
 go run main.go
 ```
@@ -15,6 +16,7 @@ This will:
 2) Fetch the details of the socket you just created and print the details to the console.
 
 # Expected output
+
 ```
 $ go run main.go
 2023/08/11 13:48:48 ✅ created socket = {
