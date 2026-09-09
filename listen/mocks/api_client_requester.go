@@ -40,6 +40,136 @@ func (_m *APIClientRequester) EXPECT() *APIClientRequester_Expecter {
 	return &APIClientRequester_Expecter{mock: &_m.Mock}
 }
 
+// ApprovalWorkflow provides a mock function for the type APIClientRequester
+func (_mock *APIClientRequester) ApprovalWorkflow(ctx context.Context, id string) (*client.ApprovalWorkflow, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApprovalWorkflow")
+	}
+
+	var r0 *client.ApprovalWorkflow
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*client.ApprovalWorkflow, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *client.ApprovalWorkflow); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ApprovalWorkflow)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// APIClientRequester_ApprovalWorkflow_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApprovalWorkflow'
+type APIClientRequester_ApprovalWorkflow_Call struct {
+	*mock.Call
+}
+
+// ApprovalWorkflow is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) ApprovalWorkflow(ctx interface{}, id interface{}) *APIClientRequester_ApprovalWorkflow_Call {
+	return &APIClientRequester_ApprovalWorkflow_Call{Call: _e.mock.On("ApprovalWorkflow", ctx, id)}
+}
+
+func (_c *APIClientRequester_ApprovalWorkflow_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_ApprovalWorkflow_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_ApprovalWorkflow_Call) Return(out *client.ApprovalWorkflow, err error) *APIClientRequester_ApprovalWorkflow_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_ApprovalWorkflow_Call) RunAndReturn(run func(ctx context.Context, id string) (*client.ApprovalWorkflow, error)) *APIClientRequester_ApprovalWorkflow_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ApprovalWorkflows provides a mock function for the type APIClientRequester
+func (_mock *APIClientRequester) ApprovalWorkflows(ctx context.Context) (*client.ApprovalWorkflows, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApprovalWorkflows")
+	}
+
+	var r0 *client.ApprovalWorkflows
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (*client.ApprovalWorkflows, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) *client.ApprovalWorkflows); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ApprovalWorkflows)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// APIClientRequester_ApprovalWorkflows_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApprovalWorkflows'
+type APIClientRequester_ApprovalWorkflows_Call struct {
+	*mock.Call
+}
+
+// ApprovalWorkflows is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *APIClientRequester_Expecter) ApprovalWorkflows(ctx interface{}) *APIClientRequester_ApprovalWorkflows_Call {
+	return &APIClientRequester_ApprovalWorkflows_Call{Call: _e.mock.On("ApprovalWorkflows", ctx)}
+}
+
+func (_c *APIClientRequester_ApprovalWorkflows_Call) Run(run func(ctx context.Context)) *APIClientRequester_ApprovalWorkflows_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_ApprovalWorkflows_Call) Return(out *client.ApprovalWorkflows, err error) *APIClientRequester_ApprovalWorkflows_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_ApprovalWorkflows_Call) RunAndReturn(run func(ctx context.Context) (*client.ApprovalWorkflows, error)) *APIClientRequester_ApprovalWorkflows_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // AttachPoliciesToSocket provides a mock function for the type APIClientRequester
 func (_mock *APIClientRequester) AttachPoliciesToSocket(ctx context.Context, policyIDs []string, socketID string) error {
 	ret := _mock.Called(ctx, policyIDs, socketID)
@@ -500,6 +630,74 @@ func (_c *APIClientRequester_Connectors_Call) Return(out *client.Connectors, err
 }
 
 func (_c *APIClientRequester_Connectors_Call) RunAndReturn(run func(ctx context.Context) (*client.Connectors, error)) *APIClientRequester_Connectors_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateApprovalWorkflow provides a mock function for the type APIClientRequester
+func (_mock *APIClientRequester) CreateApprovalWorkflow(ctx context.Context, in *client.ApprovalWorkflow) (*client.ApprovalWorkflow, error) {
+	ret := _mock.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateApprovalWorkflow")
+	}
+
+	var r0 *client.ApprovalWorkflow
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *client.ApprovalWorkflow) (*client.ApprovalWorkflow, error)); ok {
+		return returnFunc(ctx, in)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *client.ApprovalWorkflow) *client.ApprovalWorkflow); ok {
+		r0 = returnFunc(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ApprovalWorkflow)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *client.ApprovalWorkflow) error); ok {
+		r1 = returnFunc(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// APIClientRequester_CreateApprovalWorkflow_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateApprovalWorkflow'
+type APIClientRequester_CreateApprovalWorkflow_Call struct {
+	*mock.Call
+}
+
+// CreateApprovalWorkflow is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.ApprovalWorkflow
+func (_e *APIClientRequester_Expecter) CreateApprovalWorkflow(ctx interface{}, in interface{}) *APIClientRequester_CreateApprovalWorkflow_Call {
+	return &APIClientRequester_CreateApprovalWorkflow_Call{Call: _e.mock.On("CreateApprovalWorkflow", ctx, in)}
+}
+
+func (_c *APIClientRequester_CreateApprovalWorkflow_Call) Run(run func(ctx context.Context, in *client.ApprovalWorkflow)) *APIClientRequester_CreateApprovalWorkflow_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *client.ApprovalWorkflow
+		if args[1] != nil {
+			arg1 = args[1].(*client.ApprovalWorkflow)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_CreateApprovalWorkflow_Call) Return(out *client.ApprovalWorkflow, err error) *APIClientRequester_CreateApprovalWorkflow_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_CreateApprovalWorkflow_Call) RunAndReturn(run func(ctx context.Context, in *client.ApprovalWorkflow) (*client.ApprovalWorkflow, error)) *APIClientRequester_CreateApprovalWorkflow_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1065,6 +1263,63 @@ func (_c *APIClientRequester_CreateUser_Call) Return(out *client.User, err error
 }
 
 func (_c *APIClientRequester_CreateUser_Call) RunAndReturn(run func(ctx context.Context, in *client.User, opts ...client.UserOption) (*client.User, error)) *APIClientRequester_CreateUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteApprovalWorkflow provides a mock function for the type APIClientRequester
+func (_mock *APIClientRequester) DeleteApprovalWorkflow(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteApprovalWorkflow")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// APIClientRequester_DeleteApprovalWorkflow_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteApprovalWorkflow'
+type APIClientRequester_DeleteApprovalWorkflow_Call struct {
+	*mock.Call
+}
+
+// DeleteApprovalWorkflow is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *APIClientRequester_Expecter) DeleteApprovalWorkflow(ctx interface{}, id interface{}) *APIClientRequester_DeleteApprovalWorkflow_Call {
+	return &APIClientRequester_DeleteApprovalWorkflow_Call{Call: _e.mock.On("DeleteApprovalWorkflow", ctx, id)}
+}
+
+func (_c *APIClientRequester_DeleteApprovalWorkflow_Call) Run(run func(ctx context.Context, id string)) *APIClientRequester_DeleteApprovalWorkflow_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteApprovalWorkflow_Call) Return(err error) *APIClientRequester_DeleteApprovalWorkflow_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *APIClientRequester_DeleteApprovalWorkflow_Call) RunAndReturn(run func(ctx context.Context, id string) error) *APIClientRequester_DeleteApprovalWorkflow_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -2743,6 +2998,74 @@ func (_c *APIClientRequester_TokenClaims_Call) Return(mapClaims jwt.MapClaims, e
 }
 
 func (_c *APIClientRequester_TokenClaims_Call) RunAndReturn(run func() (jwt.MapClaims, error)) *APIClientRequester_TokenClaims_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateApprovalWorkflow provides a mock function for the type APIClientRequester
+func (_mock *APIClientRequester) UpdateApprovalWorkflow(ctx context.Context, in *client.ApprovalWorkflow) (*client.ApprovalWorkflow, error) {
+	ret := _mock.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateApprovalWorkflow")
+	}
+
+	var r0 *client.ApprovalWorkflow
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *client.ApprovalWorkflow) (*client.ApprovalWorkflow, error)); ok {
+		return returnFunc(ctx, in)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *client.ApprovalWorkflow) *client.ApprovalWorkflow); ok {
+		r0 = returnFunc(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.ApprovalWorkflow)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *client.ApprovalWorkflow) error); ok {
+		r1 = returnFunc(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// APIClientRequester_UpdateApprovalWorkflow_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateApprovalWorkflow'
+type APIClientRequester_UpdateApprovalWorkflow_Call struct {
+	*mock.Call
+}
+
+// UpdateApprovalWorkflow is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *client.ApprovalWorkflow
+func (_e *APIClientRequester_Expecter) UpdateApprovalWorkflow(ctx interface{}, in interface{}) *APIClientRequester_UpdateApprovalWorkflow_Call {
+	return &APIClientRequester_UpdateApprovalWorkflow_Call{Call: _e.mock.On("UpdateApprovalWorkflow", ctx, in)}
+}
+
+func (_c *APIClientRequester_UpdateApprovalWorkflow_Call) Run(run func(ctx context.Context, in *client.ApprovalWorkflow)) *APIClientRequester_UpdateApprovalWorkflow_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *client.ApprovalWorkflow
+		if args[1] != nil {
+			arg1 = args[1].(*client.ApprovalWorkflow)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateApprovalWorkflow_Call) Return(out *client.ApprovalWorkflow, err error) *APIClientRequester_UpdateApprovalWorkflow_Call {
+	_c.Call.Return(out, err)
+	return _c
+}
+
+func (_c *APIClientRequester_UpdateApprovalWorkflow_Call) RunAndReturn(run func(ctx context.Context, in *client.ApprovalWorkflow) (*client.ApprovalWorkflow, error)) *APIClientRequester_UpdateApprovalWorkflow_Call {
 	_c.Call.Return(run)
 	return _c
 }
