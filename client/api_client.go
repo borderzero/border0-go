@@ -35,6 +35,7 @@ type Requester interface {
 	GroupService
 	ServiceAccountService
 	WebIdentityService
+	ApprovalWorkflowService
 }
 
 const (
