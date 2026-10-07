@@ -299,14 +299,15 @@ type DatabasePermission struct {
 
 // SSHPermissions represents ssh service permissions for policy (v2).
 type SSHPermissions struct {
-	Shell                     *SSHShellPermission         `json:"shell,omitempty"`
-	Exec                      *SSHExecPermission          `json:"exec,omitempty"`
-	SFTP                      *SSHSFTPPermission          `json:"sftp,omitempty"`
-	TCPForwarding             *SSHTCPForwardingPermission `json:"tcp_forwarding,omitempty"`
-	KubectlExec               *SSHKubectlExecPermission   `json:"kubectl_exec,omitempty"`
-	DockerExec                *SSHDockerExecPermission    `json:"docker_exec,omitempty"`
-	MaxSessionDurationSeconds *int                        `json:"max_session_duration_seconds,omitempty"`
-	AllowedUsernames          *[]string                   `json:"allowed_usernames,omitempty"`
+	Shell                     *SSHShellPermission           `json:"shell,omitempty"`
+	Exec                      *SSHExecPermission            `json:"exec,omitempty"`
+	SFTP                      *SSHSFTPPermission            `json:"sftp,omitempty"`
+	AgentForwarding           *SSHAgentForwardingPermission `json:"agent_forwarding,omitempty"`
+	TCPForwarding             *SSHTCPForwardingPermission   `json:"tcp_forwarding,omitempty"`
+	KubectlExec               *SSHKubectlExecPermission     `json:"kubectl_exec,omitempty"`
+	DockerExec                *SSHDockerExecPermission      `json:"docker_exec,omitempty"`
+	MaxSessionDurationSeconds *int                          `json:"max_session_duration_seconds,omitempty"`
+	AllowedUsernames          *[]string                     `json:"allowed_usernames,omitempty"`
 }
 
 // SSHShellPermission represents the shell ssh permission for policy (v2).
@@ -319,6 +320,10 @@ type SSHExecPermission struct {
 
 // SSHSFTPPermission represents the sftp ssh permission for policy (v2).
 type SSHSFTPPermission struct{}
+
+// SSHAgentForwardingPermission represents the agent forwarding ssh permission for policy (v2).
+// Like sftp, its presence grants the permission; it carries no further configuration.
+type SSHAgentForwardingPermission struct{}
 
 // SSHTCPForwardingPermission represents the tcp forwarding ssh permission for policy (v2).
 type SSHTCPForwardingPermission struct {
