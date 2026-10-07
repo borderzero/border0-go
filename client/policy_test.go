@@ -53,7 +53,8 @@ var testPolicyDataV2 = PolicyDataV2{
 			Exec: &SSHExecPermission{
 				Commands: &[]string{"ls", "pwd"},
 			},
-			SFTP: &SSHSFTPPermission{},
+			SFTP:            &SSHSFTPPermission{},
+			AgentForwarding: &SSHAgentForwardingPermission{},
 			TCPForwarding: &SSHTCPForwardingPermission{
 				AllowedConnections: &[]SSHTcpForwardingConnection{
 					{
