@@ -16,10 +16,6 @@ func Match(template string, check string) bool {
 // pattern given a template string with wildcards
 func wildcardToRegexp(template string) string {
 	parts := strings.Split(template, "*")
-	if len(parts) == 1 {
-		// no *'s, return exact match regex pattern
-		return fmt.Sprintf("^%s$", template)
-	}
 	var result strings.Builder
 	for i, literal := range parts {
 		// replace * with .*

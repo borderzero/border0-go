@@ -85,6 +85,42 @@ func Test_Match(t *testing.T) {
 			Str:         "hello world",
 			ExpectMatch: false,
 		},
+		{
+			Name:        "Dot in template is literal, not regex any-char",
+			Template:    "pods.log",
+			Str:         "podsxlog",
+			ExpectMatch: false,
+		},
+		{
+			Name:        "Dot in template matches itself",
+			Template:    "pods.log",
+			Str:         "pods.log",
+			ExpectMatch: true,
+		},
+		{
+			Name:        "Regex metacharacters are literal and do not panic",
+			Template:    "foo(",
+			Str:         "foo(",
+			ExpectMatch: true,
+		},
+		{
+			Name:        "Regex metacharacters do not alter matching",
+			Template:    "foo(",
+			Str:         "fooX",
+			ExpectMatch: false,
+		},
+		{
+			Name:        "Dot stays literal alongside wildcards",
+			Template:    "*.example.com",
+			Str:         "a.example.com",
+			ExpectMatch: true,
+		},
+		{
+			Name:        "Dot stays literal alongside wildcards - negative",
+			Template:    "*.example.com",
+			Str:         "axexample.com",
+			ExpectMatch: false,
+		},
 	}
 
 	for _, test := range tests {
@@ -109,6 +145,11 @@ func Test_wildcardToRegexp(t *testing.T) {
 			Name:          "Non empty string template with no wildcards",
 			Template:      "hello",
 			ExpectedRegex: "^hello$",
+		},
+		{
+			Name:          "Regex metacharacters are quoted in template with no wildcards",
+			Template:      "pods.log",
+			ExpectedRegex: `^pods\.log$`,
 		},
 		{
 			Name:          "Template with one wildcard",
